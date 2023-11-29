@@ -1,0 +1,23 @@
+{
+  "name": "fastify-zero",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "packageManager": "pnpm@8.11.0",
+  "scripts": {
+    "test": "pnpm -r --workspace-concurrency=1 test",
+    "lint": "pnpm -r --workspace-concurrency=1 lint",
+    "clean": "rm -rf node_modules && rm -rf services/*/node_modules",
+    "cleanall": "rm pnpm-lock.yaml && rm -rf node_modules && rm -rf services/*/node_modules",
+    "dev": "pnpm -r dev",
+    "print-routes": "pnpm -r print-routes",
+    "mkcert": "pnpm -r mkcert",
+    "start": "pnpm -r start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "pnpm": "^8.11.0"
+  }
+}
