@@ -1,7 +1,7 @@
 'use strict'
 
 import { config } from 'dotenv'
-config()
+
 import { readFileSync, existsSync } from 'fs'
 import path from 'path'
 
@@ -11,6 +11,7 @@ import closeWithGrace from 'close-with-grace'
 
 import { configureOidc } from './oidc/index.js'
 import desm from 'desm'
+config()
 
 const __dirname = desm(import.meta.url)
 
@@ -33,9 +34,10 @@ const keyFile = path.join(__dirname, `${MY_HOST}-key.pem`)
 
 const localHttps = existsSync(certFile)
   ? {
-    key: readFileSync(keyFile),
-    cert: readFileSync(certFile)
-  }
+      key: readFileSync(keyFile),
+      cert: readFileSync(certFile),
+      ca: readFileSync('/Users/bkb/Library/Application Support/mkcert/rootCA.pem')
+    }
   : undefined
 
 const host = localHttps ? `https://${MY_HOST}:${port}` : `http://localhost:${port}`
@@ -45,11 +47,10 @@ const app = Fastify({
   https: localHttps
 })
 
-await app.register(middie)
-
 start()
 
-async function start() {
+async function start () {
+  await app.register(middie)
   const provider = await configureOidc()
   provider.use(prePost)
 
@@ -59,7 +60,6 @@ async function start() {
 
   const appService = await import('./app.js')
   app.register(appService, { oidc: provider })
-
 
   // delay is the number of milliseconds for the graceful close to finish
   const closeListeners = closeWithGrace({ delay: process.env.FASTIFY_CLOSE_GRACE_DELAY || 500 }, async function ({ signal, err, manual }) {
@@ -92,7 +92,7 @@ async function start() {
   })
 }
 
-async function prePost(ctx, next) {
+async function prePost (ctx, next) {
   /** pre-processing
    * you may target a specific action here by matching `ctx.path`
    */

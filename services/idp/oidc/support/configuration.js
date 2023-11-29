@@ -8,10 +8,10 @@
 export default {
   clients: [
     {
-      client_id: 'oidcCLIENT',
-      client_secret: '...',
+      client_id: '528da254-b1f4-4881-9ab3-5dfb98addaf5',
+      client_secret: 'GSSmbseznQzFEANOvhbGY',
       grant_types: ['refresh_token', 'authorization_code'],
-      redirect_uris: ['http://sso-client.dev/providers/7/open_id', 'http://sso-client.dev/providers/8/open_id']
+      redirect_uris: ['http://localhost:3002/cb']
     }
   ],
   interactions: {
@@ -30,7 +30,7 @@ export default {
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo']
   },
   features: {
-    devInteractions: { enabled: true },
+    devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
     revocation: { enabled: true }
   },

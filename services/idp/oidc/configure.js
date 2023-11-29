@@ -1,15 +1,9 @@
-import path from 'path'
 import { promisify } from 'node:util'
 
-import render from '@koa/ejs'
 import helmet from 'helmet'
-import desm from 'desm'
 
 import configuration from './support/configuration.js'
-import routes from './routes/index.js'
 import Account from './support/account.js'
-
-const __dirname = desm(import.meta.url)
 
 const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env
 
@@ -46,6 +40,7 @@ async function configure () {
     return next()
   })
 
+  // todo ?
   if (prod) {
     provider.proxy = true
     provider.use(async (ctx, next) => {
@@ -63,13 +58,6 @@ async function configure () {
       }
     })
   }
-  render(provider.app, {
-    cache: false,
-    viewExt: 'ejs',
-    layout: '_layout',
-    root: path.join(__dirname, 'views')
-  })
-  const _r = await routes(provider)
-  provider.use(_r.routes())
+
   return provider
 }

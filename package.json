@@ -19,5 +19,9 @@
   "license": "ISC",
   "devDependencies": {
     "pnpm": "^8.11.0"
+  },
+  "dependencies": {
+    "open": "^9.1.0",
+    "tsx": "^4.6.0"
   }
 }

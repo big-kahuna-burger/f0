@@ -2,6 +2,10 @@
 
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
+import View from '@fastify/view'
+
+import ejs from 'ejs'
+
 import desm from 'desm'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
@@ -16,6 +20,14 @@ export default async function (fastify, opts) {
   // those should be support plugins that are reused
   // through your application
   // console.log(opts, options)
+
+  fastify.register(View, {
+    engine: { ejs },
+    root: path.join(__dirname, 'ejs-templates'),
+    layout: './layout',
+    extName: 'ejs'
+  })
+
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)
