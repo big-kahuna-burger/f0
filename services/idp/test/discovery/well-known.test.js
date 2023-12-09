@@ -1,6 +1,6 @@
 'use strict'
 
-import { test, beforeEach, beforeAll, expect } from 'vitest'
+import { test, beforeEach, expect } from 'vitest'
 import got from 'got'
 
 import { build } from '../helper.js'
@@ -22,7 +22,7 @@ beforeEach(async () => {
 
 test('.well-known is working', async (t) => {
   const { body, statusCode, headers } = await got(`http://localhost:${port}/.well-known/openid-configuration`)
-  
+
   expect(statusCode).toEqual(200)
   expect(headers['content-type']).toEqual('application/json; charset=utf-8')
   expect(JSON.parse(body)).toMatchObject(expected(port))

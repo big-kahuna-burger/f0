@@ -1,5 +1,6 @@
 import { initializeKeys, getConfig } from '../../../db/helpers/keys.js'
 import Account from '../support/account.js'
+import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
 // TODO devInteractions disable
 // TODO interactions implement
 // TODO dynamic features state loading
@@ -13,6 +14,10 @@ if (!config) {
 }
 
 export default {
+  async renderError(ctx, out, error) {
+    console.log(out)
+    defaults.renderError(ctx, out, error);
+  },
   findAccount: Account.findAccount,
   clients: [
     {
