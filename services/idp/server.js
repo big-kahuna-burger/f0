@@ -39,14 +39,15 @@ const localHttps = existsSync(certFile)
 
 const host = localHttps ? `https://${MY_HOST}:${port}` : `http://localhost:${port}`
 
-const app = Fastify({
-  logger: true,
-  https: localHttps
-})
 
-async function start () {
+
+async function start (config) {
+  const app = Fastify({
+    logger: true,
+    https: localHttps
+  })
   await app.register(middie)
-  const provider = await configureOidc()
+  const provider = config?.oidc || (await configureOidc())
 
   const oidcCallback = provider.callback()
 
@@ -80,6 +81,11 @@ async function start () {
       process.exit(1)
     }
   })
+
+  if (config?.silent) {
+    app.log.level = 'silent'
+  }
+
   return app
 }
 
