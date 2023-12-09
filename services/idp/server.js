@@ -1,6 +1,5 @@
 'use strict'
-
-import { config } from 'dotenv'
+import './helpers/config.js'
 
 import { readFileSync, existsSync } from 'fs'
 import path from 'path'
@@ -10,18 +9,18 @@ import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
 
 import { configureOidc } from './oidc/index.js'
-import desm from 'desm'
-config()
+import { dirname, filename } from 'desm'
 
-const __dirname = desm(import.meta.url)
+const __dirname = dirname(import.meta.url)
 
 let parsedHost
 
 try {
   parsedHost = new URL(process.env.ISSUER)
-} catch { }
-
-// console.log({ parsedHost })
+} catch (error) {
+  console.error(error)
+  process.exit(1)
+}
 
 const MY_HOST = parsedHost.hostname || 'idp.dev'
 const port = parsedHost.port || 3000
@@ -29,8 +28,6 @@ const mountPoint = parsedHost.pathname || '/oidc'
 
 const certFile = path.join(__dirname, `${MY_HOST}.pem`)
 const keyFile = path.join(__dirname, `${MY_HOST}-key.pem`)
-
-// console.log(MY_HOST)
 
 const localHttps = existsSync(certFile)
   ? {
@@ -47,12 +44,9 @@ const app = Fastify({
   https: localHttps
 })
 
-start()
-
 async function start () {
   await app.register(middie)
   const provider = await configureOidc()
-  provider.use(prePost)
 
   const oidcCallback = provider.callback()
 
@@ -67,10 +61,6 @@ async function start () {
       app.log.error(err)
     }
     await app.close()
-  })
-
-  app.addHook('onRoute', (routeOptions) => {
-    // console.log(routeOptions)
   })
 
   app.addHook('onClose', async (instance, done) => {
@@ -90,46 +80,14 @@ async function start () {
       process.exit(1)
     }
   })
+  return app
 }
 
-async function prePost (ctx, next) {
-  /** pre-processing
-   * you may target a specific action here by matching `ctx.path`
-   */
-  console.log('pre middleware', ctx.method, ctx.path)
-  await next()
-  /** post-processing
-   * since internal route matching was already executed you may target a specific action here
-   * checking `ctx.oidc.route`, the unique route names used are
-   *
-   * `authorization`
-   * `backchannel_authentication`
-   * `client_delete`
-   * `client_update`
-   * `client`
-   * `code_verification`
-   * `cors.device_authorization`
-   * `cors.discovery`
-   * `cors.introspection`
-   * `cors.jwks`
-   * `cors.pushed_authorization_request`
-   * `cors.revocation`
-   * `cors.token`
-   * `cors.userinfo`
-   * `device_authorization`
-   * `device_resume`
-   * `discovery`
-   * `end_session_confirm`
-   * `end_session_success`
-   * `end_session`
-   * `introspection`
-   * `jwks`
-   * `pushed_authorization_request`
-   * `registration`
-   * `resume`
-   * `revocation`
-   * `token`
-   * `userinfo`
-   */
-  console.log('post middleware', ctx.method, ctx.oidc?.route)
+export default start
+
+if (import.meta.url.startsWith('file:')) {
+  const modulePath = filename(import.meta.url)
+  if (process.argv[1] === modulePath) {
+    start()
+  }
 }

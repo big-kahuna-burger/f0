@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import * as querystring from 'node:querystring'
 import { inspect } from 'node:util'
+import NoCache from 'fastify-disablecache'
 import FormBody from '@fastify/formbody'
 import isEmpty from 'lodash/isEmpty.js'
 import Account from '../../oidc/support/account.js'
@@ -18,7 +19,8 @@ const noop = function () {}
 
 export default async function interactionsRouter (fastify, opts) {
   fastify.register(FormBody)
-
+  fastify.register(NoCache)
+  
   fastify.get('/:uid', getInteraction)
   fastify.post('/:uid/login', checkLogin)
   fastify.post('/:uid/confirm', interactionConfirm)

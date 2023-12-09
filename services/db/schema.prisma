@@ -1,0 +1,15 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+model Config {
+  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jwks Json[]
+}

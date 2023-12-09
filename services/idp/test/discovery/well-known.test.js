@@ -1,11 +1,14 @@
+'use strict'
+
 import { test } from 'tap'
 import { build } from '../helper.js'
 
-test('example is loaded', async (t) => {
+test('.well-known is working', async (t) => {
   const app = await build(t)
 
   const res = await app.inject({
-    url: '/example'
+    url: '/.well-known/openid-configuration'
   })
+
   t.equal(res.payload, 'this is an example')
 })

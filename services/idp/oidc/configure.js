@@ -1,3 +1,4 @@
+import '../helpers/config.js'
 import { promisify } from 'node:util'
 
 import helmet from 'helmet'
@@ -5,7 +6,7 @@ import helmet from 'helmet'
 import configuration from './support/configuration.js'
 import Account from './support/account.js'
 
-const { PORT = 3000, ISSUER = `http://localhost:${PORT}` } = process.env
+const { ISSUER } = process.env
 
 export default configure
 
