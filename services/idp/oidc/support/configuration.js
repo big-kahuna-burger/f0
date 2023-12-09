@@ -1,4 +1,5 @@
 import { initializeKeys, getConfig } from '../../../db/helpers/keys.js'
+import Account from '../support/account.js'
 // TODO devInteractions disable
 // TODO interactions implement
 // TODO dynamic features state loading
@@ -12,6 +13,7 @@ if (!config) {
 }
 
 export default {
+  findAccount: Account.findAccount,
   clients: [
     {
       client_id: '528da254-b1f4-4881-9ab3-5dfb98addaf5',
@@ -36,12 +38,14 @@ export default {
     keys: ['some secret key', 'and also the old rotated away some time ago', 'and one more']
   },
   claims: {
+    openid: ['sub'],
     address: ['address'],
     email: ['email', 'email_verified'],
     phone: ['phone_number', 'phone_number_verified'],
     profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
       'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo']
   },
+  scopes: ['openid', 'offline_access', 'address', 'email', 'phone', 'profile'],
   features: {
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },

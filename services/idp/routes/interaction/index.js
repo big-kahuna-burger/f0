@@ -20,7 +20,7 @@ const noop = function () {}
 export default async function interactionsRouter (fastify, opts) {
   fastify.register(FormBody)
   fastify.register(NoCache)
-  
+
   fastify.get('/:uid', getInteraction)
   fastify.post('/:uid/login', checkLogin)
   fastify.post('/:uid/confirm', interactionConfirm)

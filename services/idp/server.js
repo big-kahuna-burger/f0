@@ -2,56 +2,37 @@
 import './helpers/config.js'
 
 import { readFileSync, existsSync } from 'fs'
-import path from 'path'
 
 import Fastify from 'fastify'
 import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
 
 import { configureOidc } from './oidc/index.js'
-import { dirname, filename } from 'desm'
+import { filename } from 'desm'
 
-const __dirname = dirname(import.meta.url)
+async function makeFastify(config, pretty) {
+  const parsedHost = new URL(config?.issuer || process.env.ISSUER)
 
-let parsedHost
+  const { hostname, protocol, port, pathname } = parsedHost
 
-try {
-  parsedHost = new URL(process.env.ISSUER)
-} catch (error) {
-  console.error(error)
-  process.exit(1)
-}
+  const mountPoint = pathname.length > 1 ? pathname : ''
+  const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${mountPoint}`
 
-const MY_HOST = parsedHost.hostname || 'idp.dev'
-const port = parsedHost.port || 3000
-const mountPoint = parsedHost.pathname || '/oidc'
-
-const certFile = path.join(__dirname, `${MY_HOST}.pem`)
-const keyFile = path.join(__dirname, `${MY_HOST}-key.pem`)
-
-const localHttps = existsSync(certFile)
-  ? {
-      key: readFileSync(keyFile),
-      cert: readFileSync(certFile),
-      ca: readFileSync('/Users/bkb/Library/Application Support/mkcert/rootCA.pem')
-    }
-  : undefined
-
-const host = localHttps ? `https://${MY_HOST}:${port}` : `http://localhost:${port}`
-
-
-
-async function start (config) {
   const app = Fastify({
-    logger: true,
-    https: localHttps
+    logger: {
+      transport: pretty ? {
+        target: 'pino-pretty',
+        options: {
+          colorize: true
+        }
+      } : false
+    }
   })
   await app.register(middie)
-  const provider = config?.oidc || (await configureOidc())
 
-  const oidcCallback = provider.callback()
+  const provider = await configureOidc(host)
 
-  app.use(mountPoint, oidcCallback)
+  app.use(pathname, provider.callback())
 
   const appService = await import('./app.js')
   app.register(appService, { oidc: provider })
@@ -69,31 +50,27 @@ async function start (config) {
     done()
   })
 
-  // Start listening.
-  app.listen({
-    port,
-    listenTextResolver: addr => {
-      return `OIDC PROVIDER: listening at ${host}. Check metadata at ${host}${mountPoint?.length > 1 ? mountPoint : ''}/.well-known/openid-configuration`
-    }
-  }, (err) => {
-    if (err) {
-      app.log.error(err)
-      process.exit(1)
-    }
-  })
-
-  if (config?.silent) {
-    app.log.level = 'silent'
-  }
-
   return app
 }
 
-export default start
+async function start(port, pretty) {
+  const app = await makeFastify(null, pretty)
+  await app.ready()
+  const listenOpts = { port, listenTextResolver }
+  await app.listen(listenOpts)
+
+  function listenTextResolver() {
+    return `OP metadata at http://localhost:${port}/.well-known/openid-configuration`
+  }
+}
+
+export default makeFastify
 
 if (import.meta.url.startsWith('file:')) {
+  const { port } = new URL(process.env.ISSUER)
   const modulePath = filename(import.meta.url)
+  const pretty = true
   if (process.argv[1] === modulePath) {
-    start()
+    start(port, pretty)
   }
 }

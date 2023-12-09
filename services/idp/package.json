@@ -8,7 +8,9 @@
   },
   "type": "module",
   "scripts": {
-    "test": "vitest run",
+    "test": "ENV=test vitest run",
+    "w": "ENV=test vitest",
+    "c8": "ENV=test vitest run --coverage",
     "start": "nodemon server.js",
     "dev": "nodemon server.js",
     "print-routes": "fastify print-routes routes/root.js",
@@ -18,38 +20,31 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fastify/autoload": "^5.0.0",
+    "@fastify/autoload": "^5.8.0",
     "@fastify/cookie": "^9.2.0",
     "@fastify/formbody": "^7.4.0",
     "@fastify/middie": "^8.3.0",
-    "@fastify/sensible": "^5.0.0",
+    "@fastify/sensible": "^5.5.0",
     "@fastify/view": "^8.2.0",
     "@koa/ejs": "^5.1.0",
+    "@opentelemetry/api": "^1.7.0",
     "desm": "^1.3.0",
     "ejs": "^3.1.9",
-    "fastify": "^4.0.0",
+    "fastify": "^4.24.3",
     "fastify-cli": "^5.9.0",
     "fastify-disablecache": "^3.1.7",
-    "fastify-plugin": "^4.0.0",
+    "fastify-plugin": "^4.5.1",
     "helmet": "^7.1.0",
     "koa-body": "^6.0.1",
     "koa-router": "^12.0.1",
     "lodash": "^4.17.21",
-    "oidc-provider": "^8.4.1",
+    "oidc-provider": "^8.4.2",
     "openid-client": "^5.6.1"
   },
   "devDependencies": {
-    "@istanbuljs/esm-loader-hook": "^0.2.0",
-    "c8": "^8.0.1",
-    "tap": "^16.3.9",
+    "@vitest/coverage-v8": "^1.0.2",
+    "request": "^2.88.2",
     "vitest": "^1.0.2",
     "vitest-mock-extended": "^1.3.1"
-  },
-  "tap": {
-    "node-arg": [
-      "--no-warnings",
-      "--experimental-loader",
-      "@istanbuljs/esm-loader-hook"
-    ]
   }
 }

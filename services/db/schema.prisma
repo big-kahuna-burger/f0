@@ -6,10 +6,26 @@ datasource db {
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  previewFeatures = ["postgresqlExtensions", "tracing"]
 }
 
 model Config {
   id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   jwks Json[]
+}
+
+model OidcModel {
+  id         String    @id
+  type       Int // name of the oidc-provider model
+  payload    Json
+  grantId    String?
+  userCode   String?
+  uid        String?
+  expiresAt  DateTime?
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([id, type])
+  @@map("oidc_model")
 }

@@ -1,28 +1,19 @@
 import '../helpers/config.js'
 import { promisify } from 'node:util'
-
+import Provider from 'oidc-provider'
 import helmet from 'helmet'
+import redirectToHttps from './helpers/koa-https-redirect.js'
 
-import configuration from './support/configuration.js'
-import Account from './support/account.js'
-
-const { ISSUER } = process.env
+const { ISSUER, NODE_ENV } = process.env
+const prod = NODE_ENV === 'production'
 
 export default configure
 
-async function configure () {
-  configuration.findAccount = Account.findAccount
-  const { default: Provider } = await import('oidc-provider')
+async function configure (iss = ISSUER) {
+  const { default: configuration } = await import('./support/configuration.js')
+  const { default: adapter } = await import('./support/adapter.js')
 
-  let adapter
-  if (process.env.MONGODB_URI) {
-    ({ default: adapter } = await import('./adapters/mongodb.js'))
-    await adapter.connect()
-  }
-
-  const prod = process.env.NODE_ENV === 'production'
-
-  const provider = new Provider(ISSUER, { adapter, ...configuration })
+  const provider = new Provider(iss, { adapter, ...configuration })
 
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
   delete directives['form-action']
@@ -41,23 +32,9 @@ async function configure () {
     return next()
   })
 
-  // todo ?
   if (prod) {
     provider.proxy = true
-    provider.use(async (ctx, next) => {
-      if (ctx.secure) {
-        await next()
-      } else if (ctx.method === 'GET' || ctx.method === 'HEAD') {
-        ctx.status = 303
-        ctx.redirect(ctx.href.replace(/^http:\/\//i, 'https://'))
-      } else {
-        ctx.body = {
-          error: 'invalid_request',
-          error_description: 'do yourself a favor and only use https'
-        }
-        ctx.status = 400
-      }
-    })
+    provider.use(redirectToHttps)
   }
 
   return provider
