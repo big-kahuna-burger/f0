@@ -18,16 +18,17 @@ async function makeFastify(config, pretty) {
   const mountPoint = pathname.length > 1 ? pathname : ''
   const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${mountPoint}`
 
-  const app = Fastify({
-    logger: {
-      transport: pretty ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true
-        }
-      } : false
+  const transport = pretty ? {
+    target: 'pino-pretty',
+    options: {
+      colorize: true
     }
-  })
+  } : false
+
+  const logger = { transport }
+  const fastifyOpts = { logger }
+
+  const app = Fastify(fastifyOpts)
   await app.register(middie)
 
   const provider = await configureOidc(host)
@@ -38,19 +39,24 @@ async function makeFastify(config, pretty) {
   app.register(appService, { oidc: provider })
 
   // delay is the number of milliseconds for the graceful close to finish
-  const closeListeners = closeWithGrace({ delay: process.env.FASTIFY_CLOSE_GRACE_DELAY || 500 }, async function ({ signal, err, manual }) {
+  const GRACE_DELAY = process.env.FASTIFY_CLOSE_GRACE_DELAY || 500
+  const closeListeners = closeWithGrace({ delay: GRACE_DELAY }, gracefullCallback)
+
+  app.addHook('onClose', onCloseHook)
+
+  return app
+
+  async function gracefullCallback({ signal, err, manual }) {
     if (err) {
       app.log.error(err)
     }
     await app.close()
-  })
+  }
 
-  app.addHook('onClose', async (instance, done) => {
+  async function onCloseHook(instance, done) {
     closeListeners.uninstall()
     done()
-  })
-
-  return app
+  }
 }
 
 async function start(port, pretty) {
