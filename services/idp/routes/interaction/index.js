@@ -87,7 +87,7 @@ export default async function interactionsRouter (fastify, opts) {
     const returnTo = await provider.interactionResult(request, reply, result, {
       mergeWithLastSubmission: false
     })
-    console.log({ TO: returnTo })
+
     reply.header('Content-Length', 0)
     return reply.redirect(303, returnTo)
   }

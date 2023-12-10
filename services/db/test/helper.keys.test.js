@@ -6,6 +6,7 @@ vi.mock('../client')
 
 test('initialize keys with empty config table', async t => {
   prisma.config.findMany.mockResolvedValue([])
+  prisma.config.create.mockResolvedValue()
   await initializeKeys()
 })
 
@@ -13,6 +14,7 @@ test('initialize with missing jwks', async t => {
   prisma.config.findMany.mockResolvedValue([{
     jwks: []
   }])
+  prisma.config.update.mockResolvedValue()
   await initializeKeys()
 })
 

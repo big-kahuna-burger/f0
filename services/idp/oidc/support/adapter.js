@@ -51,6 +51,7 @@ class PrismaAdapter {
     expiresIn
   ) {
     await tracer.startActiveSpan('upsert(id, payload, expiresIn)', async (span) => {
+      span.setAttribute('payload', JSON.stringify(payload))
       try {
         const data = {
           type: this.type,

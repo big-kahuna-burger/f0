@@ -10,11 +10,13 @@ const prod = NODE_ENV === 'production'
 
 export default configure
 
-async function configure(iss, adapterArg) {
+async function configure (iss, adapterArg) {
   const { default: configuration } = await import('./support/configuration.js')
-  
+
   const adapter = adapterArg || (await import('./support/adapter.js')).default
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
+  // TODO move this to pino
+  // provider.on('authorization.error', console.log)
 
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
   delete directives['form-action']
@@ -27,7 +29,7 @@ async function configure(iss, adapterArg) {
 
   provider.use(async (ctx, next) => {
     const origSecure = ctx.req.secure
-    // ctx.req.secure = ctx.request.secure
+    // ctx.req.secure = ctx.request.secure // TODO check what to do here
     await pHelmet(ctx.req, ctx.res)
     // ctx.req.secure = origSecure
     return next()
