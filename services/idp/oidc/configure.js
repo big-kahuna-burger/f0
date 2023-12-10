@@ -26,9 +26,9 @@ async function configure (iss = ISSUER) {
 
   provider.use(async (ctx, next) => {
     const origSecure = ctx.req.secure
-    ctx.req.secure = ctx.request.secure
+    // ctx.req.secure = ctx.request.secure
     await pHelmet(ctx.req, ctx.res)
-    ctx.req.secure = origSecure
+    // ctx.req.secure = origSecure
     return next()
   })
 

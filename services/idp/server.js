@@ -2,7 +2,7 @@
 import './helpers/config.js'
 
 import Fastify from 'fastify'
-import middie from '@fastify/middie'
+import middie from '@fastify/express'
 import closeWithGrace from 'close-with-grace'
 
 import { configureOidc } from './oidc/index.js'
@@ -11,8 +11,12 @@ import { filename } from 'desm'
 async function makeFastify (config, pretty) {
   const parsedHost = new URL(config?.issuer || process.env.ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
-  const mountPoint = pathname.length > 1 ? pathname : ''
-  const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${mountPoint}`
+  if (pathname === '/') {
+    throw new Error("You should provide a path/prefix for the issuer. Can't mount it to root. In env vars ISSUER=https://mydomain.com/oidc")
+  }
+
+  const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
+  const provider = await configureOidc(host)
 
   const transport = pretty
     ? {
@@ -29,19 +33,22 @@ async function makeFastify (config, pretty) {
   const app = Fastify(fastifyOpts)
   await app.register(middie)
 
-  const provider = await configureOidc(host)
-  
+  const oidCallback = provider.callback()
+  app.use(pathname, oidCallback)
+
   const appService = await import('./app.js')
   app.register(appService, { oidc: provider })
-  
-  const oidCallback = provider.callback()
 
-  app.use(pathname, oidCallback)
   // delay is the number of milliseconds for the graceful close to finish
   const GRACE_DELAY = process.env.FASTIFY_CLOSE_GRACE_DELAY || 500
   const closeListeners = closeWithGrace({ delay: GRACE_DELAY }, gracefullCallback)
 
   app.addHook('onClose', onCloseHook)
+
+  if (process.env.OTEL) {
+    const { otelSetup } = await import('./otel.js')
+    otelSetup()
+  }
 
   return app
 
@@ -61,6 +68,7 @@ async function makeFastify (config, pretty) {
 async function start (port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.ready()
+  console.log(app.printRoutes())
   const listenOpts = { port, listenTextResolver }
   await app.listen(listenOpts)
 
@@ -75,6 +83,7 @@ if (import.meta.url.startsWith('file:')) {
   const { port } = new URL(process.env.ISSUER)
   const modulePath = filename(import.meta.url)
   const pretty = true
+
   if (process.argv[1] === modulePath) {
     start(port, pretty)
   }

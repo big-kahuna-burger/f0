@@ -21,7 +21,7 @@ beforeEach(async () => {
 })
 
 test('.well-known is working', async (t) => {
-  const { body, statusCode, headers } = await got(`http://localhost:${port}/.well-known/openid-configuration`)
+  const { body, statusCode, headers } = await got(`http://localhost:${port}/oidc/.well-known/openid-configuration`)
 
   expect(statusCode).toEqual(200)
   expect(headers['content-type']).toEqual('application/json; charset=utf-8')
@@ -29,8 +29,8 @@ test('.well-known is working', async (t) => {
 })
 
 const expected = port => ({
-  authorization_endpoint: `http://localhost:${port}/auth`,
-  device_authorization_endpoint: `http://localhost:${port}/device/auth`,
+  authorization_endpoint: `http://localhost:${port}/oidc/auth`,
+  device_authorization_endpoint: `http://localhost:${port}/oidc/device/auth`,
   claims_parameter_supported: false,
   claims_supported: [
     'sub',
@@ -60,7 +60,7 @@ const expected = port => ({
   code_challenge_methods_supported: [
     'S256'
   ],
-  end_session_endpoint: `http://localhost:${port}/session/end`,
+  end_session_endpoint: `http://localhost:${port}/oidc/session/end`,
   grant_types_supported: [
     'implicit',
     'authorization_code',
@@ -68,8 +68,8 @@ const expected = port => ({
     'client_credentials',
     'urn:ietf:params:oauth:grant-type:device_code'
   ],
-  issuer: 'http://idp.dev:9876',
-  jwks_uri: `http://localhost:${port}/jwks`,
+  issuer: 'http://idp.dev:9876/oidc',
+  jwks_uri: `http://localhost:${port}/oidc/jwks`,
   authorization_response_iss_parameter_supported: true,
   response_modes_supported: [
     'form_post',
@@ -107,17 +107,17 @@ const expected = port => ({
     'ES256',
     'EdDSA'
   ],
-  token_endpoint: `http://localhost:${port}/token`,
+  token_endpoint: `http://localhost:${port}/oidc/token`,
   id_token_signing_alg_values_supported: [
     'PS256',
     'RS256',
     'ES256'
   ],
-  pushed_authorization_request_endpoint: `http://localhost:${port}/request`,
+  pushed_authorization_request_endpoint: `http://localhost:${port}/oidc/request`,
   request_parameter_supported: false,
   request_uri_parameter_supported: false,
-  userinfo_endpoint: `http://localhost:${port}/me`,
-  revocation_endpoint: `http://localhost:${port}/token/revocation`,
+  userinfo_endpoint: `http://localhost:${port}/oidc/me`,
+  revocation_endpoint: `http://localhost:${port}/oidc/token/revocation`,
   claim_types_supported: [
     'normal'
   ]

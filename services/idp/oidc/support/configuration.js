@@ -1,6 +1,7 @@
 import { initializeKeys, getConfig } from '../../../db/helpers/keys.js'
 import Account from '../support/account.js'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import ttl from './ttl.js'
 // TODO devInteractions disable
 // TODO interactions implement
 // TODO dynamic features state loading
@@ -14,9 +15,9 @@ if (!config) {
 }
 
 export default {
-  async renderError(ctx, out, error) {
-    console.log(out)
-    defaults.renderError(ctx, out, error);
+  async renderError (ctx, out, error) {
+    // console.error(out, error)
+    defaults.renderError(ctx, out, error)
   },
   findAccount: Account.findAccount,
   clients: [
@@ -24,7 +25,8 @@ export default {
       client_id: '528da254-b1f4-4881-9ab3-5dfb98addaf5',
       client_secret: 'GSSmbseznQzFEANOvhbGY',
       grant_types: ['refresh_token', 'authorization_code'],
-      redirect_uris: ['http://localhost:3002/cb']
+      redirect_uris: ['http://localhost:3002/cb', 'https://somerp.com/cb'],
+      token_endpoint_auth_method: 'none'
     },
     {
       client_id: '228da254-b1f4-4881-9ab3-5dfb98addaf5',
@@ -55,9 +57,9 @@ export default {
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
     revocation: { enabled: true },
-    clientCredentials: { enabled: true }
+    clientCredentials: { enabled: true },
+    registration: { enabled: true }
   },
-  jwks: {
-    keys: config.jwks
-  }
+  jwks: { keys: config.jwks },
+  ttl
 }

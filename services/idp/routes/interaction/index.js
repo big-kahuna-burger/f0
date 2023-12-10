@@ -31,7 +31,6 @@ export default async function interactionsRouter (fastify, opts) {
     const {
       uid, prompt, params, session
     } = await provider.interactionDetails(request, reply)
-
     const client = await provider.Client.find(params.client_id)
 
     switch (prompt.name) {

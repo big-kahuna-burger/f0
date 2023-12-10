@@ -101,7 +101,7 @@ class PrismaAdapter {
           })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
-            return resolve(undefined);
+            return resolve(undefined)
           }
           return resolve(prepare(doc))
         } catch (error) {
@@ -128,7 +128,7 @@ class PrismaAdapter {
           })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
-            return resolve(undefined);
+            return resolve(undefined)
           }
           return resolve(prepare(doc))
         } catch (error) {
@@ -152,7 +152,7 @@ class PrismaAdapter {
           })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
-            return resolve(undefined);
+            return resolve(undefined)
           }
           return resolve(prepare(doc))
         } catch (error) {
