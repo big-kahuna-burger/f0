@@ -24,16 +24,18 @@ describe('authorization code', () => {
     try {
       await got(`http://localhost:${port}/oidc/auth`)
     } catch (error) {
+      expect(error.response.statusCode).toEqual(400)
       expect(error.response.body).toMatch(/oops! something went wrong/)
     }
   })
 
   test.each`
-  query                   | status | matcher
-  ${{}}                   | ${400} | ${/missing required parameter &#39;client_id&#39;/}
-  ${{ client_id: 'abc' }} | ${400} | ${/client is invalid/}
+  query                      | status | matcher
+  ${{}}                      | ${400} | ${/missing required parameter &#39;client_id&#39;/}
+  ${{ client_id: 'abc123' }} | ${400} | ${/client is invalid/}
 `('returns status $status with "$query" query', async ({ query, status, matcher }) => {
     try {
+      prisma.oidcModel.findUnique.mockResolvedValue(undefined)
       const q = stringify(query)
       const url = `http://localhost:${port}/oidc/auth?${q}`
       await got(url)

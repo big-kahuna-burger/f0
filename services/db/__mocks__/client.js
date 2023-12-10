@@ -5,5 +5,9 @@ beforeEach(() => {
   mockReset(prisma)
 })
 
-const prisma = mockDeep()
+const prisma = mockDeep({
+  fallbackMockImplementation: () => {
+    throw new Error('please add expected return value using calledWith')
+  }
+})
 export default prisma
