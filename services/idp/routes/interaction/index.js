@@ -15,7 +15,7 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
 }, {}), '<br/>', ': ', {
   encodeURIComponent (value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
 })
-const noop = function () {}
+const noop = function () { }
 
 export default async function interactionsRouter (fastify, opts) {
   fastify.register(FormBody)
@@ -70,27 +70,26 @@ export default async function interactionsRouter (fastify, opts) {
   async function checkLogin (request, reply) {
     const provider = this.oidc
     const { prompt: { name } } = await provider.interactionDetails(request, reply)
+
     assert.equal(name, 'login')
 
     const account = await Account.findByLogin(request.body.login)
 
-    // const { login, password } = request.body
-    // TODO check password and stuff (login, password)
+    // // const { login, password } = request.body
+    // // TODO check password and stuff (login, password)
 
     const result = {
       login: {
         accountId: account.accountId
       }
     }
-    // just alias it so oidc-p can call .header
-    reply.setHeader = reply.header
-    reply.end = noop
 
-    await provider.interactionFinished(request, reply, result, {
+    const returnTo = await provider.interactionResult(request, reply, result, {
       mergeWithLastSubmission: false
     })
-
-    return reply.send()
+    console.log({ TO: returnTo })
+    reply.header('Content-Length', 0)
+    return reply.redirect(303, returnTo)
   }
 
   async function interactionConfirm (request, reply) {

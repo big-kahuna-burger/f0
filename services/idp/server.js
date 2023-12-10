@@ -4,7 +4,6 @@ import './helpers/config.js'
 import Fastify from 'fastify'
 import middie from '@fastify/express'
 import closeWithGrace from 'close-with-grace'
-
 import { configureOidc } from './oidc/index.js'
 import { filename } from 'desm'
 
