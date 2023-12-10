@@ -2,7 +2,7 @@ import { test, beforeEach, expect } from 'vitest'
 import got from 'got'
 
 import { build } from '../helper.js'
-process.env.OTEL = true
+// process.env.OTEL = true
 let fastify
 let port
 

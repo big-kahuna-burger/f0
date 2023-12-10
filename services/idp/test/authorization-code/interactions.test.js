@@ -4,9 +4,8 @@ import skp from 'set-cookie-parser'
 import { stringify } from 'querystring'
 import { generators } from 'openid-client'
 import { build } from '../helper.js'
-
+import { decode } from '../../helpers/base64url.js'
 import prisma from '../../../db/__mocks__/client.js'
-process.env.OTEL = true
 
 describe('interaction router', () => {
   let fastify
@@ -23,7 +22,8 @@ describe('interaction router', () => {
       await fastify.close()
     }
   })
-  test('interaction/:uid GET -> renders login', async (ctx) => {
+
+  test('auth -> login rendered with title', async (ctx) => {
     const clientMock = {
       payload: {
         client_id: 'goodclient',
@@ -105,31 +105,60 @@ describe('interaction router', () => {
       if (arg.where.id_type.type === 1) {
         return sessionDB[arg.where.id_type.id]
       }
-      console.log('findUnique', arg.where.id_type.type)
+      if (arg.where.id_type.type === 13) {
+        return grantsDB[arg.where.id_type.id]
+      }
+      if (arg.where.id_type.type === 3) {
+        return authCodes[arg.where.id_type.id]
+      }
+      console.log(arg)
     })
     prisma.oidcModel.delete.mockImplementation((arg) => {
       if (arg.where.id_type.type === 10) {
         delete interactionsDB[arg.where.id_type.id]
-        console.log('deleted interaction', arg.where.id_type.id)
         return
       }
-      console.log('not deleted!', arg.where.id_type.type)
+      if (arg.where.id_type.type === 1) {
+        delete sessionDB[arg.where.id_type.id]
+        return
+      }
+      console.log({ arg })
     })
-    prisma.oidcModel.upsert.mockImplementation(({ create }) => {
+    // adapter.upsert
+    prisma.oidcModel.upsert.mockImplementation(({ create, ...otherOpts }) => {
       if (create.type === 10) {
         interactionsDB[create.id] = create
-        console.log('upserted interaction', create.id, create.payload.prompt)
         return
       }
+
       if (create.type === 1) {
         sessionDB[create.id] = create
         return
       }
-      console.log('not saved!', create.type)
+
+      if (create.type === 13) {
+        grantsDB[create.id] = create
+        return
+      }
+
+      if (create.type === 3) {
+        authCodes[create.id] = create
+        return
+      }
+      // console.log('accessToken created ', create.payload)
     })
+    // adapter.findByUid
+    prisma.oidcModel.findFirst.mockImplementation(({ where: { uid } }) => {
+      const filtered = Object.values(sessionDB).filter(s => s.uid === uid)
+      return filtered[0]
+    })
+
     const interactionsDB = {}
+    const grantsDB = {}
+    const authCodes = {}
+    const codeVerifier = generators.codeVerifier()
     const baseUrl = `http://localhost:${port}`
-    const goodchallenge = { code_challenge: generators.codeChallenge('abc'), code_challenge_method: 'S256' }
+    const goodchallenge = { code_challenge: generators.codeChallenge(codeVerifier), code_challenge_method: 'S256' }
     const q = stringify({ client_id: 'goodclient', redirect_uri: 'https://somerp.com/cb', response_type: 'code', ...goodchallenge, scope: 'openid' })
     const url = `${baseUrl}/oidc/auth/?${q}`
     const { statusCode, headers } = await got(url, { followRedirect: false })
@@ -163,5 +192,68 @@ describe('interaction router', () => {
     expect(sessCookies.length).toEqual(4)
     expect(consentInteraction.statusCode).toEqual(303)
     expect(consentInteraction.headers.location).toMatch(/interaction/)
+
+    const consentPage = await got(`${baseUrl}${consentInteraction.headers.location}`, {
+      followRedirect: false,
+      headers: {
+        Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+      }
+    })
+
+    expect(consentPage.statusCode).toEqual(200)
+    const containsTitle = consentPage.body.includes('<title>Authorize</title>')
+    expect(containsTitle).toBe(true)
+
+    const consentConfirmed = await got.post(`${baseUrl}${consentInteraction.headers.location}/confirm`, {
+      followRedirect: false,
+      headers: {
+        Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+      }
+    })
+
+    const consentConfirmedAuthResume = consentConfirmed.headers.location
+    expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
+
+    const rpRedirect = await got(consentConfirmedAuthResume, {
+      followRedirect: false,
+      headers: {
+        Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+      }
+    })
+    const rpCodeUrl = rpRedirect.headers.location
+    const { searchParams, pathname, host, protocol } = new URL(rpCodeUrl)
+    const { code, iss } = Object.fromEntries(searchParams)
+    // console.log(code, iss, `${protocol}//${host}${pathname}`)
+    expect(iss).toBe('http://idp.dev:9876/oidc')
+    expect(code.length).toBe(43)
+    expect(`${protocol}//${host}${pathname}`).toBe(clientMock.payload.redirect_uris[0])
+
+    const tokenUrl = `${baseUrl}/oidc/token`
+
+    const token = await got.post(tokenUrl, {
+      form: {
+        client_id: clientMock.payload.client_id,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: clientMock.payload.redirect_uris[0],
+        code_verifier: codeVerifier,
+      }
+    })
+    const {
+      access_token,
+      expires_in,
+      id_token,
+      scope,
+      token_type
+    } = JSON.parse(token.body)
+    expect(access_token).toBeTruthy()
+    expect(expires_in).toEqual(3600)
+    expect(id_token).toBeTruthy()
+    expect(scope).toEqual('openid')
+    expect(token_type).toEqual('Bearer')
+    const atHeader = id_token.split('.')[0]
+    const decoded = decode(atHeader)
+    const header = JSON.parse(decoded.toString())
+    expect(header).toEqual({ alg: 'RS256', typ: 'JWT', kid: 'testkey1' })
   })
 })

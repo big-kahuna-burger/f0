@@ -13,11 +13,11 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   acc[key] = inspect(value, { depth: null })
   return acc
 }, {}), '<br/>', ': ', {
-  encodeURIComponent (value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
+  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
 })
 const noop = function () { }
 
-export default async function interactionsRouter (fastify, opts) {
+export default async function interactionsRouter(fastify, opts) {
   fastify.register(FormBody)
   fastify.register(NoCache)
 
@@ -26,7 +26,7 @@ export default async function interactionsRouter (fastify, opts) {
   fastify.post('/:uid/confirm', interactionConfirm)
   fastify.get('/:uid/abort', interactionAbort)
 
-  async function getInteraction (request, reply) {
+  async function getInteraction(request, reply) {
     const provider = this.oidc
     const {
       uid, prompt, params, session
@@ -67,7 +67,7 @@ export default async function interactionsRouter (fastify, opts) {
     }
   }
 
-  async function checkLogin (request, reply) {
+  async function checkLogin(request, reply) {
     const provider = this.oidc
     const { prompt: { name } } = await provider.interactionDetails(request, reply)
 
@@ -92,7 +92,7 @@ export default async function interactionsRouter (fastify, opts) {
     return reply.redirect(303, returnTo)
   }
 
-  async function interactionConfirm (request, reply) {
+  async function interactionConfirm(request, reply) {
     const provider = this.oidc
     const interactionDetails = await provider.interactionDetails(request, reply)
     const { prompt: { name, details }, params, session: { accountId } } = interactionDetails
@@ -133,15 +133,14 @@ export default async function interactionsRouter (fastify, opts) {
     }
 
     const result = { consent }
-
-    reply.setHeader = reply.header
-    reply.end = noop
-
-    await provider.interactionFinished(request, reply, result, { mergeWithLastSubmission: true })
-    return reply.send()
+    let returnTo = await provider.interactionResult(request, reply, result, {
+      mergeWithLastSubmission: false
+    })
+    reply.header('Content-Length', 0)
+    return reply.redirect(303, returnTo)
   }
 
-  async function interactionAbort (request, reply) {
+  async function interactionAbort(request, reply) {
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction'

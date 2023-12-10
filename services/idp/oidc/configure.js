@@ -16,7 +16,7 @@ async function configure (iss, adapterArg) {
   const adapter = adapterArg || (await import('./support/adapter.js')).default
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
   // TODO move this to pino
-  // provider.on('authorization.error', console.log)
+  provider.on('authorization.error', console.log)
 
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
   delete directives['form-action']
@@ -34,14 +34,14 @@ async function configure (iss, adapterArg) {
     // ctx.req.secure = origSecure
     return next()
   })
-  // provider.use(koaPino({
-  //   transport: {
-  //     target: 'pino-pretty',
-  //     options: {
-  //       colorize: true
-  //     }
-  //   }
-  // }))
+  provider.use(koaPino({
+    transport: {
+      target: 'pino-pretty',
+      options: {
+        colorize: true
+      }
+    }
+  }))
   // provider.use(async (ctx, next) => {
   //   try {
   //     await next();

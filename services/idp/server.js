@@ -67,7 +67,7 @@ async function makeFastify (config, pretty) {
 async function start (port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.ready()
-  console.log(app.printRoutes())
+  console.log(app.printRoutes({includeHooks: true, includeMeta: ['errorHandler']}))
   const listenOpts = { port, listenTextResolver }
   await app.listen(listenOpts)
 

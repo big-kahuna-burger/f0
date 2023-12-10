@@ -52,6 +52,7 @@ class PrismaAdapter {
   ) {
     await tracer.startActiveSpan('upsert(id, payload, expiresIn)', async (span) => {
       span.setAttribute('payload', JSON.stringify(payload))
+      span.setAttribute('id', id)
       try {
         const data = {
           type: this.type,
@@ -90,7 +91,7 @@ class PrismaAdapter {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan('find(id)', async (span) => {
         span.setAttribute('model.name', name)
-        span.setAttribute('model.type', type)
+        span.setAttribute('id', id)
         try {
           const doc = await prisma.oidcModel.findUnique({
             where: {
@@ -102,6 +103,7 @@ class PrismaAdapter {
           })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
+            span.setAttribute('no pasaran', 'nothing')
             return resolve(undefined)
           }
           return resolve(prepare(doc))
@@ -168,6 +170,8 @@ class PrismaAdapter {
 
   async consume (id) {
     await tracer.startActiveSpan('consume(id)', async (span) => {
+      span.setAttribute('id', id)
+      span.setAttribute('model.name', this.name)
       try {
         await prisma.oidcModel.update({
           where: {
@@ -190,6 +194,8 @@ class PrismaAdapter {
 
   async destroy (id) {
     await tracer.startActiveSpan('destroy(id)', async (span) => {
+      span.setAttribute('id', id)
+      span.setAttribute('model.name', this.name)
       try {
         await prisma.oidcModel.delete({
           where: {
