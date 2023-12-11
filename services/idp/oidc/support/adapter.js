@@ -102,7 +102,6 @@ class PrismaAdapter {
           })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
-            span.setAttribute('no pasaran', 'nothing')
             return resolve(undefined)
           }
           return resolve(prepare(doc))
