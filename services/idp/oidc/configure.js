@@ -1,19 +1,21 @@
 import '../helpers/config.js'
+import { trace } from '@opentelemetry/api'
 import { promisify } from 'node:util'
 import Provider from 'oidc-provider'
 import helmet from 'helmet'
 import redirectToHttps from './helpers/koa-https-redirect.js'
-import { trace, context } from '@opentelemetry/api'
 import koaPino from 'koa-pino-logger'
+import { readPackageUp } from 'read-package-up'
 
-const tracer = trace.getTracer('oidc-koa')
+const { packageJson: pkg } = await readPackageUp()
+const tracer = trace.getTracer('oidc-provider', pkg.dependencies['oidc-provider'])
 
 const { ISSUER, NODE_ENV } = process.env
 const prod = NODE_ENV === 'production'
 
 export default configure
 
-async function configure(iss, adapterArg) {
+async function configure (iss, adapterArg) {
   const { default: configuration } = await import('./support/configuration.js')
 
   const adapter = adapterArg || (await import('./support/adapter.js')).default
@@ -31,12 +33,13 @@ async function configure(iss, adapterArg) {
   }))
 
   provider.use(async (ctx, next) => {
-    const origSecure = ctx.req.secure
+    // const origSecure = ctx.req.secure
     // ctx.req.secure = ctx.request.secure // TODO check what to do here
     await pHelmet(ctx.req, ctx.res)
     // ctx.req.secure = origSecure
     return next()
   })
+
   if (process.env.ENV !== 'test') {
     provider.use(koaPino({
       transport: {
@@ -55,15 +58,15 @@ async function configure(iss, adapterArg) {
   }
 
   if (process.env.OTEL) {
-    provider.use(async (ctx, next) => {
-      await tracer.startActiveSpan(`${ctx.method} - ${ctx.path}`, async (span) => {
-        span.setAttribute('method', ctx.method)
-        span.setAttribute('path', ctx.path)
-        await next()
-        span.end()
-      })
-    })
+    provider.use(koaActiveSpan)
   }
 
   return provider
+}
+
+async function koaActiveSpan (ctx, next) {
+  await tracer.startActiveSpan(`${ctx.method} - ${ctx.path}`, async span => {
+    await next()
+    span.end()
+  })
 }

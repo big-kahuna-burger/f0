@@ -1,3 +1,4 @@
+import { readPackageUp } from 'read-package-up'
 import { Resource } from '@opentelemetry/resources'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import {
@@ -16,7 +17,8 @@ import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { FastifyInstrumentation } from '@opentelemetry/instrumentation-fastify'
 const { PrismaInstrumentation } = instrumentation
 
-import pkg from './package.json' assert { type: 'json' }
+const { packageJson: pkg } = await readPackageUp()
+
 export function otelSetup () {
   // a context manager is required to propagate the context
   const contextManager = new AsyncHooksContextManager().enable()
