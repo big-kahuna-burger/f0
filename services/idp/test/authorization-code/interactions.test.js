@@ -32,6 +32,7 @@ describe('interaction router', () => {
         token_endpoint_auth_method: 'none'
       }
     }
+    prisma.oidcModel.upsert.mockImplementation(() => {})
     prisma.oidcModel.findUnique.mockResolvedValueOnce(clientMock)
 
     const baseUrl = `http://localhost:${port}`
@@ -112,7 +113,7 @@ describe('interaction router', () => {
       if (arg.where.id_type.type === 3) {
         return authCodes[arg.where.id_type.id]
       }
-      console.log(arg)
+      console.log(arg, 'handle me!')
     })
     prisma.oidcModel.delete.mockImplementation((arg) => {
       if (arg.where.id_type.type === 10) {
@@ -123,7 +124,7 @@ describe('interaction router', () => {
         delete sessionDB[arg.where.id_type.id]
         return
       }
-      console.log({ arg })
+      console.log(arg, 'handle me!')
     })
     // adapter.upsert
     prisma.oidcModel.upsert.mockImplementation(({ create, ...otherOpts }) => {
@@ -153,6 +154,9 @@ describe('interaction router', () => {
       return filtered[0]
     })
 
+    prisma.oidcModel.deleteMany.mockImplementation(() => { })
+    prisma.oidcModel.update.mockImplementation(() => { })
+
     const interactionsDB = {}
     const grantsDB = {}
     const authCodes = {}
@@ -163,7 +167,7 @@ describe('interaction router', () => {
     const url = `${baseUrl}/oidc/auth/?${q}`
 
     const { statusCode, headers } = await got(url, { followRedirect: false })
-    console.log('RP -> (GET) IDP/auth redirects to login', { startsFrom: url, statusCode, location: headers.location })
+    // console.log('RP -> (GET) IDP/auth redirects to login', { startsFrom: url, statusCode, location: headers.location })
 
     expect(statusCode).toEqual(303)
     expect(headers.location).toMatch('/interaction')
@@ -180,10 +184,10 @@ describe('interaction router', () => {
     })
 
     const authLocation = loginResponse.headers.location
-    console.log('Browser -> (POST) IDP/interaction/:uid/login redirects to auth', {
-      statusCode: loginResponse.statusCode,
-      location: authLocation
-    })
+    // console.log('Browser -> (POST) IDP/interaction/:uid/login redirects to auth', {
+    //   statusCode: loginResponse.statusCode,
+    //   location: authLocation
+    // })
     expect(authLocation).toMatch(/oidc\/auth/) // .../oidc/auth/X0oCrM5oL7N_gDFzJNyqV
     expect(loginResponse.statusCode).toEqual(303)
 
@@ -193,10 +197,10 @@ describe('interaction router', () => {
         Cookie: headers['set-cookie'].join(';')
       }
     })
-    console.log('Browser -> (GET) IDP/auth redirects to consent', {
-      statusCode: consentInteraction.statusCode,
-      location: consentInteraction.headers.location
-    })
+    // console.log('Browser -> (GET) IDP/auth redirects to consent', {
+    //   statusCode: consentInteraction.statusCode,
+    //   location: consentInteraction.headers.location
+    // })
     const sessCookies = skp(consentInteraction.headers['set-cookie']).filter(ck => ck.name.startsWith('_session'))
     expect(sessCookies.length).toEqual(4)
     expect(consentInteraction.statusCode).toEqual(303)
@@ -209,7 +213,7 @@ describe('interaction router', () => {
       }
     })
 
-    console.log('Browser -> (GET) IDP/interaction/:uid (consent)', { statusCode: consentPage.statusCode })
+    // console.log('Browser -> (GET) IDP/interaction/:uid (consent)', { statusCode: consentPage.statusCode })
 
     expect(consentPage.statusCode).toEqual(200)
     const containsTitle = consentPage.body.includes('<title>Authorize</title>')
@@ -224,7 +228,9 @@ describe('interaction router', () => {
 
     const consentConfirmedAuthResume = consentConfirmed.headers.location
     expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
-    console.log('Browser -> (POST) IDP/interaction/:uid/confirm (consent)', { statusCode: consentPage.statusCode, location: consentConfirmedAuthResume })
+
+    // console.log('Browser -> (POST) IDP/interaction/:uid/confirm (consent)', { statusCode: consentPage.statusCode, location: consentConfirmedAuthResume })
+
     const rpRedirect = await got(consentConfirmedAuthResume, {
       followRedirect: false,
       headers: {
@@ -235,14 +241,13 @@ describe('interaction router', () => {
     const { searchParams, pathname, host, protocol } = new URL(rpCodeUrl)
     const { code, iss } = Object.fromEntries(searchParams)
 
-    console.log(`Browser -> (GET) RP ${protocol}//${host}${pathname}?code=${code}&iss=${iss}`)
+    // console.log(`Browser -> (GET) RP ${protocol}//${host}${pathname}?code=${code}&iss=${iss}`)
 
     expect(iss).toBe('http://idp.dev:9876/oidc')
     expect(code.length).toBe(43)
     expect(`${protocol}//${host}${pathname}`).toBe(clientMock.payload.redirect_uris[0])
 
     const tokenUrl = `${baseUrl}/oidc/token`
-
     const token = await got.post(tokenUrl, {
       form: {
         client_id: clientMock.payload.client_id,
@@ -254,7 +259,6 @@ describe('interaction router', () => {
     })
 
     const {
-      // eslint-disable-next-line
       access_token: accessToken,
       expires_in: expiresIn,
       id_token: idToken,
@@ -262,7 +266,7 @@ describe('interaction router', () => {
       token_type: tokenType
     } = JSON.parse(token.body)
 
-    console.log('RP Client -> (POST) IDP/token', { statusCode: token.statusCode, body: token.body })
+    // console.log('RP Client -> (POST) IDP/token', { statusCode: token.statusCode, body: token.body })
 
     expect(accessToken).toBeTruthy()
     expect(expiresIn).toEqual(3600)

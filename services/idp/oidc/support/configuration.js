@@ -16,7 +16,7 @@ if (!config) {
 
 export default {
   async renderError (ctx, out, error) {
-    // console.error(out, error)
+    console.error(out, error)
     defaults.renderError(ctx, out, error)
   },
   findAccount: Account.findAccount,

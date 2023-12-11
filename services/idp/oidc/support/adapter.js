@@ -23,8 +23,6 @@ const types = [
   {}
 )
 
-// remove this startActiveSpan with start span thing because top spans should be HTTP
-
 const prepare = (doc) => {
   const isPayloadJson = doc.payload && typeof doc.payload === 'object' && !Array.isArray(doc.payload)
 
@@ -79,7 +77,6 @@ class PrismaAdapter {
             ...data
           }
         })
-        span.setStatus({ code: 1 })
       } catch (error) {
         span.recordException(error)
       } finally {
@@ -143,8 +140,8 @@ class PrismaAdapter {
       })
     })
   }
-  // eslint-disable-next-line
-  async findByUid(uid) {
+
+  async findByUid (uid) {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan('findByUid(uid)', async (span) => {
         span.setAttribute('uid', uid)
@@ -214,11 +211,19 @@ class PrismaAdapter {
       }
     })
   }
-  // eslint-disable-next-line
-  async revokeByGrantId(grantId) {
-    await prisma.oidcModel.deleteMany({
-      where: {
-        grantId
+
+  async revokeByGrantId (grantId) {
+    await tracer.startActiveSpan('revokeByGrantId', async (span) => {
+      try {
+        await prisma.oidcModel.deleteMany({
+          where: {
+            grantId
+          }
+        })
+      } catch (error) {
+        span.recordException(error)
+      } finally {
+        span.end()
       }
     })
   }

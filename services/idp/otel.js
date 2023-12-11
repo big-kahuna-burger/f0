@@ -57,5 +57,4 @@ export function otelSetup () {
       new FastifyInstrumentation()
     ]
   })
-  console.log('configured OTEL')
 }

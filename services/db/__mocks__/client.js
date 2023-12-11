@@ -6,8 +6,9 @@ beforeEach(() => {
 })
 
 const prisma = mockDeep({
-  fallbackMockImplementation: (abc) => {
-    throw new Error('please add expected return value using calledWith')
+  fallbackMockImplementation: (...args) => {
+    console.error('fallback mock called with', args)
+    throw new Error('please add mock implementation')
   }
 })
 export default prisma
