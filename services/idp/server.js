@@ -40,7 +40,12 @@ async function makeFastify (config, pretty) {
   app.use(pathname, oidCallback)
 
   const appService = await import('./app.js')
-  app.register(appService, { oidc: provider })
+  app.register(appService,
+    {
+      oidc: provider,
+      otel: { wrapRoutes: true }
+    }
+  )
 
   // delay is the number of milliseconds for the graceful close to finish
   const GRACE_DELAY = process.env.FASTIFY_CLOSE_GRACE_DELAY || 500

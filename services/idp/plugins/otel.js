@@ -7,6 +7,6 @@ const fpOpts = { fastify: '^4.x' }
 
 export default fp(plugin, fpOpts)
 
-async function plugin (fastify) {
-  fastify.register(openTelemetryPlugin, { wrapRoutes: true })
+async function plugin (fastify, { otel }) {
+  fastify.register(openTelemetryPlugin, otel)
 }
