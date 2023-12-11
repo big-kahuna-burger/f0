@@ -10,6 +10,8 @@ import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks'
 import * as api from '@opentelemetry/api'
 import instrumentation from '@prisma/instrumentation'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
+import { KoaInstrumentation } from '@opentelemetry/instrumentation-koa'
+
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { FastifyInstrumentation } from '@opentelemetry/instrumentation-fastify'
 const { PrismaInstrumentation } = instrumentation
@@ -54,6 +56,7 @@ export function otelSetup () {
     instrumentations: [
       new PrismaInstrumentation(),
       new HttpInstrumentation(),
+      new KoaInstrumentation(),
       new FastifyInstrumentation()
     ]
   })
