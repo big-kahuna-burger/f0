@@ -50,9 +50,8 @@ class PrismaAdapter {
     payload,
     expiresIn
   ) {
-    await tracer.startActiveSpan('adapter:upsert(id, payload, expiresIn)', async (span) => {
+    await tracer.startActiveSpan(`${this.name}:upsert(id, payload, expiresIn)`, async (span) => {
       span.setAttribute('id', id)
-      span.setAttribute('model.name', this.name)
       try {
         const data = {
           type: this.type,
@@ -86,11 +85,9 @@ class PrismaAdapter {
   }
 
   async find (id) {
-    const { name } = this
     return new Promise((resolve, reject) => {
-      tracer.startActiveSpan('adapter:find(id)', async (span) => {
+      tracer.startActiveSpan(`${this.name}:find(id)`, async (span) => {
         span.setAttribute('id', id)
-        span.setAttribute('model.name', name)
         try {
           const doc = await prisma.oidcModel.findUnique({
             where: {
@@ -117,8 +114,7 @@ class PrismaAdapter {
 
   async findByUserCode (userCode) {
     return new Promise((resolve, reject) => {
-      tracer.startActiveSpan('adapter:findByUserCode(userCode)', async (span) => {
-        span.setAttribute('model.name', this.name)
+      tracer.startActiveSpan(`${this.name}:findByUserCode(userCode)`, async (span) => {
         try {
           const doc = await prisma.oidcModel.findFirst({
             where: {
@@ -142,9 +138,8 @@ class PrismaAdapter {
 
   async findByUid (uid) {
     return new Promise((resolve, reject) => {
-      tracer.startActiveSpan('adapter:findByUid(uid)', async (span) => {
+      tracer.startActiveSpan(`${this.name}:findByUid(uid)`, async (span) => {
         span.setAttribute('uid', uid)
-        span.setAttribute('model.name', this.name)
         try {
           const doc = await prisma.oidcModel.findFirst({
             where: {
@@ -167,9 +162,8 @@ class PrismaAdapter {
   }
 
   async consume (id) {
-    await tracer.startActiveSpan('adapter:consume(id)', async (span) => {
+    await tracer.startActiveSpan(`${this.name}:consume(id)`, async (span) => {
       span.setAttribute('id', id)
-      span.setAttribute('model.name', this.name)
       try {
         await prisma.oidcModel.update({
           where: {
@@ -191,9 +185,8 @@ class PrismaAdapter {
   }
 
   async destroy (id) {
-    await tracer.startActiveSpan('adapter:destroy(id)', async (span) => {
+    await tracer.startActiveSpan(`${this.name}:destroy(id)`, async (span) => {
       span.setAttribute('id', id)
-      span.setAttribute('model.name', this.name)
       try {
         await prisma.oidcModel.delete({
           where: {
@@ -212,7 +205,7 @@ class PrismaAdapter {
   }
 
   async revokeByGrantId (grantId) {
-    await tracer.startActiveSpan('adapter:revokeByGrantId', async (span) => {
+    await tracer.startActiveSpan(`${this.name}:revokeByGrantId(grantId)`, async (span) => {
       try {
         await prisma.oidcModel.deleteMany({
           where: {
