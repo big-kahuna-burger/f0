@@ -23,6 +23,8 @@ const types = [
   {}
 )
 
+// remove this startActiveSpan with start span thing because top spans should be HTTP
+
 const prepare = (doc) => {
   const isPayloadJson = doc.payload && typeof doc.payload === 'object' && !Array.isArray(doc.payload)
 
@@ -51,8 +53,8 @@ class PrismaAdapter {
     expiresIn
   ) {
     await tracer.startActiveSpan('upsert(id, payload, expiresIn)', async (span) => {
-      span.setAttribute('payload', JSON.stringify(payload))
       span.setAttribute('id', id)
+      span.setAttribute('model.name', this.name)
       try {
         const data = {
           type: this.type,
@@ -87,11 +89,11 @@ class PrismaAdapter {
   }
 
   async find (id) {
-    const { name, type } = this
+    const { name } = this
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan('find(id)', async (span) => {
-        span.setAttribute('model.name', name)
         span.setAttribute('id', id)
+        span.setAttribute('model.name', name)
         try {
           const doc = await prisma.oidcModel.findUnique({
             where: {
@@ -118,11 +120,9 @@ class PrismaAdapter {
   }
 
   async findByUserCode (userCode) {
-    const { name, type } = this
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan('findByUserCode(userCode)', async (span) => {
-        span.setAttribute('model.name', name)
-        span.setAttribute('model.type', type)
+        span.setAttribute('model.name', this.name)
         try {
           const doc = await prisma.oidcModel.findFirst({
             where: {
@@ -147,6 +147,8 @@ class PrismaAdapter {
   async findByUid(uid) {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan('findByUid(uid)', async (span) => {
+        span.setAttribute('uid', uid)
+        span.setAttribute('model.name', this.name)
         try {
           const doc = await prisma.oidcModel.findFirst({
             where: {

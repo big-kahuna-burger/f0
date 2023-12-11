@@ -34,25 +34,18 @@ async function configure (iss, adapterArg) {
     // ctx.req.secure = origSecure
     return next()
   })
-  provider.use(koaPino({
-    transport: {
-      target: 'pino-pretty',
-      options: {
-        colorize: true
+  if (process.env.ENV !== 'test') {
+    provider.use(koaPino({
+      transport: {
+        target: 'pino-pretty',
+        options: {
+          singleLine: true,
+          colorize: true
+        }
       }
-    }
-  }))
-  // provider.use(async (ctx, next) => {
-  //   try {
-  //     await next();
-  //   } catch (err) {
-  //     // will only respond with JSON
-  //     ctx.status = err.statusCode || err.status || 500;
-  //     ctx.body = {
-  //       message: err.stack
-  //     };
-  //   }
-  // })
+    }))
+  }
+
   if (prod) {
     provider.proxy = true
     provider.use(redirectToHttps)

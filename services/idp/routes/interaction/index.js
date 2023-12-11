@@ -5,6 +5,8 @@ import NoCache from 'fastify-disablecache'
 import FormBody from '@fastify/formbody'
 import isEmpty from 'lodash/isEmpty.js'
 import Account from '../../oidc/support/account.js'
+import { errors } from 'oidc-provider'
+const { SessionNotFound } = errors
 
 const keys = new Set()
 const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
@@ -13,20 +15,25 @@ const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [k
   acc[key] = inspect(value, { depth: null })
   return acc
 }, {}), '<br/>', ': ', {
-  encodeURIComponent(value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
+  encodeURIComponent (value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
 })
-const noop = function () { }
 
-export default async function interactionsRouter(fastify, opts) {
+export default async function interactionsRouter (fastify, opts) {
   fastify.register(FormBody)
   fastify.register(NoCache)
 
-  fastify.get('/:uid', getInteraction)
-  fastify.post('/:uid/login', checkLogin)
-  fastify.post('/:uid/confirm', interactionConfirm)
-  fastify.get('/:uid/abort', interactionAbort)
+  fastify.get('/:uid', { errorHandler: sessionNotFoundHandler }, getInteraction)
+  fastify.post('/:uid/login', { errorHandler: sessionNotFoundHandler }, checkLogin)
+  fastify.post('/:uid/confirm', { errorHandler: sessionNotFoundHandler }, interactionConfirm)
+  fastify.get('/:uid/abort', { errorHandler: sessionNotFoundHandler }, interactionAbort)
 
-  async function getInteraction(request, reply) {
+  async function sessionNotFoundHandler (error, request, reply) {
+    if (error instanceof SessionNotFound) {
+      return reply.code(400).send('Session not found')
+    }
+  }
+
+  async function getInteraction (request, reply) {
     const provider = this.oidc
     const {
       uid, prompt, params, session
@@ -67,7 +74,7 @@ export default async function interactionsRouter(fastify, opts) {
     }
   }
 
-  async function checkLogin(request, reply) {
+  async function checkLogin (request, reply) {
     const provider = this.oidc
     const { prompt: { name } } = await provider.interactionDetails(request, reply)
 
@@ -92,7 +99,7 @@ export default async function interactionsRouter(fastify, opts) {
     return reply.redirect(303, returnTo)
   }
 
-  async function interactionConfirm(request, reply) {
+  async function interactionConfirm (request, reply) {
     const provider = this.oidc
     const interactionDetails = await provider.interactionDetails(request, reply)
     const { prompt: { name, details }, params, session: { accountId } } = interactionDetails
@@ -133,21 +140,23 @@ export default async function interactionsRouter(fastify, opts) {
     }
 
     const result = { consent }
-    let returnTo = await provider.interactionResult(request, reply, result, {
+    const returnTo = await provider.interactionResult(request, reply, result, {
       mergeWithLastSubmission: false
     })
     reply.header('Content-Length', 0)
     return reply.redirect(303, returnTo)
   }
 
-  async function interactionAbort(request, reply) {
+  async function interactionAbort (request, reply) {
+    const provider = this.oidc
     const result = {
       error: 'access_denied',
       error_description: 'End-User aborted interaction'
     }
-    reply.setHeader = reply.header
-    reply.end = noop
-    await this.oidc.interactionFinished(request, reply, result, { mergeWithLastSubmission: false })
-    return reply.send()
+    const returnTo = await provider.interactionResult(request, reply, result, {
+      mergeWithLastSubmission: false
+    })
+    reply.header('Content-Length', 0)
+    return reply.redirect(303, returnTo)
   }
 }

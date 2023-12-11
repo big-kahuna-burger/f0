@@ -21,12 +21,16 @@ async function makeFastify (config, pretty) {
     ? {
         target: 'pino-pretty',
         options: {
-          colorize: true
+          colorize: true,
+          singleLine: true
         }
       }
     : false
 
-  const logger = { transport }
+  const logger = {
+    msgPrefix: '[f0] -> ',
+    transport
+  }
   const fastifyOpts = { logger }
 
   const app = Fastify(fastifyOpts)
@@ -67,12 +71,12 @@ async function makeFastify (config, pretty) {
 async function start (port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.ready()
-  console.log(app.printRoutes({includeHooks: true, includeMeta: ['errorHandler']}))
+  console.log(app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] }))
   const listenOpts = { port, listenTextResolver }
   await app.listen(listenOpts)
 
   function listenTextResolver () {
-    return `OP metadata at http://localhost:${port}/.well-known/openid-configuration`
+    return `OP metadata at http://localhost:${port}/oidc/.well-known/openid-configuration`
   }
 }
 

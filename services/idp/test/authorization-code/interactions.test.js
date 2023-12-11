@@ -24,6 +24,7 @@ describe('interaction router', () => {
   })
 
   test('auth -> login rendered with title', async (ctx) => {
+    // prepare client db mock
     const clientMock = {
       payload: {
         client_id: 'goodclient',
@@ -143,7 +144,6 @@ describe('interaction router', () => {
 
       if (create.type === 3) {
         authCodes[create.id] = create
-        return
       }
       // console.log('accessToken created ', create.payload)
     })
@@ -161,7 +161,9 @@ describe('interaction router', () => {
     const goodchallenge = { code_challenge: generators.codeChallenge(codeVerifier), code_challenge_method: 'S256' }
     const q = stringify({ client_id: 'goodclient', redirect_uri: 'https://somerp.com/cb', response_type: 'code', ...goodchallenge, scope: 'openid' })
     const url = `${baseUrl}/oidc/auth/?${q}`
+
     const { statusCode, headers } = await got(url, { followRedirect: false })
+    console.log('RP -> (GET) IDP/auth redirects to login', { startsFrom: url, statusCode, location: headers.location })
 
     expect(statusCode).toEqual(303)
     expect(headers.location).toMatch('/interaction')
@@ -178,6 +180,10 @@ describe('interaction router', () => {
     })
 
     const authLocation = loginResponse.headers.location
+    console.log('Browser -> (POST) IDP/interaction/:uid/login redirects to auth', {
+      statusCode: loginResponse.statusCode,
+      location: authLocation
+    })
     expect(authLocation).toMatch(/oidc\/auth/) // .../oidc/auth/X0oCrM5oL7N_gDFzJNyqV
     expect(loginResponse.statusCode).toEqual(303)
 
@@ -187,7 +193,10 @@ describe('interaction router', () => {
         Cookie: headers['set-cookie'].join(';')
       }
     })
-
+    console.log('Browser -> (GET) IDP/auth redirects to consent', {
+      statusCode: consentInteraction.statusCode,
+      location: consentInteraction.headers.location
+    })
     const sessCookies = skp(consentInteraction.headers['set-cookie']).filter(ck => ck.name.startsWith('_session'))
     expect(sessCookies.length).toEqual(4)
     expect(consentInteraction.statusCode).toEqual(303)
@@ -199,6 +208,8 @@ describe('interaction router', () => {
         Cookie: [...consentInteraction.headers['set-cookie']].join(';')
       }
     })
+
+    console.log('Browser -> (GET) IDP/interaction/:uid (consent)', { statusCode: consentPage.statusCode })
 
     expect(consentPage.statusCode).toEqual(200)
     const containsTitle = consentPage.body.includes('<title>Authorize</title>')
@@ -213,7 +224,7 @@ describe('interaction router', () => {
 
     const consentConfirmedAuthResume = consentConfirmed.headers.location
     expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
-
+    console.log('Browser -> (POST) IDP/interaction/:uid/confirm (consent)', { statusCode: consentPage.statusCode, location: consentConfirmedAuthResume })
     const rpRedirect = await got(consentConfirmedAuthResume, {
       followRedirect: false,
       headers: {
@@ -223,7 +234,9 @@ describe('interaction router', () => {
     const rpCodeUrl = rpRedirect.headers.location
     const { searchParams, pathname, host, protocol } = new URL(rpCodeUrl)
     const { code, iss } = Object.fromEntries(searchParams)
-    // console.log(code, iss, `${protocol}//${host}${pathname}`)
+
+    console.log(`Browser -> (GET) RP ${protocol}//${host}${pathname}?code=${code}&iss=${iss}`)
+
     expect(iss).toBe('http://idp.dev:9876/oidc')
     expect(code.length).toBe(43)
     expect(`${protocol}//${host}${pathname}`).toBe(clientMock.payload.redirect_uris[0])
@@ -236,22 +249,27 @@ describe('interaction router', () => {
         grant_type: 'authorization_code',
         code,
         redirect_uri: clientMock.payload.redirect_uris[0],
-        code_verifier: codeVerifier,
+        code_verifier: codeVerifier
       }
     })
+
     const {
-      access_token,
-      expires_in,
-      id_token,
+      // eslint-disable-next-line
+      access_token: accessToken,
+      expires_in: expiresIn,
+      id_token: idToken,
       scope,
-      token_type
+      token_type: tokenType
     } = JSON.parse(token.body)
-    expect(access_token).toBeTruthy()
-    expect(expires_in).toEqual(3600)
-    expect(id_token).toBeTruthy()
+
+    console.log('RP Client -> (POST) IDP/token', { statusCode: token.statusCode, body: token.body })
+
+    expect(accessToken).toBeTruthy()
+    expect(expiresIn).toEqual(3600)
+    expect(idToken).toBeTruthy()
     expect(scope).toEqual('openid')
-    expect(token_type).toEqual('Bearer')
-    const atHeader = id_token.split('.')[0]
+    expect(tokenType).toEqual('Bearer')
+    const atHeader = idToken.split('.')[0]
     const decoded = decode(atHeader)
     const header = JSON.parse(decoded.toString())
     expect(header).toEqual({ alg: 'RS256', typ: 'JWT', kid: 'testkey1' })
