@@ -8,5 +8,5 @@ const fpOpts = { fastify: '^4.x' }
 export default fp(plugin, fpOpts)
 
 async function plugin (fastify, { otel }) {
-  fastify.register(openTelemetryPlugin, otel)
+  // fastify.register(openTelemetryPlugin, otel)
 }

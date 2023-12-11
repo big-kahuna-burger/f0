@@ -1,8 +1,8 @@
 import { vi, test, expect } from 'vitest'
-import { initializeKeys, getConfig, rotateKey } from '../helpers/keys.js'
-import prisma from '../__mocks__/client.js'
+import { initializeKeys, getConfig, rotateKey } from '../../helpers/keys.js'
+import prisma from '../../db/__mocks__/client.js'
 
-vi.mock('../client')
+vi.mock('../../db/client.js')
 
 test('initialize keys with empty config table', async t => {
   prisma.config.findMany.mockResolvedValue([])

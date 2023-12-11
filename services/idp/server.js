@@ -1,13 +1,15 @@
 'use strict'
 import './helpers/config.js'
 
-import Fastify from 'fastify'
-import middie from '@fastify/express'
+import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
-import { configureOidc } from './oidc/index.js'
 import { filename } from 'desm'
 
+const ff = await import('fastify')
+const { default: Fastify } = ff
+
 async function makeFastify (config, pretty) {
+  const { configureOidc } = await import('./oidc/index.js')
   const parsedHost = new URL(config?.issuer || process.env.ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
   if (pathname === '/') {
@@ -53,11 +55,6 @@ async function makeFastify (config, pretty) {
 
   app.addHook('onClose', onCloseHook)
 
-  if (process.env.OTEL) {
-    const { otelSetup } = await import('./otel.js')
-    otelSetup()
-  }
-
   return app
 
   async function gracefullCallback ({ signal, err, manual }) {
@@ -76,7 +73,7 @@ async function makeFastify (config, pretty) {
 async function start (port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.ready()
-  console.log(app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] }))
+  // console.log(app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] }))
   const listenOpts = { port, listenTextResolver }
   await app.listen(listenOpts)
 

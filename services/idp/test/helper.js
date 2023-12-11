@@ -8,11 +8,11 @@ import path from 'path'
 import { vi } from 'vitest'
 import makeFastify from '../server.js'
 
-import prisma from '../../db/__mocks__/client.js'
+import prisma from '../db/__mocks__/client.js'
 import { readFile } from 'fs/promises'
 process.env.ENV = 'test'
 
-vi.mock('../../db/client.js')
+vi.mock('../db/client.js')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)

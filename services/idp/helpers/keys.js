@@ -1,5 +1,5 @@
 import { generateKeyPair, exportJWK } from 'jose'
-import prisma from '../client.js'
+import prisma from '../db/client.js'
 
 const ALGS_SUPPORTED = new Set(['ES256', 'PS256'])
 const ALG_TO_KTY = new Map(Object.entries({

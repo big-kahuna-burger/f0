@@ -1,5 +1,5 @@
 import { trace } from '@opentelemetry/api'
-import prisma from '../../../db/client.js'
+import prisma from '../../db/client.js'
 
 const tracer = trace.getTracer('Prisma-Adapter')
 

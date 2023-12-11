@@ -5,7 +5,7 @@ import { stringify } from 'querystring'
 import { generators } from 'openid-client'
 import { build } from '../helper.js'
 import { decode } from '../../helpers/base64url.js'
-import prisma from '../../../db/__mocks__/client.js'
+import prisma from '../../db/__mocks__/client.js'
 
 describe('interaction router', () => {
   let fastify

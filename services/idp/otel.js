@@ -1,25 +1,32 @@
+import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api'
 import { readPackageUp } from 'read-package-up'
 import { Resource } from '@opentelemetry/resources'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 import {
   BasicTracerProvider,
   SimpleSpanProcessor,
-  BatchSpanProcessor
+  BatchSpanProcessor,
+  TraceIdRatioBasedSampler
 } from '@opentelemetry/sdk-trace-base'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks'
 import * as api from '@opentelemetry/api'
 import instrumentation from '@prisma/instrumentation'
+import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 import { KoaInstrumentation } from '@opentelemetry/instrumentation-koa'
-
-import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { FastifyInstrumentation } from '@opentelemetry/instrumentation-fastify'
+
 const { PrismaInstrumentation } = instrumentation
+if(process.env.OTEL_DIAG) {
+  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG);
+}
 
-const { packageJson: pkg } = await readPackageUp()
-
-export function otelSetup () {
+if (process.env.OTEL) {
+  await otelSetup()
+}
+async function otelSetup () {
+  const { packageJson: pkg } = await readPackageUp()
   // a context manager is required to propagate the context
   const contextManager = new AsyncHooksContextManager().enable()
 
@@ -35,7 +42,7 @@ export function otelSetup () {
   // a standard provider that can run on the web and in node
   const provider = new BasicTracerProvider({
     // Enable sampling in production for better performance
-    // sampler: new TraceIdRatioBasedSampler(0.1),
+    sampler: new TraceIdRatioBasedSampler(0.1),
     resource: new Resource({
       // we can define some metadata about the trace resource
       [SemanticResourceAttributes.SERVICE_NAME]: pkg.name,
@@ -56,10 +63,17 @@ export function otelSetup () {
 
   registerInstrumentations({
     instrumentations: [
-      new PrismaInstrumentation(),
       new HttpInstrumentation(),
+      new FastifyInstrumentation({
+        requestHook: function (span, info) {
+          span.setAttribute(
+            'http.method',
+            info.request.method,
+          )
+        }
+      }),
       new KoaInstrumentation(),
-      new FastifyInstrumentation()
+      new PrismaInstrumentation(),
     ]
   })
 }

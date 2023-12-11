@@ -58,7 +58,7 @@ async function configure (iss, adapterArg) {
   }
 
   if (process.env.OTEL) {
-    provider.use(koaActiveSpan)
+    // provider.use(koaActiveSpan)
   }
 
   return provider

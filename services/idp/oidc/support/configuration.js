@@ -1,4 +1,4 @@
-import { initializeKeys, getConfig } from '../../../db/helpers/keys.js'
+import { initializeKeys, getConfig } from '../../helpers/keys.js'
 import Account from '../support/account.js'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
 import ttl from './ttl.js'
