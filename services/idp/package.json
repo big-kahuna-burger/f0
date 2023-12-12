@@ -15,6 +15,7 @@
     "dev": "OTEL=1 OTEL_DIAG=1 node --watch --import ./otel.js server.js",
     "lint:fix": "biome check --apply .",
     "lint": "biome check .",
+    "lint:ci": "biome ci .",
     "postinstall": "prisma generate"
   },
   "keywords": [],
