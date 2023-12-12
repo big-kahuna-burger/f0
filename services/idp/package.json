@@ -1,7 +1,7 @@
 {
-  "name": "f1",
-  "version": "1.0.0",
-  "description": "This project was bootstrapped with Fastify-CLI.",
+  "name": "f0",
+  "version": "0.0.0",
+  "description": "",
   "main": "server.js",
   "directories": {
     "test": "test"
@@ -11,8 +11,8 @@
     "test": "ENV=test vitest run",
     "w": "ENV=test vitest",
     "c8": "ENV=test vitest run --coverage",
-    "start": "OTEL=1 OTEL_DIAG=1 node --import=./otel.js server.js",
-    "dev": "nodemon server.js",
+    "start": "OTEL=1 OTEL_SAMPLER=0.1 node --import ./otel.js server.js",
+    "dev": "OTEL=1 OTEL_DIAG=1 node --watch --import ./otel.js server.js",
     "postinstall": "prisma generate"
   },
   "keywords": [],
@@ -30,7 +30,7 @@
     "@koa/ejs": "^5.1.0",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.45.1",
-    "@opentelemetry/instrumentation": "^0.40.0",
+    "@opentelemetry/instrumentation": "^0.45.1",
     "@opentelemetry/instrumentation-fastify": "^0.32.5",
     "@opentelemetry/instrumentation-http": "^0.45.1",
     "@opentelemetry/instrumentation-koa": "^0.36.3",

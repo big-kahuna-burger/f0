@@ -1,15 +1,13 @@
-'use strict'
+// import './otel.js'
 import './helpers/config.js'
 
 import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
-
-const ff = await import('fastify')
-const { default: Fastify } = ff
+import Fastify from 'fastify'
+import { configureOidc } from './oidc/index.js'
 
 async function makeFastify (config, pretty) {
-  const { configureOidc } = await import('./oidc/index.js')
   const parsedHost = new URL(config?.issuer || process.env.ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
   if (pathname === '/') {
