@@ -1,5 +1,3 @@
-'use strict'
-
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
 import View from '@fastify/view'

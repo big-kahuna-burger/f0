@@ -1,11 +1,11 @@
-import { describe, expect, test, beforeEach } from 'vitest'
-import got from 'got'
-import skp from 'set-cookie-parser'
 import { stringify } from 'querystring'
+import got from 'got'
 import { generators } from 'openid-client'
-import { build } from '../helper.js'
-import { decode } from '../../helpers/base64url.js'
+import skp from 'set-cookie-parser'
+import { beforeEach, describe, expect, test } from 'vitest'
 import prisma from '../../db/__mocks__/client.js'
+import { decode } from '../../helpers/base64url.js'
+import { build } from '../helper.js'
 
 describe('interaction router', () => {
   let fastify
@@ -36,8 +36,16 @@ describe('interaction router', () => {
     prisma.oidcModel.findUnique.mockResolvedValueOnce(clientMock)
 
     const baseUrl = `http://localhost:${port}`
-    const goodchallenge = { code_challenge: generators.codeChallenge('abc'), code_challenge_method: 'S256' }
-    const q = stringify({ client_id: 'goodclient', redirect_uri: 'https://somerp.com/cb', response_type: 'code', ...goodchallenge })
+    const goodchallenge = {
+      code_challenge: generators.codeChallenge('abc'),
+      code_challenge_method: 'S256'
+    }
+    const q = stringify({
+      client_id: 'goodclient',
+      redirect_uri: 'https://somerp.com/cb',
+      response_type: 'code',
+      ...goodchallenge
+    })
     const url = `${baseUrl}/oidc/auth/?${q}`
     const { statusCode, headers } = await got(url, { followRedirect: false })
 
@@ -45,32 +53,36 @@ describe('interaction router', () => {
     expect(headers.location).toMatch('/interaction')
 
     const parsed = skp(headers['set-cookie'])
-    const { value: interactionJTI } = parsed.filter(c => c.name === '_interaction')[0]
+    const { value: interactionJTI } = parsed.filter(
+      (c) => c.name === '_interaction'
+    )[0]
     const epoch = (date = Date.now()) => Math.floor(date / 1000)
 
-    prisma.oidcModel.findUnique.mockResolvedValueOnce({
-      payload: {
-        // interaction mock
-        cid: 'gORORb3lcg6C9ksV8a0Ve',
-        exp: epoch() + 3600,
-        iat: epoch(),
-        jti: interactionJTI,
-        kind: 'Interaction',
-        params: {
-          client_id: 'goodclient',
-          redirect_uri: 'https://somerp.com/cb',
-          response_type: 'code',
-          code_challenge: goodchallenge.code_challenge,
-          code_challenge_method: 'S256'
-        },
-        prompt: {
-          name: 'login',
-          details: {},
-          reasons: ['no_session']
-        },
-        returnTo: `http://localhost:9876/auth/${interactionJTI}`
-      }
-    }).mockResolvedValueOnce(clientMock) // this is important.
+    prisma.oidcModel.findUnique
+      .mockResolvedValueOnce({
+        payload: {
+          // interaction mock
+          cid: 'gORORb3lcg6C9ksV8a0Ve',
+          exp: epoch() + 3600,
+          iat: epoch(),
+          jti: interactionJTI,
+          kind: 'Interaction',
+          params: {
+            client_id: 'goodclient',
+            redirect_uri: 'https://somerp.com/cb',
+            response_type: 'code',
+            code_challenge: goodchallenge.code_challenge,
+            code_challenge_method: 'S256'
+          },
+          prompt: {
+            name: 'login',
+            details: {},
+            reasons: ['no_session']
+          },
+          returnTo: `http://localhost:9876/auth/${interactionJTI}`
+        }
+      })
+      .mockResolvedValueOnce(clientMock) // this is important.
     // First oidc-provider will call interaction find, then we call in route client find
 
     const interactionResponse = await got(`${baseUrl}${headers.location}`, {
@@ -78,7 +90,9 @@ describe('interaction router', () => {
         Cookie: headers['set-cookie'].join(';')
       }
     })
-    const containsTitle = interactionResponse.body.includes('<title>Sign-in</title>')
+    const containsTitle = interactionResponse.body.includes(
+      '<title>Sign-in</title>'
+    )
     expect(containsTitle).toBe(true)
   })
 
@@ -150,20 +164,29 @@ describe('interaction router', () => {
     })
     // adapter.findByUid
     prisma.oidcModel.findFirst.mockImplementation(({ where: { uid } }) => {
-      const filtered = Object.values(sessionDB).filter(s => s.uid === uid)
+      const filtered = Object.values(sessionDB).filter((s) => s.uid === uid)
       return filtered[0]
     })
 
-    prisma.oidcModel.deleteMany.mockImplementation(() => { })
-    prisma.oidcModel.update.mockImplementation(() => { })
+    prisma.oidcModel.deleteMany.mockImplementation(() => {})
+    prisma.oidcModel.update.mockImplementation(() => {})
 
     const interactionsDB = {}
     const grantsDB = {}
     const authCodes = {}
     const codeVerifier = generators.codeVerifier()
     const baseUrl = `http://localhost:${port}`
-    const goodchallenge = { code_challenge: generators.codeChallenge(codeVerifier), code_challenge_method: 'S256' }
-    const q = stringify({ client_id: 'goodclient', redirect_uri: 'https://somerp.com/cb', response_type: 'code', ...goodchallenge, scope: 'openid' })
+    const goodchallenge = {
+      code_challenge: generators.codeChallenge(codeVerifier),
+      code_challenge_method: 'S256'
+    }
+    const q = stringify({
+      client_id: 'goodclient',
+      redirect_uri: 'https://somerp.com/cb',
+      response_type: 'code',
+      ...goodchallenge,
+      scope: 'openid'
+    })
     const url = `${baseUrl}/oidc/auth/?${q}`
 
     const { statusCode, headers } = await got(url, { followRedirect: false })
@@ -172,16 +195,19 @@ describe('interaction router', () => {
     expect(statusCode).toEqual(303)
     expect(headers.location).toMatch('/interaction')
 
-    const loginResponse = await got.post(`${baseUrl}${headers.location}/login`, {
-      followRedirect: false, // important to not follow redirects
-      headers: {
-        Cookie: headers['set-cookie'].join(';')
-      },
-      form: {
-        login: 'lecler',
-        password: 'icme'
+    const loginResponse = await got.post(
+      `${baseUrl}${headers.location}/login`,
+      {
+        followRedirect: false, // important to not follow redirects
+        headers: {
+          Cookie: headers['set-cookie'].join(';')
+        },
+        form: {
+          login: 'lecler',
+          password: 'icme'
+        }
       }
-    })
+    )
 
     const authLocation = loginResponse.headers.location
     // console.log('Browser -> (POST) IDP/interaction/:uid/login redirects to auth', {
@@ -201,17 +227,22 @@ describe('interaction router', () => {
     //   statusCode: consentInteraction.statusCode,
     //   location: consentInteraction.headers.location
     // })
-    const sessCookies = skp(consentInteraction.headers['set-cookie']).filter(ck => ck.name.startsWith('_session'))
+    const sessCookies = skp(consentInteraction.headers['set-cookie']).filter(
+      (ck) => ck.name.startsWith('_session')
+    )
     expect(sessCookies.length).toEqual(4)
     expect(consentInteraction.statusCode).toEqual(303)
     expect(consentInteraction.headers.location).toMatch(/interaction/)
 
-    const consentPage = await got(`${baseUrl}${consentInteraction.headers.location}`, {
-      followRedirect: false,
-      headers: {
-        Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+    const consentPage = await got(
+      `${baseUrl}${consentInteraction.headers.location}`,
+      {
+        followRedirect: false,
+        headers: {
+          Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+        }
       }
-    })
+    )
 
     // console.log('Browser -> (GET) IDP/interaction/:uid (consent)', { statusCode: consentPage.statusCode })
 
@@ -219,12 +250,15 @@ describe('interaction router', () => {
     const containsTitle = consentPage.body.includes('<title>Authorize</title>')
     expect(containsTitle).toBe(true)
 
-    const consentConfirmed = await got.post(`${baseUrl}${consentInteraction.headers.location}/confirm`, {
-      followRedirect: false,
-      headers: {
-        Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+    const consentConfirmed = await got.post(
+      `${baseUrl}${consentInteraction.headers.location}/confirm`,
+      {
+        followRedirect: false,
+        headers: {
+          Cookie: [...consentInteraction.headers['set-cookie']].join(';')
+        }
       }
-    })
+    )
 
     const consentConfirmedAuthResume = consentConfirmed.headers.location
     expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
@@ -245,7 +279,9 @@ describe('interaction router', () => {
 
     expect(iss).toBe('http://idp.dev:9876/oidc')
     expect(code.length).toBe(43)
-    expect(`${protocol}//${host}${pathname}`).toBe(clientMock.payload.redirect_uris[0])
+    expect(`${protocol}//${host}${pathname}`).toBe(
+      clientMock.payload.redirect_uris[0]
+    )
 
     const tokenUrl = `${baseUrl}/oidc/token`
     const token = await got.post(tokenUrl, {

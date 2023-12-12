@@ -2,25 +2,27 @@
 // between our tests.
 import '../helpers/config.js'
 
-import { fileURLToPath } from 'url'
 import path from 'path'
+import { fileURLToPath } from 'url'
 
 import { vi } from 'vitest'
 import makeFastify from '../server.js'
 
-import prisma from '../db/__mocks__/client.js'
 import { readFile } from 'fs/promises'
+import prisma from '../db/__mocks__/client.js'
 process.env.ENV = 'test'
 
 vi.mock('../db/client.js')
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
-const testKeys = JSON.parse((await readFile(path.join(__dirname, './jwks.json'))).toString())
+const testKeys = JSON.parse(
+  (await readFile(path.join(__dirname, './jwks.json'))).toString()
+)
 
 // Fill in this config with all the configurations
 // needed for testing the application
-async function config (opts) {
+async function config(opts) {
   return {
     ...opts
     // oidc: (await configureOidc())
@@ -28,7 +30,7 @@ async function config (opts) {
 }
 
 // automatically build and tear down our instance
-async function build (opts) {
+async function build(opts) {
   // you can set all the options supported by the fastify CLI command
   const dbConf = { jwks: testKeys }
   prisma.config.findMany.mockResolvedValue([dbConf])
@@ -42,7 +44,4 @@ async function build (opts) {
   return fastify
 }
 
-export {
-  config,
-  build
-}
+export { config, build }

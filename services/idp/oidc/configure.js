@@ -1,21 +1,24 @@
-import '../helpers/config.js'
-import { trace } from '@opentelemetry/api'
 import { promisify } from 'node:util'
-import Provider from 'oidc-provider'
+import { trace } from '@opentelemetry/api'
 import helmet from 'helmet'
-import redirectToHttps from './helpers/koa-https-redirect.js'
 import koaPino from 'koa-pino-logger'
+import Provider from 'oidc-provider'
 import { readPackageUp } from 'read-package-up'
+import '../helpers/config.js'
+import redirectToHttps from './helpers/koa-https-redirect.js'
 
 const { packageJson: pkg } = await readPackageUp()
-const tracer = trace.getTracer('oidc-provider', pkg.dependencies['oidc-provider'])
+const tracer = trace.getTracer(
+  'oidc-provider',
+  pkg.dependencies['oidc-provider']
+)
 
 const { ISSUER, NODE_ENV } = process.env
 const prod = NODE_ENV === 'production'
 
 export default configure
 
-async function configure (iss, adapterArg) {
+async function configure(iss, adapterArg) {
   const { default: configuration } = await import('./support/configuration.js')
 
   const adapter = adapterArg || (await import('./support/adapter.js')).default
@@ -24,13 +27,16 @@ async function configure (iss, adapterArg) {
   provider.on('authorization.error', console.log)
 
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
+  // biome-ignore lint: needed
   delete directives['form-action']
-  const pHelmet = promisify(helmet({
-    contentSecurityPolicy: {
-      useDefaults: false,
-      directives
-    }
-  }))
+  const pHelmet = promisify(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives
+      }
+    })
+  )
 
   provider.use(async (ctx, next) => {
     // const origSecure = ctx.req.secure
@@ -41,15 +47,17 @@ async function configure (iss, adapterArg) {
   })
 
   if (process.env.ENV !== 'test') {
-    provider.use(koaPino({
-      transport: {
-        target: 'pino-pretty',
-        options: {
-          singleLine: true,
-          colorize: true
+    provider.use(
+      koaPino({
+        transport: {
+          target: 'pino-pretty',
+          options: {
+            singleLine: true,
+            colorize: true
+          }
         }
-      }
-    }))
+      })
+    )
   }
 
   if (prod) {
@@ -64,8 +72,8 @@ async function configure (iss, adapterArg) {
   return provider
 }
 
-async function koaActiveSpan (ctx, next) {
-  await tracer.startActiveSpan(`${ctx.method} - ${ctx.path}`, async span => {
+async function koaActiveSpan(ctx, next) {
+  await tracer.startActiveSpan(`${ctx.method} - ${ctx.path}`, async (span) => {
     await next()
     span.end()
   })

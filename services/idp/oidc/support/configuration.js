@@ -1,6 +1,6 @@
-import { initializeKeys, getConfig } from '../../helpers/keys.js'
-import Account from '../support/account.js'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import { getConfig, initializeKeys } from '../../helpers/keys.js'
+import Account from '../support/account.js'
 import ttl from './ttl.js'
 // TODO devInteractions disable
 // TODO interactions implement
@@ -15,7 +15,7 @@ if (!config) {
 }
 
 export default {
-  async renderError (ctx, out, error) {
+  async renderError(ctx, out, error) {
     console.error(out, error)
     defaults.renderError(ctx, out, error)
   },
@@ -37,20 +37,38 @@ export default {
     }
   ],
   interactions: {
-    url (ctx, interaction) { // eslint-disable-line no-unused-vars
+    url(ctx, interaction) {
       return `/interaction/${interaction.uid}`
     }
   },
   cookies: {
-    keys: ['some secret key', 'and also the old rotated away some time ago', 'and one more']
+    keys: [
+      'some secret key',
+      'and also the old rotated away some time ago',
+      'and one more'
+    ]
   },
   claims: {
     openid: ['sub'],
     address: ['address'],
     email: ['email', 'email_verified'],
     phone: ['phone_number', 'phone_number_verified'],
-    profile: ['birthdate', 'family_name', 'gender', 'given_name', 'locale', 'middle_name', 'name',
-      'nickname', 'picture', 'preferred_username', 'profile', 'updated_at', 'website', 'zoneinfo']
+    profile: [
+      'birthdate',
+      'family_name',
+      'gender',
+      'given_name',
+      'locale',
+      'middle_name',
+      'name',
+      'nickname',
+      'picture',
+      'preferred_username',
+      'profile',
+      'updated_at',
+      'website',
+      'zoneinfo'
+    ]
   },
   scopes: ['openid', 'offline_access', 'address', 'email', 'phone', 'profile'],
   features: {

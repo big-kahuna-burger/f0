@@ -1,7 +1,5 @@
-'use strict'
-
-import { test, beforeEach, expect } from 'vitest'
 import got from 'got'
+import { beforeEach, expect, test } from 'vitest'
 
 import { build } from '../helper.js'
 let fastify
@@ -21,14 +19,16 @@ beforeEach(async () => {
 })
 
 test('.well-known is working', async (t) => {
-  const { body, statusCode, headers } = await got(`http://localhost:${port}/oidc/.well-known/openid-configuration`)
+  const { body, statusCode, headers } = await got(
+    `http://localhost:${port}/oidc/.well-known/openid-configuration`
+  )
 
   expect(statusCode).toEqual(200)
   expect(headers['content-type']).toEqual('application/json; charset=utf-8')
   expect(JSON.parse(body)).toMatchObject(expected(port))
 })
 
-const expected = port => ({
+const expected = (port) => ({
   authorization_endpoint: `http://localhost:${port}/oidc/auth`,
   device_authorization_endpoint: `http://localhost:${port}/oidc/device/auth`,
   claims_parameter_supported: false,
@@ -57,9 +57,7 @@ const expected = port => ({
     'auth_time',
     'iss'
   ],
-  code_challenge_methods_supported: [
-    'S256'
-  ],
+  code_challenge_methods_supported: ['S256'],
   end_session_endpoint: `http://localhost:${port}/oidc/session/end`,
   grant_types_supported: [
     'implicit',
@@ -71,17 +69,8 @@ const expected = port => ({
   issuer: 'http://idp.dev:9876/oidc',
   jwks_uri: `http://localhost:${port}/oidc/jwks`,
   authorization_response_iss_parameter_supported: true,
-  response_modes_supported: [
-    'form_post',
-    'fragment',
-    'query'
-  ],
-  response_types_supported: [
-    'code id_token',
-    'code',
-    'id_token',
-    'none'
-  ],
+  response_modes_supported: ['form_post', 'fragment', 'query'],
+  response_types_supported: ['code id_token', 'code', 'id_token', 'none'],
   scopes_supported: [
     'openid',
     'offline_access',
@@ -90,9 +79,7 @@ const expected = port => ({
     'phone',
     'profile'
   ],
-  subject_types_supported: [
-    'public'
-  ],
+  subject_types_supported: ['public'],
   token_endpoint_auth_methods_supported: [
     'client_secret_basic',
     'client_secret_jwt',
@@ -108,17 +95,11 @@ const expected = port => ({
     'EdDSA'
   ],
   token_endpoint: `http://localhost:${port}/oidc/token`,
-  id_token_signing_alg_values_supported: [
-    'PS256',
-    'RS256',
-    'ES256'
-  ],
+  id_token_signing_alg_values_supported: ['PS256', 'RS256', 'ES256'],
   pushed_authorization_request_endpoint: `http://localhost:${port}/oidc/request`,
   request_parameter_supported: false,
   request_uri_parameter_supported: false,
   userinfo_endpoint: `http://localhost:${port}/oidc/me`,
   revocation_endpoint: `http://localhost:${port}/oidc/token/revocation`,
-  claim_types_supported: [
-    'normal'
-  ]
+  claim_types_supported: ['normal']
 })

@@ -12,10 +12,10 @@
     "kid": "testkey1"
   },
   {
-    "d": "3B6pK1Ad3oUFkoo63HdSuAYqaNa0wi8Y5ET_IiMVWB4", 
-    "x": "XwgO7cK2h38T6DJyiwYYMSVmSRsQ3LIq8kzgzeDETp8", 
-    "y": "rn19IlDU9QHGQgzZTYYVmSPNwREgrzZe-YQRNjLKZCE", 
-    "crv": "P-256", 
+    "d": "3B6pK1Ad3oUFkoo63HdSuAYqaNa0wi8Y5ET_IiMVWB4",
+    "x": "XwgO7cK2h38T6DJyiwYYMSVmSRsQ3LIq8kzgzeDETp8",
+    "y": "rn19IlDU9QHGQgzZTYYVmSPNwREgrzZe-YQRNjLKZCE",
+    "crv": "P-256",
     "kty": "EC",
     "kid": "testkey2"
   }

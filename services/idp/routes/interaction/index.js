@@ -1,43 +1,64 @@
 import assert from 'node:assert/strict'
 import * as querystring from 'node:querystring'
 import { inspect } from 'node:util'
-import NoCache from 'fastify-disablecache'
 import FormBody from '@fastify/formbody'
+import NoCache from 'fastify-disablecache'
 import isEmpty from 'lodash/isEmpty.js'
-import Account from '../../oidc/support/account.js'
 import { errors } from 'oidc-provider'
+import Account from '../../oidc/support/account.js'
 const { SessionNotFound } = errors
 
 const keys = new Set()
-const debug = (obj) => querystring.stringify(Object.entries(obj).reduce((acc, [key, value]) => {
-  keys.add(key)
-  if (isEmpty(value)) return acc
-  acc[key] = inspect(value, { depth: null })
-  return acc
-}, {}), '<br/>', ': ', {
-  encodeURIComponent (value) { return keys.has(value) ? `<strong>${value}</strong>` : value }
-})
+const debug = (obj) =>
+  querystring.stringify(
+    Object.entries(obj).reduce((acc, [key, value]) => {
+      keys.add(key)
+      if (isEmpty(value)) return acc
+      acc[key] = inspect(value, { depth: null })
+      return acc
+    }, {}),
+    '<br/>',
+    ': ',
+    {
+      encodeURIComponent(value) {
+        return keys.has(value) ? `<strong>${value}</strong>` : value
+      }
+    }
+  )
 
-export default async function interactionsRouter (fastify, opts) {
+export default async function interactionsRouter(fastify, opts) {
   fastify.register(FormBody)
   fastify.register(NoCache)
 
   fastify.get('/:uid', { errorHandler: sessionNotFoundHandler }, getInteraction)
-  fastify.post('/:uid/login', { errorHandler: sessionNotFoundHandler }, checkLogin)
-  fastify.post('/:uid/confirm', { errorHandler: sessionNotFoundHandler }, interactionConfirm)
-  fastify.get('/:uid/abort', { errorHandler: sessionNotFoundHandler }, interactionAbort)
+  fastify.post(
+    '/:uid/login',
+    { errorHandler: sessionNotFoundHandler },
+    checkLogin
+  )
+  fastify.post(
+    '/:uid/confirm',
+    { errorHandler: sessionNotFoundHandler },
+    interactionConfirm
+  )
+  fastify.get(
+    '/:uid/abort',
+    { errorHandler: sessionNotFoundHandler },
+    interactionAbort
+  )
 
-  async function sessionNotFoundHandler (error, request, reply) {
+  async function sessionNotFoundHandler(error, request, reply) {
     if (error instanceof SessionNotFound) {
       return reply.code(400).send('Session not found')
     }
   }
 
-  async function getInteraction (request, reply) {
+  async function getInteraction(request, reply) {
     const provider = this.oidc
-    const {
-      uid, prompt, params, session
-    } = await provider.interactionDetails(request, reply)
+    const { uid, prompt, params, session } = await provider.interactionDetails(
+      request,
+      reply
+    )
     const client = await provider.Client.find(params.client_id)
 
     switch (prompt.name) {
@@ -74,9 +95,11 @@ export default async function interactionsRouter (fastify, opts) {
     }
   }
 
-  async function checkLogin (request, reply) {
+  async function checkLogin(request, reply) {
     const provider = this.oidc
-    const { prompt: { name } } = await provider.interactionDetails(request, reply)
+    const {
+      prompt: { name }
+    } = await provider.interactionDetails(request, reply)
 
     assert.equal(name, 'login')
 
@@ -99,10 +122,14 @@ export default async function interactionsRouter (fastify, opts) {
     return reply.redirect(303, returnTo)
   }
 
-  async function interactionConfirm (request, reply) {
+  async function interactionConfirm(request, reply) {
     const provider = this.oidc
     const interactionDetails = await provider.interactionDetails(request, reply)
-    const { prompt: { name, details }, params, session: { accountId } } = interactionDetails
+    const {
+      prompt: { name, details },
+      params,
+      session: { accountId }
+    } = interactionDetails
     assert.equal(name, 'consent')
 
     let { grantId } = interactionDetails
@@ -126,7 +153,9 @@ export default async function interactionsRouter (fastify, opts) {
       grant.addOIDCClaims(details.missingOIDCClaims)
     }
     if (details.missingResourceScopes) {
-      for (const [indicator, scopes] of Object.entries(details.missingResourceScopes)) {
+      for (const [indicator, scopes] of Object.entries(
+        details.missingResourceScopes
+      )) {
         grant.addResourceScope(indicator, scopes.join(' '))
       }
     }
@@ -147,7 +176,7 @@ export default async function interactionsRouter (fastify, opts) {
     return reply.redirect(303, returnTo)
   }
 
-  async function interactionAbort (request, reply) {
+  async function interactionAbort(request, reply) {
     const provider = this.oidc
     const result = {
       error: 'access_denied',

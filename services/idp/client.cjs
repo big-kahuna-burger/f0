@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-/* eslint-disable no-console, camelcase */
-
 const server = require('http').createServer().listen(0)
 
 const { Issuer, generators } = require('openid-client')
@@ -10,10 +8,12 @@ server.removeAllListeners('request')
 const { ISSUER = 'http://localhost:9876/oidc' } = process.env
 
 server.once('listening', () => {
-  (async () => {
+  ;(async () => {
     const issuer = await Issuer.discover(ISSUER)
     const { address, port } = server.address()
-    const redirect_uri = `http://${address === '::' ? '[::1]' : address}:${port}`
+    const redirect_uri = `http://${
+      address === '::' ? '[::1]' : address
+    }:${port}`
 
     const client = await issuer.Client.register({
       redirect_uris: [redirect_uri],
@@ -28,9 +28,10 @@ server.once('listening', () => {
       const params = client.callbackParams(req)
       console.log(params)
       if (Object.keys(params).length) {
-        const tokenSet = await client.callback(
-          redirect_uri, params, { code_verifier, response_type: 'code' }
-        )
+        const tokenSet = await client.callback(redirect_uri, params, {
+          code_verifier,
+          response_type: 'code'
+        })
 
         console.log('got', tokenSet)
         console.log('id token claims', tokenSet.claims())
@@ -42,13 +43,16 @@ server.once('listening', () => {
         server.close()
       }
     })
-    import('open').then(open => {
-      open.default(client.authorizationUrl({
-        redirect_uri,
-        code_challenge,
-        code_challenge_method: 'S256',
-        scope: 'openid email'
-      }), { wait: false })
+    import('open').then((open) => {
+      open.default(
+        client.authorizationUrl({
+          redirect_uri,
+          code_challenge,
+          code_challenge_method: 'S256',
+          scope: 'openid email'
+        }),
+        { wait: false }
+      )
     })
   })().catch((err) => {
     console.error(err)
