@@ -19,7 +19,9 @@ export default {
   },
   findAccount: Account.findAccount,
   clients: [],
-  interactions: { url: (ctx, interaction) => `/interaction/${interaction.uid}` },
+  interactions: {
+    url: (ctx, interaction) => `/interaction/${interaction.uid}`
+  },
   cookies: {
     keys: config.cookieKeys
   },

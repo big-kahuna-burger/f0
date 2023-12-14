@@ -1,3 +1,6 @@
+import path from 'path'
+import fs from 'fs/promises'
+
 import { DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api'
 import api from '@opentelemetry/api'
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks'
@@ -15,8 +18,6 @@ import {
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
 
 import instrumentation from '@prisma/instrumentation'
-import fs from 'fs/promises'
-import path from 'path'
 import desm from 'desm'
 
 const __dirname = desm(import.meta.url)

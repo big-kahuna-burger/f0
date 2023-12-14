@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
+import { readFileSync } from 'fs'
 /* eslint-disable no-console, camelcase */
 import http from 'http'
-import { readFileSync } from 'fs'
-import { Issuer, generators, custom } from 'openid-client'
 import open from 'open'
+import { Issuer, custom, generators } from 'openid-client'
 
 const { ISSUER = 'https://idp.dev:3000/op' } = process.env
 
@@ -20,7 +20,7 @@ custom.setHttpOptionsDefaults({
 })
 
 server.once('listening', () => {
-  (async () => {
+  ;(async () => {
     const issuer = await Issuer.discover(ISSUER)
     const redirect_uri = 'http://localhost:3002/cb'
     const client = new issuer.Client({
@@ -36,9 +36,10 @@ server.once('listening', () => {
       res.setHeader('connection', 'close')
       const params = client.callbackParams(req)
       if (Object.keys(params).length) {
-        const tokenSet = await client.callback(
-          redirect_uri, params, { code_verifier, response_type: 'code' }
-        )
+        const tokenSet = await client.callback(redirect_uri, params, {
+          code_verifier,
+          response_type: 'code'
+        })
 
         console.log('got', tokenSet)
         console.log('id token claims', tokenSet.claims())
@@ -54,18 +55,21 @@ server.once('listening', () => {
       }
     })
 
-    await open(client.authorizationUrl({
-      redirect_uri,
-      code_challenge,
-      code_challenge_method: 'S256',
-      response_type: 'code',
-      // scope: 'openid profile email address phone offline_access arandjel',
-      scope: 'openid email offline_access',
-      prompt: 'login'
+    await open(
+      client.authorizationUrl({
+        redirect_uri,
+        code_challenge,
+        code_challenge_method: 'S256',
+        response_type: 'code',
+        // scope: 'openid profile email address phone offline_access arandjel',
+        scope: 'openid email offline_access',
+        prompt: 'login'
 
-      // claims: '{ "userinfo": { "extra_claim_test": { "essential": true } } }',
-      // resource: ['https://apps.example.com/scim/Schemas1', 'https://apps.example.com/scim/Groups']
-    }), { wait: false })
+        // claims: '{ "userinfo": { "extra_claim_test": { "essential": true } } }',
+        // resource: ['https://apps.example.com/scim/Schemas1', 'https://apps.example.com/scim/Groups']
+      }),
+      { wait: false }
+    )
   })().catch((err) => {
     console.error(err)
     process.exitCode = 1
