@@ -19,13 +19,13 @@ const provider = await configureOidc(host)
 const transport = {
   target: 'pino-pretty',
   options: {
-    colorize: true,
+    colorize: false,
     singleLine: true
   }
 }
 
 const logger = {
-  msgPrefix: '[f0]: ',
+  msgPrefix: 'pino:',
   transport
 }
 const fastifyOpts = { logger }
