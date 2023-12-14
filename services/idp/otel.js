@@ -5,7 +5,6 @@ import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http'
 
-// import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node'
 import { Resource } from '@opentelemetry/resources'
 import {
   BasicTracerProvider,
