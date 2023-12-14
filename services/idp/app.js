@@ -26,10 +26,15 @@ export default async function runme(fastify, opts) {
           'https://vitals.vercel-insights.com',
           'https://vitals.vercel-analytics.com'
         ],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          'https://unpkg.com'
+        ],
         styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:'],
-        fontSrc: ["'self'"],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: []
       }
