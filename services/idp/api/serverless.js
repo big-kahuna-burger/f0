@@ -1,6 +1,6 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
-
+import middie from '@fastify/middie'
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
 const config = {}
@@ -32,9 +32,9 @@ const fastifyOpts = { logger }
 
 const app = Fastify(fastifyOpts)
 
+await app.register(middie)
 app.use(pathname, provider.callback())
 const appService = await import('../app.js')
-await app.register(middie)
 app.register(appService, {
   oidc: provider,
   otel: { wrapRoutes: true }
