@@ -25,9 +25,12 @@ export default async function (fastify, opts) {
     engine: { ejs },
     root: path.join(__dirname, 'ejs-templates'),
     layout: './layout',
-    extName: 'ejs'
+    extName: 'ejs',
+    defaultContext: {
+      analyticsId: process.env.VERCEL_ANALYTICS_ID || ''
+    }
   })
-
+  // analyticsId: process.env.VERCEL_ANALYTICS_ID || ''
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)
