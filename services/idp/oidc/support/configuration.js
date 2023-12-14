@@ -18,33 +18,10 @@ export default {
     defaults.renderError(ctx, out, error)
   },
   findAccount: Account.findAccount,
-  clients: [
-    {
-      client_id: '528da254-b1f4-4881-9ab3-5dfb98addaf5',
-      client_secret: 'GSSmbseznQzFEANOvhbGY',
-      grant_types: ['refresh_token', 'authorization_code'],
-      redirect_uris: ['http://localhost:3002/cb', 'https://somerp.com/cb'],
-      token_endpoint_auth_method: 'none'
-    },
-    {
-      client_id: '228da254-b1f4-4881-9ab3-5dfb98addaf5',
-      client_secret: 'GSSmbseznQzFEANOvhbGY',
-      grant_types: ['client_credentials'],
-      redirect_uris: [],
-      response_types: []
-    }
-  ],
-  interactions: {
-    url(ctx, interaction) {
-      return `/interaction/${interaction.uid}`
-    }
-  },
+  clients: [],
+  interactions: { url: (ctx, interaction) => `/interaction/${interaction.uid}` },
   cookies: {
-    keys: [
-      'some secret key',
-      'and also the old rotated away some time ago',
-      'and one more'
-    ]
+    keys: config.cookieKeys
   },
   claims: {
     openid: ['sub'],

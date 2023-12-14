@@ -1,14 +1,14 @@
-// datasource db {
-//   provider   = "postgresql"
-//   url        = env("DATABASE_URL")
-//   extensions = [pgcrypto]
-// }
-
 datasource db {
-  provider = "postgresql"
-  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgcrypto]
 }
+
+// datasource db {
+//   provider = "postgresql"
+//   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+//   // directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+// }
 
 generator client {
   provider        = "prisma-client-js"
@@ -16,8 +16,9 @@ generator client {
 }
 
 model Config {
-  id   String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  jwks Json[]
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jwks       Json[]
+  cookieKeys String[]
 }
 
 model OidcModel {

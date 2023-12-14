@@ -32,7 +32,7 @@ async function config(opts) {
 // automatically build and tear down our instance
 async function build(opts) {
   // you can set all the options supported by the fastify CLI command
-  const dbConf = { jwks: testKeys }
+  const dbConf = { jwks: testKeys, cookieKeys: ['test'] }
   prisma.config.findMany.mockResolvedValue([dbConf])
   prisma.config.findFirst.mockResolvedValue(dbConf)
 
