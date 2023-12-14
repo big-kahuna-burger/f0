@@ -1,5 +1,6 @@
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
+import helmet from '@fastify/helmet'
 import Static from '@fastify/static'
 import View from '@fastify/view'
 import desm from 'desm'
@@ -17,7 +18,23 @@ export default async function runme(fastify, opts) {
   // those should be support plugins that are reused
   // through your application
   // console.log(opts, options)
-
+  fastify.register(helmet, {
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: [
+          "'self'",
+          'https://vitals.vercel-insights.com',
+          'https://vitals.vercel-analytics.com'
+        ],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: []
+      }
+    }
+  })
   fastify.register(Static, {
     root: path.join(__dirname, 'public')
   })

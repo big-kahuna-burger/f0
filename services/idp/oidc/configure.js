@@ -1,6 +1,4 @@
-import { promisify } from 'node:util'
 import { trace } from '@opentelemetry/api'
-import helmet from 'helmet'
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
 import '../helpers/config.js'
@@ -18,40 +16,9 @@ async function configure(iss, adapterArg) {
 
   const adapter = adapterArg || (await import('./support/adapter.js')).default
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
-  const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
-  // biome-ignore lint: needed
-  delete directives['form-action']
-  directives['default-src'].push(() => 'https://vitals.vercel-insights.com')
-  directives['default-src'].push(() => 'https://vitals.vercel-analytics.com')
-  const pHelmet = promisify(
-    helmet({
-      contentSecurityPolicy: {
-        useDefaults: false,
-        directives
-      }
-    })
-  )
-
-  provider.use(async (ctx, next) => {
-    // const origSecure = ctx.req.secure
-    // ctx.req.secure = ctx.request.secure // TODO check what to do here
-    await pHelmet(ctx.req, ctx.res)
-    // ctx.req.secure = origSecure
-    return next()
-  })
 
   if (process.env.ENV !== 'test') {
-    provider.use(
-      koaPino({
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            singleLine: true,
-            colorize: true
-          }
-        }
-      })
-    )
+    provider.use(koaPino())
   }
 
   if (prod) {
