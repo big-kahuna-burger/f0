@@ -16,15 +16,13 @@ if (pathname === '/') {
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
 const provider = await configureOidc(host)
 
-const transport = pretty
-  ? {
-      target: 'pino-pretty',
-      options: {
-        colorize: true,
-        singleLine: true
-      }
-    }
-  : false
+const transport = {
+  target: 'pino-pretty',
+  options: {
+    colorize: true,
+    singleLine: true
+  }
+}
 
 const logger = {
   msgPrefix: '[f0]: ',
