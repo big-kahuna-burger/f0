@@ -36,8 +36,7 @@ await app.register(middie)
 app.use(pathname, provider.callback())
 const appService = await import('../app.js')
 app.register(appService, {
-  oidc: provider,
-  otel: { wrapRoutes: true }
+  oidc: provider
 })
 
 export default async (req, res) => {
