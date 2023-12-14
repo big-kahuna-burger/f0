@@ -27,7 +27,7 @@ export default async function runme(fastify, opts) {
     layout: './layout',
     extName: 'ejs',
     defaultContext: {
-      analyticsId: process.env.VERCEL_ANALYTICS_ID || '',
+      //analyticsId: process.env.VERCEL_ANALYTICS_ID || '',
       uid: '',
       nonce: ''
     }
