@@ -15,8 +15,7 @@ custom.setHttpOptionsDefaults({
   timeout: 5000000,
   checkServerIdentity: (hostname, cert) => {
     console.log(hostname, cert)
-  },
-  ca: readFileSync('/Users/bkb/Library/Application Support/mkcert/rootCA.pem')
+  }
 })
 
 server.once('listening', () => {

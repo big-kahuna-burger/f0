@@ -1,7 +1,7 @@
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
+import Static from '@fastify/static'
 import View from '@fastify/view'
-
 import ejs from 'ejs'
 
 import desm from 'desm'
@@ -18,7 +18,9 @@ export default async function (fastify, opts) {
   // those should be support plugins that are reused
   // through your application
   // console.log(opts, options)
-
+  fastify.register(Static, {
+    root: path.join(__dirname, 'public')
+  })
   fastify.register(View, {
     engine: { ejs },
     root: path.join(__dirname, 'ejs-templates'),
