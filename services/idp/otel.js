@@ -14,19 +14,22 @@ import {
   TraceIdRatioBasedSampler
 } from '@opentelemetry/sdk-trace-base'
 import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions'
-import { readPackageUp } from 'read-package-up'
 
 import instrumentation from '@prisma/instrumentation'
+import fs from 'fs/promises'
+import path from 'path'
+import desm from 'desm'
 
-// import { FastifyInstrumentation } from '@opentelemetry/instrumentation-fastify'
-// import { KoaInstrumentation } = '@opentelemetry/instrumentation-koa'
+const __dirname = desm(import.meta.url)
+const packageJsonPath = path.resolve(__dirname, 'package.json')
+const packageJsonData = await fs.readFile(packageJsonPath, 'utf8')
+const pkg = JSON.parse(packageJsonData)
+
 const { PrismaInstrumentation } = instrumentation
 
 if (process.env.OTEL_DIAG) {
   diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
 }
-
-const { packageJson: pkg } = await readPackageUp()
 const contextManager = new AsyncHooksContextManager().enable()
 
 api.context.setGlobalContextManager(contextManager)
@@ -49,22 +52,12 @@ if (process.env.OTEL_SAMPLER) {
   provider.addSpanProcessor(new SimpleSpanProcessor(otlpTraceExporter))
 }
 
-// makes the provider the global tracer provider for telemetry
 provider.register()
 
-// const ffInstrumentator = new FastifyInstrumentation({
-//   requestHook: (span, info) => {
-//     span.setAttribute('http.method', info.request.method)
-//   }
-// })
-
-// const koaInstrumentation = new KoaInstrumentation()
 const httpsInstrumentation = new HttpInstrumentation()
 const instrumentations = [
   httpsInstrumentation,
   new PrismaInstrumentation({ middleware: true })
-  //koaInstrumentation, // this one is broken
-  //ffInstrumentator // this one too
 ]
 registerInstrumentations({
   instrumentations
