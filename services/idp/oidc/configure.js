@@ -18,12 +18,11 @@ async function configure(iss, adapterArg) {
 
   const adapter = adapterArg || (await import('./support/adapter.js')).default
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
-  // TODO move this to pino
-  provider.on('authorization.error', console.log)
-
   const directives = helmet.contentSecurityPolicy.getDefaultDirectives()
   // biome-ignore lint: needed
   delete directives['form-action']
+  directives['default-src'].push(() => 'https://vitals.vercel-insights.com')
+  directives['default-src'].push(() => 'https://vitals.vercel-analytics.com')
   const pHelmet = promisify(
     helmet({
       contentSecurityPolicy: {

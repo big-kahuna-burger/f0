@@ -4,7 +4,6 @@ import Static from '@fastify/static'
 import View from '@fastify/view'
 import desm from 'desm'
 import ejs from 'ejs'
-import Fastify from 'fastify'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
 
