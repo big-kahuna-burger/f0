@@ -5,7 +5,7 @@ const server = require('http').createServer().listen(0)
 const { Issuer, generators } = require('openid-client')
 
 server.removeAllListeners('request')
-const { ISSUER = 'http://localhost:9876/oidc' } = process.env
+const { ISSUER = 'https://f0.pchele.com/oidc' } = process.env
 
 server.once('listening', () => {
   ;(async () => {
