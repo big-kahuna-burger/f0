@@ -2,12 +2,14 @@ import assert from 'node:assert/strict'
 import * as querystring from 'node:querystring'
 import { inspect } from 'node:util'
 import FormBody from '@fastify/formbody'
+import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import isEmpty from 'lodash/isEmpty.js'
 import { errors } from 'oidc-provider'
 import Account from '../../oidc/support/account.js'
+const { errorCodes } = Fastify
+const { FST_ERR_BAD_STATUS_CODE } = errorCodes
 const { SessionNotFound } = errors
-
 const keys = new Set()
 const debug = (obj) =>
   querystring.stringify(
@@ -25,8 +27,19 @@ const debug = (obj) =>
       }
     }
   )
-
+function MYEYEYEYYE(error, request, reply) {
+  if (error instanceof FST_ERR_BAD_STATUS_CODE) {
+    // Log error
+    this.log.error(error)
+    // Send error response
+    reply.status(500).send({ ok: false })
+  } else {
+    // fastify will use parent error handler to handle this
+    reply.send(error)
+  }
+}
 export default async function interactionsRouter(fastify, opts) {
+  fastify.setErrorHandler(MYEYEYEYYE)
   fastify.register(FormBody)
   fastify.register(NoCache)
 
