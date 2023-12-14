@@ -6,9 +6,7 @@ import Provider from 'oidc-provider'
 import '../helpers/config.js'
 import redirectToHttps from './helpers/koa-https-redirect.js'
 
-const tracer = trace.getTracer(
-  'oidc-provider'
-)
+const tracer = trace.getTracer('oidc-provider')
 
 const { ISSUER, NODE_ENV } = process.env
 const prod = NODE_ENV === 'production'
