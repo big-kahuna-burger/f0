@@ -86,14 +86,14 @@ async function start(port, pretty) {
   }
 }
 
+const { port } = new URL(process.env.ISSUER)
 export default makeFastify
+await start(port, true)
+// if (import.meta.url.startsWith('file:')) {
+//   const modulePath = filename(import.meta.url)
+//   const pretty = true
 
-if (import.meta.url.startsWith('file:')) {
-  const { port } = new URL(process.env.ISSUER)
-  const modulePath = filename(import.meta.url)
-  const pretty = true
-
-  if (process.argv[1] === modulePath) {
-    await start(port, pretty)
-  }
-}
+//   if (process.argv[1] === modulePath) {
+//     await start(port, pretty)
+//   }
+// }
