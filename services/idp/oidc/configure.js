@@ -3,14 +3,11 @@ import { trace } from '@opentelemetry/api'
 import helmet from 'helmet'
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
-import { readPackageUp } from 'read-package-up'
 import '../helpers/config.js'
 import redirectToHttps from './helpers/koa-https-redirect.js'
 
-const { packageJson: pkg } = await readPackageUp()
 const tracer = trace.getTracer(
-  'oidc-provider',
-  pkg.dependencies['oidc-provider']
+  'oidc-provider'
 )
 
 const { ISSUER, NODE_ENV } = process.env
