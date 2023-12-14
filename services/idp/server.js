@@ -3,9 +3,9 @@ import './helpers/config.js'
 
 import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
+import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
-
 async function makeFastify(config, pretty) {
   const parsedHost = new URL(config?.issuer || process.env.ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
@@ -87,12 +87,11 @@ async function start(port, pretty) {
 
 const { port } = new URL(process.env.ISSUER)
 export default makeFastify
-await start(port, true)
-// if (import.meta.url.startsWith('file:')) {
-//   const modulePath = filename(import.meta.url)
-//   const pretty = true
+if (import.meta.url.startsWith('file:')) {
+  const modulePath = filename(import.meta.url)
+  const pretty = true
 
-//   if (process.argv[1] === modulePath) {
-//     await start(port, pretty)
-//   }
-// }
+  if (process.argv[1] === modulePath) {
+    await start(port, pretty)
+  }
+}
