@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "./services/idp/server.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/.*", "dest": "./services/idp/server.js" }
+  ]
+}

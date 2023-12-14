@@ -2,8 +2,7 @@ import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
 import { getConfig, initializeKeys } from '../../helpers/keys.js'
 import Account from '../support/account.js'
 import ttl from './ttl.js'
-// TODO devInteractions disable
-// TODO interactions implement
+
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 // TODO dynamic cookies config loading
@@ -16,7 +15,6 @@ if (!config) {
 
 export default {
   async renderError(ctx, out, error) {
-    console.error(out, error)
     defaults.renderError(ctx, out, error)
   },
   findAccount: Account.findAccount,
