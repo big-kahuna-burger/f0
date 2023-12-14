@@ -8,7 +8,7 @@ const app = Fastify({
   logger: true
 })
 
-const appService = await import('./app.js')
+const appService = await import('../app.js')
 
 app.register(appService, {
   oidc: await configureOidc(),
