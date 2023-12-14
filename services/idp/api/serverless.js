@@ -3,7 +3,7 @@ dotenv.config()
 
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
-
+const config = {}
 const parsedHost = new URL(config?.issuer || process.env.ISSUER)
 const { hostname, protocol, port, pathname } = parsedHost
 if (pathname === '/') {
