@@ -3,7 +3,6 @@ import './helpers/config.js'
 
 import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'
-import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
 
