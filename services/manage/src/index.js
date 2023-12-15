@@ -1,33 +1,97 @@
+import '@mantine/core/styles.css'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AuthProvider } from 'react-oauth2-code-pkce'
 import App from './App'
-import './index.css'
 import reportWebVitals from './reportWebVitals'
+
+import {
+  MantineProvider,
+  MantineThemeProvider,
+  createTheme,
+  localStorageColorSchemeManager
+} from '@mantine/core'
+const ISSUER = process.env.REACT_APP_ISSUER || 'http://localhost:3033'
+const ORIGIN = window.location.origin
+
+const colorSchemeManager = localStorageColorSchemeManager({
+  key: 'mng-color-scheme'
+})
+
+const myColor = [
+  '#f6eeff',
+  '#e7daf7',
+  '#cab1ea',
+  '#ad86dd',
+  '#9562d2',
+  '#854bcb',
+  '#7d3ec9',
+  '#6b31b2',
+  '#5f2aa0',
+  '#52228d'
+]
+const myAltColor = [
+  '#f6fae8',
+  '#edf1da',
+  '#dae1b9',
+  '#c6d094',
+  '#b4c274',
+  '#aab95f',
+  '#a4b454',
+  '#8f9e44',
+  '#7e8c39',
+  '#6b7a2b'
+]
+
+const theme = createTheme({
+  fontFamily: 'Montserrat, sans-serif',
+  defaultRadius: 'md',
+  colors: {
+    myColor,
+    myAltColor
+  },
+  primaryColor: 'myColor',
+  defaultGradient: {
+    from: 'purple',
+    to: 'green',
+    deg: 180
+  }
+})
 
 const authConfig = {
   clientId: 'myClientID',
-  authorizationEndpoint: 'http://localhost:9876/oidc/auth',
-  tokenEndpoint: 'http://localhost:9876/oidc/token',
-  redirectUri: 'http://localhost:3036/cb',
-  postLogoutRedirectUri: 'http://localhost:3036/',
+  authorizationEndpoint: `${ISSUER}/auth`,
+  tokenEndpoint: `${ISSUER}/token`,
+  redirectUri: `${ORIGIN}/cb`,
+  postLogoutRedirectUri: `${ORIGIN}/`,
   scope: 'openid email profile',
   onRefreshTokenExpire: (event) =>
     window.confirm(
       'Session expired. Refresh page to continue using the site?'
     ) && event.login(),
-  logoutEndpoint: 'http://localhost:9876/oidc/session/end',
-  logoutRedirect: 'http://localhost:3036/logged-out',
-  autoLogin: true
+  //logoutEndpoint: `${ISSUER}/session/end`,
+  //logoutRedirect: `${ORIGIN}/logged-out`,
+  postLogin: () => {
+    window.location.href = `${ORIGIN}/`
+  },
+  autoLogin: false,
+  decodeToken: false,
+  clearURL: true
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 
 root.render(
   <React.StrictMode>
-    <AuthProvider authConfig={authConfig}>
-      <App />
-    </AuthProvider>
+    <MantineProvider
+      defaultColorScheme="dark"
+      theme={theme}
+      colorSchemeManager={colorSchemeManager}
+    >
+      <AuthProvider authConfig={authConfig}>
+        <App />
+      </AuthProvider>
+    </MantineProvider>
   </React.StrictMode>
 )
 

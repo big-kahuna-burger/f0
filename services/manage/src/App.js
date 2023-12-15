@@ -1,58 +1,64 @@
-import { useContext } from 'react'
-import { AuthContext } from 'react-oauth2-code-pkce'
-import './App.css'
-
+import { useState } from 'react'
+import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import { SelectedUserContext } from './SelectedUser.context' // Import the SelectedUserContext component
+import Shell from './Shell'
+import { UsersRolesTable } from './components/UserTableWithRoles'
+import { UsersTable } from './components/UsersTable'
+const routes = [
+  {
+    root: '*',
+    element: <Shell />,
+    children: [
+      {
+        path: '/',
+        element: <></>
+      },
+      {
+        path: '/apis',
+        element: <></>
+      },
+      {
+        path: '/apps',
+        element: <></>
+      },
+      {
+        path: '/authn/db',
+        element: <></>
+      },
+      {
+        path: '/authn/social',
+        element: <></>
+      },
+      {
+        path: '/users',
+        element: <UsersTable />
+      },
+      {
+        path: '/authz',
+        element: <></>
+      },
+      {
+        path: '/branding/looks',
+        element: <></>
+      },
+      {
+        path: '/branding/profile',
+        element: <UsersRolesTable />
+      },
+      {
+        path: '/cb',
+        element: <></>
+      }
+    ]
+  }
+]
 function App() {
-  /*
-token: string;
-    logOut: (state?: string, logoutHint?: string) => void;
-    login: (state?: string) => void;
-    error: string | null;
-    tokenData?: TTokenData;
-    idToken?: string;
-    idTokenData?: TTokenData;
-    loginInProgress: boolean;
-*/
-
-  const { token, idToken, login, logOut } = useContext(AuthContext)
+  const router = createBrowserRouter(routes)
+  const [user, setUser] = useState({})
   return (
-    <div className="App">
-      <header className="App-header">
-        {token ? (
-          <button
-            type="button"
-            className="button-logout"
-            onClick={() => {
-              logOut(undefined, idToken)
-            }}
-          >
-            Logout
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="button-logout"
-            onClick={() => login()}
-          >
-            Login
-          </button>
-        )}
-      </header>
-      <UserInfo />
-    </div>
-  )
-}
-
-const UserInfo = () => {
-  const { token, idTokenData } = useContext(AuthContext)
-
-  return (
-    <>
-      <h4>Access Token</h4>
-      <pre>{token}</pre>
-      <h4>User Information from ID Token JWT</h4>
-      <pre>{JSON.stringify(idTokenData, null, 2)}</pre>
-    </>
+    <SelectedUserContext.Provider value={{ user, setUser }}>
+      <RouterProvider router={router} fallbackElement={<div>LOADING</div>} />
+    </SelectedUserContext.Provider>
   )
 }
 
