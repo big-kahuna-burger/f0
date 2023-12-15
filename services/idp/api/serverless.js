@@ -41,5 +41,6 @@ app.register(appService, {
 
 export default async (req, res) => {
   await app.ready()
+  console.log(process.env.VERCEL_ANALYTICS_ID)
   app.server.emit('request', req, res)
 }

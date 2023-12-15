@@ -6,6 +6,7 @@ import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
+
 async function makeFastify(config, pretty) {
   const parsedHost = new URL(config?.issuer || process.env.ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
@@ -16,8 +17,9 @@ async function makeFastify(config, pretty) {
     )
   }
 
-  const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-  const provider = await configureOidc(host)
+  const provider = await configureOidc(
+    `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
+  )
 
   const transport = pretty
     ? {
@@ -86,7 +88,9 @@ async function start(port, pretty) {
 }
 
 const { port } = new URL(process.env.ISSUER)
+
 export default makeFastify
+
 if (import.meta.url.startsWith('file:')) {
   const modulePath = filename(import.meta.url)
   const pretty = true

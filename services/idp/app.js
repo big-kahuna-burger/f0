@@ -32,6 +32,7 @@ export default async function runme(fastify, opts) {
           "'unsafe-eval'",
           'https://unpkg.com'
         ],
+        formAction: null,
         styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
