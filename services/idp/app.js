@@ -50,12 +50,10 @@ export default async function runme(fastify, opts) {
     layout: './layout',
     extName: 'ejs',
     defaultContext: {
-      //analyticsId: process.env.VERCEL_ANALYTICS_ID || '',
       uid: '',
       nonce: ''
     }
   })
-  // analyticsId: process.env.VERCEL_ANALYTICS_ID || ''
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)

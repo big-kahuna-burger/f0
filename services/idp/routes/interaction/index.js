@@ -82,7 +82,6 @@ export default async function interactionsRouter(fastify, opts) {
           details: prompt.details,
           params,
           title: 'Sign-in',
-          analyticsId: process.env.VECREL_ANALYTICS_ID,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),
@@ -98,7 +97,6 @@ export default async function interactionsRouter(fastify, opts) {
           params,
           title: 'Authorize',
           session: session ? debug(session) : undefined,
-          analyticsId: process.env.VECREL_ANALYTICS_ID,
           dbg: {
             params: debug(params),
             prompt: debug(prompt)
