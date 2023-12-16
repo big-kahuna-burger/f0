@@ -1,5 +1,5 @@
-import debug from 'debug'
 import { PrismaClient } from '@prisma/client'
+import debug from 'debug'
 const dbg = debug('prisma:events')
 
 const prisma = new PrismaClient({

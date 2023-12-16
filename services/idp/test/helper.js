@@ -1,6 +1,6 @@
 // This file contains code that we reuse
 // between our tests.
-import '../helpers/config.js'
+import '../oidc/helpers/config.js'
 
 import path from 'path'
 import { fileURLToPath } from 'url'

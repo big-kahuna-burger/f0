@@ -23,6 +23,7 @@ export default async function runme(fastify, opts) {
     origin: 'http://localhost:3036'
   })
   fastify.register(helmet, {
+    enableCSPNonces: true,
     contentSecurityPolicy: {
       directives: {
         defaultSrc: [
@@ -40,6 +41,7 @@ export default async function runme(fastify, opts) {
         styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
         imgSrc: ["'self'", 'data:'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        scriptSrcAttr: ["'self'", "'unsafe-inline'"],
         objectSrc: ["'none'"],
         upgradeInsecureRequests: []
       }
@@ -55,7 +57,7 @@ export default async function runme(fastify, opts) {
     extName: 'ejs',
     defaultContext: {
       uid: '',
-      nonce: ''
+      vercel: false
     }
   })
   fastify.register(AutoLoad, {

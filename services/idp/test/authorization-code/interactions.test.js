@@ -3,8 +3,7 @@ import got from 'got'
 import { generators } from 'openid-client'
 import skp from 'set-cookie-parser'
 import { beforeEach, describe, expect, test } from 'vitest'
-import prisma from '../../db/__mocks__/client.js'
-import { decode } from '../../helpers/base64url.js'
+import { decode } from '../../oidc/helpers/base64url.js'
 import { build } from '../helper.js'
 
 describe('interaction router', () => {
@@ -54,7 +53,6 @@ describe('interaction router', () => {
       '<title>Sign-in</title>'
     )
     expect(containsLoginTitle).toBe(true)
-
 
     expect(statusCode).toEqual(303)
     expect(headers.location).toMatch('/interaction')
@@ -116,7 +114,7 @@ describe('interaction router', () => {
 
     const consentConfirmedAuthResume = consentConfirmed.headers.location
     expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
-    
+
     const rpRedirect = await got(consentConfirmedAuthResume, {
       followRedirect: false,
       headers: {

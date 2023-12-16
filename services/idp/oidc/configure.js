@@ -1,7 +1,7 @@
 import { trace } from '@opentelemetry/api'
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
-import '../helpers/config.js'
+import './helpers/config.js'
 import redirectToHttps from './helpers/koa-https-redirect.js'
 
 const tracer = trace.getTracer('oidc-provider')
@@ -22,8 +22,8 @@ async function configure(iss, adapterArg) {
   }
 
   if (prod) {
-    provider.proxy = true
-    provider.use(redirectToHttps)
+    // provider.proxy = true
+    // provider.use(redirectToHttps)
   }
 
   if (process.env.OTEL) {

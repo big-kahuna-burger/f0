@@ -1,6 +1,6 @@
 import { customAlphabet, nanoid } from 'nanoid'
 import client from '../../db/client.js'
-
+import { compareHash, generateHash } from './password-tsc.js'
 const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 26)
 // TODO implement persistence, by adding a DB client and fix a claims fn
 // TODO implement find by federated
@@ -62,11 +62,27 @@ class Account {
 
   static async authenticate(email, password) {
     // TODO check password and stuff
-    const account = await Account.findByEmail(email)
+    const found = await client.profile.findFirst({
+      where: { email },
+      include: {
+        Address: true,
+        Account: {
+          include: {
+            Identity: {
+              include: {
+                PasswordHash: true
+              }
+            }
+          }
+        }
+      }
+    })
 
-    if (!account) {
-      throw new Error('no account found')
+    if (!found) {
+      throw new AccountNotFound()
     }
+
+    return fromDbData(found)
   }
 
   static async createFromClaims(claims, provider = 'f0') {
@@ -119,7 +135,7 @@ class Account {
           street_address
         } = address
 
-        ProfileData.address = {
+        ProfileData.Address = {
           create: {
             country,
             formatted,
@@ -158,6 +174,19 @@ function fromDbData(data) {
 }
 
 export default Account
+
+class AccountNotFound extends Error {
+  constructor(...args) {
+    super(...args)
+    this.name = 'InvalidCredentials'
+    this.message = 'Invalid email or password'
+    this.status = 401
+  }
+}
+
+export const errors = {
+  AccountNotFound
+}
 
 // Account.createFromClaims({
 //   // sub: 'test1234', // it is essential to always return a sub claim

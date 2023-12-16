@@ -7,6 +7,7 @@ import NoCache from 'fastify-disablecache'
 import isEmpty from 'lodash/isEmpty.js'
 import { errors } from 'oidc-provider'
 import Account from '../../oidc/support/account.js'
+import { errors as accountErrors } from '../../oidc/support/account.js'
 const { errorCodes } = Fastify
 const { FST_ERR_BAD_STATUS_CODE } = errorCodes
 const { SessionNotFound } = errors
@@ -29,49 +30,35 @@ const debug = (obj) =>
   )
 function errorHandler(error, request, reply) {
   if (error instanceof FST_ERR_BAD_STATUS_CODE) {
-    // Log error
     this.log.error(error)
-    // Send error response
     reply.status(500).send({ ok: false })
-  } else {
-    // fastify will use parent error handler to handle this
-    reply.send(error)
+  } else if (error instanceof SessionNotFound) {
+    return reply.code(400).send('Session not found')
+  } else if (error instanceof accountErrors.AccountNotFound) {
+    return reply.code(401).send(error.message)
   }
+
+  reply.send(error)
 }
 export default async function interactionsRouter(fastify, opts) {
   fastify.setErrorHandler(errorHandler)
   fastify.register(FormBody)
   fastify.register(NoCache)
 
-  fastify.get('/:uid', { errorHandler: sessionNotFoundHandler }, getInteraction)
-  fastify.post(
-    '/:uid/login',
-    { errorHandler: sessionNotFoundHandler },
-    checkLogin
-  )
-  fastify.post(
-    '/:uid/confirm',
-    { errorHandler: sessionNotFoundHandler },
-    interactionConfirm
-  )
-  fastify.get(
-    '/:uid/abort',
-    { errorHandler: sessionNotFoundHandler },
-    interactionAbort
-  )
-
-  async function sessionNotFoundHandler(error, request, reply) {
-    if (error instanceof SessionNotFound) {
-      return reply.code(400).send('Session not found')
-    }
-  }
+  fastify.get('/:uid', getInteraction)
+  fastify.post('/:uid/login', checkLogin)
+  fastify.post('/:uid/confirm', interactionConfirm)
+  fastify.get('/:uid/abort', interactionAbort)
 
   async function getInteraction(request, reply) {
     const provider = this.oidc
-    const { uid, prompt, params, session } = await provider.interactionDetails(
-      request,
-      reply
-    )
+    const {
+      uid,
+      prompt,
+      params,
+      session,
+      lastSubmission = {}
+    } = await provider.interactionDetails(request, reply)
     const client = await provider.Client.find(params.client_id)
 
     switch (prompt.name) {
@@ -86,7 +73,9 @@ export default async function interactionsRouter(fastify, opts) {
           dbg: {
             params: debug(params),
             prompt: debug(prompt)
-          }
+          },
+          nonce: reply.cspNonce.script,
+          error: lastSubmission.user_error_desc
         })
       }
       case 'consent': {
@@ -100,7 +89,8 @@ export default async function interactionsRouter(fastify, opts) {
           dbg: {
             params: debug(params),
             prompt: debug(prompt)
-          }
+          },
+          nonce: reply.cspNonce.script
         })
       }
       default:
@@ -113,11 +103,32 @@ export default async function interactionsRouter(fastify, opts) {
     const {
       prompt: { name }
     } = await provider.interactionDetails(request, reply)
-
     assert.equal(name, 'login')
-
-    const account = await Account.findByEmail(request.body.login)
-
+    let account
+    try {
+      account = await Account.authenticate(
+        request.body.login,
+        request.body.password
+      )
+    } catch (error) {
+      if (error instanceof accountErrors.AccountNotFound) {
+        const errResult = {
+          user_error: 'access_denied',
+          user_error_desc: error.message
+        }
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          errResult,
+          {
+            mergeWithLastSubmission: true
+          }
+        )
+        return reply.redirect(303, returnTo)
+      }
+      throw error
+    }
+    console.log(account)
     // // const { login, password } = request.body
     // // TODO check password and stuff (login, password)
 
@@ -130,8 +141,7 @@ export default async function interactionsRouter(fastify, opts) {
     const returnTo = await provider.interactionResult(request, reply, result, {
       mergeWithLastSubmission: false
     })
-
-    reply.header('Content-Length', 0)
+    console.log('sending them to ', returnTo, reply.raw.headers)
     return reply.redirect(303, returnTo)
   }
 

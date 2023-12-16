@@ -1,10 +1,7 @@
 import { stringify } from 'querystring'
 import got from 'got'
 import { generators } from 'openid-client'
-import skp from 'set-cookie-parser'
 import { beforeEach, describe, expect, test } from 'vitest'
-import prisma from '../../db/__mocks__/client.js'
-import { decode } from '../../helpers/base64url.js'
 import { build } from '../helper.js'
 
 describe('interaction router', () => {
@@ -23,7 +20,6 @@ describe('interaction router', () => {
     }
   })
 
-  
   test('random interaction hit will produce SessionNotFound', async (t) => {
     const baseUrl = `http://localhost:${port}`
     try {

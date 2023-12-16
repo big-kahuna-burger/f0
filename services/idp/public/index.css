@@ -177,3 +177,7 @@ li + li {
 button {
   cursor: pointer;
 }
+
+.red {
+  color: red;
+}

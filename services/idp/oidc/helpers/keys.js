@@ -1,5 +1,6 @@
 import { exportJWK, generateKeyPair } from 'jose'
-import prisma from '../db/client.js'
+import nanoid from 'oidc-provider/lib/helpers/nanoid.js'
+import prisma from '../../db/client.js'
 
 const ALGS_SUPPORTED = new Set(['ES256', 'PS256'])
 const ALG_TO_KTY = new Map(
@@ -26,7 +27,7 @@ async function initializeKeys() {
     return
   }
 
-  const { id, jwks } = configs[0]
+  const { id, jwks, cookieKeys } = configs[0]
   if (jwks.length < 2) {
     const result = await prisma.config.update({
       where: { id: id },
@@ -36,10 +37,27 @@ async function initializeKeys() {
     console.log('initialized JWK in config', result)
     return
   }
+  if (!cookieKeys || cookieKeys.length < 2) {
+    const cookieSecrets = [nanoid(), nanoid()]
+    await prisma.config.update({
+      where: { id: id },
+      data: { cookieKeys: cookieSecrets }
+    })
+    console.log('cookie secrets initialized')
+  }
   console.log('found JWK in config, nothing changed')
 }
 
 async function getConfig() {
+  const found = await prisma.config.findFirst()
+  if (!found.cookieKeys || found.cookieKeys.length < 2) {
+    const cookieSecrets = [nanoid(), nanoid()]
+    await prisma.config.update({
+      where: { id: found.id },
+      data: { cookieKeys: cookieSecrets }
+    })
+    console.log('cookie secrets initialized')
+  }
   return prisma.config.findFirst()
 }
 

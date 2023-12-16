@@ -1,5 +1,5 @@
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
-import { getConfig, initializeKeys } from '../../helpers/keys.js'
+import { getConfig, initializeKeys } from '../helpers/keys.js'
 import Account from '../support/account.js'
 import ttl from './ttl.js'
 
@@ -76,6 +76,16 @@ export default {
   },
   cookies: {
     keys: config.cookieKeys
+    // short: {
+    //   httpOnly: false,
+    //   overwrite: true,
+    //   sameSite: 'lax'
+    // },
+    // long: {
+    //   httpOnly: false,
+    //   overwrite: true,
+    //   sameSite: 'lax'
+    // }
   },
   claims: {
     openid: ['sub'],

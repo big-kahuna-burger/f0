@@ -4,12 +4,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://unpkg.com">
-    <link rel="preconnect" href="https://vitals.vercel-analytics.com">
     <link rel="preconnect" href="https://unpkg.com">
-    <script>
-      window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
-    </script>
-    <script defer src="/_vercel/speed-insights/script.js"></script>
+    <% if (vercel) { %>
+      <link rel="preconnect" href="https://vitals.vercel-analytics.com">
+      <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+      </script>
+      <script defer src="/_vercel/speed-insights/script.js"></script>
+    <% } %>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
@@ -32,7 +34,7 @@
     </div>
     <div class="grant-debug">
       <details>
-        <summary style="text-align: center;">(Click to expand) DEBUG information</summary>
+        <summary>(Click to expand) DEBUG information</summary>
         <div>
           <strong>uid</strong>: <%= uid %>
         </div>

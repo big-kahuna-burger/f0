@@ -1,6 +1,10 @@
 import { expect, test, vi } from 'vitest'
 import prisma from '../../db/__mocks__/client.js'
-import { getConfig, initializeKeys, rotateKey } from '../../helpers/keys.js'
+import {
+  getConfig,
+  initializeKeys,
+  rotateKey
+} from '../../oidc/helpers/keys.js'
 
 vi.mock('../../db/client.js')
 

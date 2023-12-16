@@ -62,7 +62,7 @@ model Profile {
   updatedAt           DateTime? @default(now()) @updatedAt @db.Date
   website             String?
   zoneinfo            String?
-  address             Address?  @relation(fields: [addressId], references: [id])
+  Address             Address?  @relation(fields: [addressId], references: [id])
   addressId           String?   @db.Uuid
 
   @@map("profile")
@@ -93,15 +93,26 @@ model Login {
 }
 
 model Identity {
-  id        String    @id @default(dbgenerated("gen_random_uuid()"))
-  sub       String
-  provider  String
-  updatedAt DateTime? @default(now()) @updatedAt @db.Date
-  Account   Account   @relation(fields: [sub], references: [id])
-  source    IDENTITY  @default(DB)
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
+  sub          String
+  provider     String
+  updatedAt    DateTime?      @default(now()) @updatedAt @db.Date
+  Account      Account        @relation(fields: [sub], references: [id])
+  source       IDENTITY       @default(DB)
+  PasswordHash PasswordHash[]
 
   @@index([sub])
   @@map("identity")
+}
+
+model PasswordHash {
+  id         String    @id @default(dbgenerated("gen_random_uuid()"))
+  identityId String
+  hash       String
+  updatedAt  DateTime? @default(now()) @updatedAt @db.Date
+  Identity   Identity  @relation(fields: [identityId], references: [id])
+
+  @@map("password_hash")
 }
 
 enum IDENTITY {
