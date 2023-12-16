@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals'
 
 import {
   MantineProvider,
-  MantineThemeProvider,
   createTheme,
   localStorageColorSchemeManager
 } from '@mantine/core'

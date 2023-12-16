@@ -60,7 +60,7 @@ export function UsersRolesTable() {
     <Table.Tr key={item.name}>
       <Table.Td>
         <Group gap="sm">
-          <Avatar size={40} src={item.avatar} radius={40} />
+          <Avatar size={40} src={item.picture} radius={40} />
           <div>
             <Text fz="sm" fw={500}>
               {item.name}

@@ -23,7 +23,7 @@ export function UserCardImage({ user }) {
         }}
       />
       <Avatar
-        src={user.avatar}
+        src={user.picture}
         size={80}
         radius={80}
         mx="auto"

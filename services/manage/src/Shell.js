@@ -1,6 +1,4 @@
-import { AppShell, Burger, Group } from '@mantine/core'
-import { Button } from '@mantine/core'
-import { useDisclosure } from '@mantine/hooks'
+import { AppShell, Group } from '@mantine/core'
 import { Outlet } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'

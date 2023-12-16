@@ -1,56 +1,19 @@
 export { getUsers }
 
 async function getUsers() {
-  console.log(
-    localStorage
-      .getItem('ROCP_token')
-      .split('"')
-      .filter((x) => x.length)[0]
-  )
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return [
-    {
-      avatar:
-        'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-1.png',
-      name: 'Robert Wolfkisser',
-      job: 'Engineer',
-      email: 'rob_wolf@gmail.com',
-      phone: '+44 (452) 886 09 12'
-    },
-    {
-      avatar:
-        'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-7.png',
-      name: 'Jill Jailbreaker',
-      job: 'Engineer',
-      email: 'jj@breaker.com',
-      phone: '+44 (934) 777 12 76'
-    },
-    {
-      avatar:
-        'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-2.png',
-      name: 'Henry Silkeater',
-      job: 'Designer',
-      email: 'henry@silkeater.io',
-      phone: '+44 (901) 384 88 34'
-    },
-    {
-      avatar:
-        'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-3.png',
-      name: 'Bill Horsefighter',
-      job: 'Designer',
-      email: 'bhorsefighter@gmail.com',
-      phone: '+44 (667) 341 45 22'
-    },
-    {
-      avatar:
-        'https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-10.png',
-      name: 'Jeremy Footviewer',
-      job: 'Manager',
-      email: 'jeremy@foot.dev',
-      phone: '+44 (881) 245 65 65'
-    }
-  ].map((u) => ({
+  const token =
+    localStorage.getItem('ROCP_token') ||
+    ''.split('"').filter((x) => x.length)[0]
+  const usersResponse = await fetch('http://localhost:9876/manage/users', {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+  const usersJson = await usersResponse.json()
+  return usersJson.map((u, i) => ({
     ...u,
+    name: `${u.profile.given_name} ${u.profile.family_name}`,
+    picture: `https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-${
+      (i % 10) + 1
+    }.png`,
     stats: [
       { value: Math.round(Math.random() * 255), label: 'Logins' },
       { value: '2h ago', label: 'Last Login' },

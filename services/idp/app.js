@@ -1,5 +1,6 @@
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
+import Cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import Static from '@fastify/static'
 import View from '@fastify/view'
@@ -18,6 +19,9 @@ export default async function runme(fastify, opts) {
   // those should be support plugins that are reused
   // through your application
   // console.log(opts, options)
+  await fastify.register(Cors, {
+    origin: 'http://localhost:3036'
+  })
   fastify.register(helmet, {
     contentSecurityPolicy: {
       directives: {

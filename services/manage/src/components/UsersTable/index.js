@@ -1,37 +1,29 @@
 import {
-  ActionIcon,
   Anchor,
   Avatar,
-  Badge,
   Group,
   Table,
   Text,
-  rem,
   useMantineTheme
 } from '@mantine/core'
-import { IconPencil, IconTrash } from '@tabler/icons-react'
 import { Suspense } from 'react'
 import { useCallback, useContext, useEffect, useState } from 'react'
+import { AuthContext } from 'react-oauth2-code-pkce'
 import { Await } from 'react-router-dom'
 import { SelectedUserContext } from '../../SelectedUser.context'
 import { getUsers } from '../../api'
 import classes from './UserTable.module.css'
-const jobColors = {
-  engineer: 'blue',
-  manager: 'cyan',
-  designer: 'pink'
-}
-
 export function UsersTable() {
+  const { token } = useContext(AuthContext)
   const theme = useMantineTheme()
   const selectedUserContext = useContext(SelectedUserContext)
   const [users, setUsers] = useState([])
   useEffect(() => {
-    if (!users.length && !users.then) {
-      const pm = getUsers().then((users) => setUsers(users))
+    if (token && !users.length && !users.then) {
+      const pm = getUsers(token).then((users) => setUsers(users))
       setUsers(pm)
     }
-  }, [users])
+  }, [users, token])
 
   const [selectedUser, setSelectedUser] = useState({})
   useEffect(() => {
@@ -74,8 +66,8 @@ export function UsersTable() {
       document.removeEventListener('keydown', handleSelection)
     }
   }, [handleSelection])
-  const clickRow = (item) => {
-    setSelectedUser(item)
+  const clickRow = (item, i) => {
+    setActiveIndex(i)
   }
   return (
     <Suspense fallback={<p>Loading Users...</p>}>
@@ -91,20 +83,20 @@ export function UsersTable() {
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
-                {users.map((item) => (
+                {users.map((item, i) => (
                   <Table.Tr
                     className={classes['user-row']}
-                    key={item.name}
+                    key={item.id}
                     c={
                       item.name === selectedUser.name
                         ? theme.colors.myAltColor[6]
                         : undefined
                     }
-                    onClick={() => clickRow(item)}
+                    onClick={() => clickRow(item, i)}
                   >
                     <Table.Td>
                       <Group gap="sm">
-                        <Avatar size={30} src={item.avatar} radius={30} />
+                        <Avatar size={30} src={item.picture} radius={30} />
                         <Text fz="sm" fw={500}>
                           {item.name}
                         </Text>
@@ -114,22 +106,6 @@ export function UsersTable() {
                       <Anchor component="button" size="sm">
                         {item.email}
                       </Anchor>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group gap={0} justify="flex-end">
-                        {/* <ActionIcon variant="subtle" color="gray">
-                          <IconPencil
-                            style={{ width: rem(16), height: rem(16) }}
-                            stroke={1.5}
-                          />
-                        </ActionIcon>
-                        <ActionIcon variant="subtle" color="red">
-                          <IconTrash
-                            style={{ width: rem(16), height: rem(16) }}
-                            stroke={1.5}
-                          />
-                        </ActionIcon> */}
-                      </Group>
                     </Table.Td>
                   </Table.Tr>
                 ))}
