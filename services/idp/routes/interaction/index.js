@@ -27,7 +27,7 @@ const debug = (obj) =>
       }
     }
   )
-function MYEYEYEYYE(error, request, reply) {
+function errorHandler(error, request, reply) {
   if (error instanceof FST_ERR_BAD_STATUS_CODE) {
     // Log error
     this.log.error(error)
@@ -39,7 +39,7 @@ function MYEYEYEYYE(error, request, reply) {
   }
 }
 export default async function interactionsRouter(fastify, opts) {
-  fastify.setErrorHandler(MYEYEYEYYE)
+  fastify.setErrorHandler(errorHandler)
   fastify.register(FormBody)
   fastify.register(NoCache)
 
@@ -116,7 +116,7 @@ export default async function interactionsRouter(fastify, opts) {
 
     assert.equal(name, 'login')
 
-    const account = await Account.findByLogin(request.body.login)
+    const account = await Account.findByEmail(request.body.login)
 
     // // const { login, password } = request.body
     // // TODO check password and stuff (login, password)
