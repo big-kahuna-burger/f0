@@ -159,32 +159,32 @@ function fromDbData(data) {
 
 export default Account
 
-Account.createFromClaims({
-  // sub: 'test1234', // it is essential to always return a sub claim
+// Account.createFromClaims({
+//   // sub: 'test1234', // it is essential to always return a sub claim
 
-  address: {
-    country: '000',
-    formatted: '000',
-    locality: '000',
-    postal_code: '000',
-    region: '000',
-    street_address: '000'
-  },
-  birthdate: new Date(1988, 10, 16),
-  email: 'johndaasdoe@examplea1.com',
-  email_verified: false,
-  family_name: 'Doe',
-  gender: 'male',
-  given_name: 'John',
-  locale: 'en-US',
-  middle_name: 'Middle',
-  name: 'John Doe',
-  nickname: 'Johny',
-  phone_number: '+49 000 000000',
-  phone_number_verified: false,
-  picture: 'http://lorempixel.com/400/200/',
-  preferred_username: 'johnny',
-  profile: 'https://johnswebsite.com',
-  website: 'http://example.com',
-  zoneinfo: 'Europe/Berlin'
-})
+//   address: {
+//     country: '000',
+//     formatted: '000',
+//     locality: '000',
+//     postal_code: '000',
+//     region: '000',
+//     street_address: '000'
+//   },
+//   birthdate: new Date(1988, 10, 16),
+//   email: 'johndaasdoe@examplea1.com',
+//   email_verified: false,
+//   family_name: 'Doe',
+//   gender: 'male',
+//   given_name: 'John',
+//   locale: 'en-US',
+//   middle_name: 'Middle',
+//   name: 'John Doe',
+//   nickname: 'Johny',
+//   phone_number: '+49 000 000000',
+//   phone_number_verified: false,
+//   picture: 'http://lorempixel.com/400/200/',
+//   preferred_username: 'johnny',
+//   profile: 'https://johnswebsite.com',
+//   website: 'http://example.com',
+//   zoneinfo: 'Europe/Berlin'
+// })
