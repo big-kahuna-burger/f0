@@ -40,34 +40,36 @@
       <% } %>
     </div>
   </div>
-  <div class="grant-debug">
-    <details>
-      <summary>(Click to expand) DEBUG information</summary>
-      <div>
-        <strong>uid</strong>: <%= uid %>
-      </div>
-
-      <% if (session) { %>
-      <div>
-        SESSION <br>
-        ========= <br>
-        <%- session %>
-      </div>
-      <% } %>
-
-      <div>
-        PARAMS <br>
-        ======== <br>
-        <%- dbg.params %>
-      </div>
-
-      <div>
-        PROMPT <br>
-        ======== <br>
-        <%- dbg.prompt %>
-      </div>
-    </details>
-  </div>
+  <% if (showDebug) { %>
+    <div class="grant-debug">
+      <details>
+        <summary>(Click to expand) DEBUG information</summary>
+        <div>
+          <strong>uid</strong>: <%= uid %>
+        </div>
+  
+        <% if (session) { %>
+        <div>
+          SESSION <br>
+          ========= <br>
+          <%- session %>
+        </div>
+        <% } %>
+  
+        <div>
+          PARAMS <br>
+          ======== <br>
+          <%- dbg.params %>
+        </div>
+  
+        <div>
+          PROMPT <br>
+          ======== <br>
+          <%- dbg.prompt %>
+        </div>
+      </details>
+    </div>
+  <% } %>
 </body>
 
 </html>

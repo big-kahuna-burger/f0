@@ -48,7 +48,8 @@ export default async function runme(fastify, opts) {
     extName: 'ejs',
     defaultContext: {
       uid: '',
-      vercel: opts.isVercel
+      vercel: opts.isVercel,
+      showDebug: opts.grantsDebug,
     }
   })
   fastify.register(AutoLoad, {

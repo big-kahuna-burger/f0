@@ -38,7 +38,7 @@ app.register(appService, {
   Account,
   AccountErrors,
   isVercel: true,
-  grantsDebug: true
+  grantsDebug: process.env.GRANTS_DEBUG
 })
 
 export default async (req, res) => {
