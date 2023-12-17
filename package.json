@@ -7,6 +7,7 @@
   "scripts": {
     "test": "pnpm -r --workspace-concurrency=1 test",
     "lint": "pnpm -r --workspace-concurrency=1 lint",
+    "ci": "pnpm -r --workspace-concurrency=1 ci",
     "clean": "rm -rf node_modules && rm -rf services/*/node_modules",
     "cleanall": "rm pnpm-lock.yaml && rm -rf node_modules && rm -rf services/*/node_modules",
     "dev": "pnpm -r dev",
