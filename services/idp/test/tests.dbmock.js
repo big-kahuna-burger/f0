@@ -42,15 +42,15 @@ const clientMock = {
 const debug =
   (fn) =>
   (...args) => {
-    console.log('DEBUG TEST MOCK', fn.name, inspect(...args, { depth: 10 }))
+    console.log('DEBUG TEST MOCK', fn.name, ...args)
     return fn(...args)
   }
 
 export const setupPrisma = async (prisma) => {
-  prisma.config.findMany.mockImplementation(configFindMany)
-  prisma.config.findFirst.mockImplementation(configFindFirst)
-  prisma.config.update.mockImplementation(configUpdate)
-  prisma.config.create.mockImplementation(configCreate)
+  prisma.config.findMany.mockImplementation(debug(configFindMany))
+  prisma.config.findFirst.mockImplementation(debug(configFindFirst))
+  prisma.config.update.mockImplementation(debug(configUpdate))
+  prisma.config.create.mockImplementation(debug(configCreate))
   prisma.oidcModel.findUnique.mockImplementation(oidcModelFindUnique)
   prisma.oidcModel.delete.mockImplementation(oidcModelDelete)
   prisma.oidcModel.upsert.mockImplementation(oidcModelUpsert)
@@ -68,7 +68,11 @@ export const setupPrisma = async (prisma) => {
   return prisma
 }
 
-export { clientMock }
+export { clientMock, getCurrentKeys }
+
+function getCurrentKeys() {
+  return configsDB.jwks
+}
 
 async function identityCreate({ PasswordHash, data }) {
   identDb[data.sub] = data

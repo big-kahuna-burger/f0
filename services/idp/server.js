@@ -53,7 +53,8 @@ async function makeFastify(config, pretty) {
     oidc: provider,
     otel: { wrapRoutes: true },
     Account,
-    AccountErrors
+    AccountErrors,
+    grantsDebug: true
   })
 
   // delay is the number of milliseconds for the graceful close to finish

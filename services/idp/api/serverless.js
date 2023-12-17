@@ -37,7 +37,8 @@ app.register(appService, {
   oidc: provider,
   Account,
   AccountErrors,
-  isVercel: true
+  isVercel: true,
+  grantsDebug: true
 })
 
 export default async (req, res) => {

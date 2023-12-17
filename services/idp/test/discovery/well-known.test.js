@@ -1,16 +1,13 @@
 import got from 'got'
 import { beforeEach, expect, test, vi } from 'vitest'
 
-import { build } from '../helper.js'
 let fastify
 let port
-vi.mock('../../db/client.js')
-import prisma from '../../db/__mocks__/client.js'
-import { setupPrisma } from '../tests.dbmock.js'
+import { build } from '../helper.js'
+import { getCurrentKeys } from '../tests.dbmock.js'
 
 beforeEach(async () => {
   // called once before each test run
-  await setupPrisma(prisma)
   fastify = await build()
   await fastify.ready()
   await fastify.listen()
@@ -28,10 +25,27 @@ test('.well-known is working', async (t) => {
 
   expect(statusCode).toEqual(200)
   expect(headers['content-type']).toEqual('application/json; charset=utf-8')
-  expect(JSON.parse(body)).toMatchObject(expected(port))
+  expect(JSON.parse(body)).toMatchObject(expectedMetadata(port))
 })
 
-const expected = (port) => ({
+test('/jwks is working', async (t) => {
+  const { body, statusCode, headers } = await got(
+    `http://localhost:${port}/oidc/jwks`
+  )
+
+  expect(statusCode).toEqual(200)
+  expect(headers['content-type']).toEqual(
+    'application/jwk-set+json; charset=utf-8'
+  )
+  const { keys } = JSON.parse(body)
+  expect(keys).toHaveLength(2)
+  const [key1, key2] = keys
+  expect(Object.keys(key1)).toStrictEqual(['kty', 'use', 'kid', 'e', 'n'])
+  const EC_PROPS = ['kty','use','kid','alg','crv','x','y']
+  expect(Object.keys(key2)).toStrictEqual(EC_PROPS)
+})
+
+const expectedMetadata = (port) => ({
   authorization_endpoint: `http://localhost:${port}/oidc/auth`,
   device_authorization_endpoint: `http://localhost:${port}/oidc/device/auth`,
   claims_parameter_supported: false,

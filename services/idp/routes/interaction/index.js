@@ -38,6 +38,7 @@ const NO_MERGE = {
 export default async function interactionsRouter(fastify, opts) {
   const Account = opts.Account
   const AccountErrors = opts.AccountErrors
+  const GRANTS_DEBUG = opts.grantsDebug
   function errorHandler(error, request, reply) {
     if (error instanceof FST_ERR_BAD_STATUS_CODE) {
       this.log.error(error)

@@ -12,11 +12,18 @@ const prod = NODE_ENV === 'production'
 export default configure
 
 async function configure(iss, adapterArg) {
-  const { default: configuration } = await import('./support/configuration.js')
-  // TODO make this into explicit static vs dynamic loader
+  const { default: staticConfig } = await import('./support/configuration.js')
   const { default: Account, errors } = await import('./support/account.js')
-  configuration.findAccount = Account.findAccount
+  const { default: dynamicConf } = await import('./support/dynamic-config.js')
   const adapter = adapterArg || (await import('./support/adapter.js')).default
+
+  const configuration = {
+    ...staticConfig,
+    jwks: { keys: dynamicConf.jwks },
+    cookies: { ...staticConfig.cookies, keys: dynamicConf.cookieKeys },
+    findAccount: Account.findAccount
+  }
+
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
 
   if (process.env.ENV !== 'test') {

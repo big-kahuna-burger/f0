@@ -3,18 +3,6 @@ import ttl from './ttl.js'
 
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
-// TODO dynamic cookies config loading
-import { getConfig, initializeKeys } from '../helpers/keys.js'
-let config = await getConfig()
-
-if (!config) {
-  await initializeKeys()
-  config = await getConfig()
-}
-
-if (!config) {
-  throw new Error('failed to initialize config')
-}
 
 const CORS_PROP = 'urn:f0:ACO'
 
@@ -79,7 +67,7 @@ export default {
     url: (ctx, interaction) => `/interaction/${interaction.uid}`
   },
   cookies: {
-    keys: config.cookieKeys
+    keys: [] // will be dynamically loaded
   },
   claims: {
     openid: ['sub'],
@@ -111,6 +99,6 @@ export default {
     clientCredentials: { enabled: true },
     registration: { enabled: true }
   },
-  jwks: { keys: config.jwks },
+  jwks: { keys: [] }, // will be dynamically loaded
   ttl
 }
