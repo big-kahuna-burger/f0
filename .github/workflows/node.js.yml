@@ -49,7 +49,7 @@ jobs:
 
     - run: npm rebuild --update-binary bcrypt
     
-    - run: pnpm run build --if-present
+    - run: pnpm run build
 
     - name: Test ${{ matrix.node-version }}
       run: pnpm test
