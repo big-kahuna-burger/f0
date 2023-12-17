@@ -11,8 +11,6 @@
     "clean": "rm -rf node_modules && rm -rf services/*/node_modules",
     "cleanall": "rm pnpm-lock.yaml && rm -rf node_modules && rm -rf services/*/node_modules",
     "dev": "pnpm -r dev",
-    "print-routes": "pnpm -r print-routes",
-    "mkcert": "pnpm -r mkcert",
     "start": "pnpm -r start"
   },
   "keywords": [],
