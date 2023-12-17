@@ -26,11 +26,7 @@ export default async function runme(fastify, opts) {
     enableCSPNonces: true,
     contentSecurityPolicy: {
       directives: {
-        defaultSrc: [
-          "'self'",
-          'https://vitals.vercel-insights.com',
-          'https://vitals.vercel-analytics.com'
-        ],
+        defaultSrc: ["'self'"],
         scriptSrc: ["'self'", 'https://unpkg.com'],
         formAction: null,
         styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
