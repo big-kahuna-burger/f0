@@ -1,15 +1,17 @@
 <html>
-  <head>
-    <title>Fragment Federated Callback Repost Form</title>
-  </head>
-  <body>
-    <script nonce="<%= nonce %>">
+
+<head>
+  <title>Fragment Federated Callback Repost Form</title>
+</head>
+
+<body>
+  <script nonce="<%= nonce %>">
     function parseQuery(queryString) {
       var query = {};
       var pairs = (queryString[0] === '?' ? queryString.slice(1) : queryString).split('&');
       for (var i = 0; i < pairs.length; i++) {
-          var pair = pairs[i].split('=');
-          query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+        var pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
       }
       return query;
     }
@@ -35,11 +37,12 @@
     try {
       var url = window.location.href.slice(0, -Math.max(window.location.hash.length, 1));
       window.history.replaceState({}, window.document.title, url);
-    } catch(err) {
+    } catch (err) {
       window.location.hash = "";
     }
 
     form.submit();
-    </script>
-  </body>
+  </script>
+</body>
+
 </html>
