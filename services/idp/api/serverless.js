@@ -1,5 +1,3 @@
-import * as dotenv from 'dotenv'
-dotenv.config()
 import middie from '@fastify/middie'
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
