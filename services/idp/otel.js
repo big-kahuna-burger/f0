@@ -1,7 +1,6 @@
 import path from 'path'
 import fs from 'fs/promises'
 
-import { DiagConsoleLogger, DiagLogLevel, diag } from '@opentelemetry/api'
 import api from '@opentelemetry/api'
 import { AsyncHooksContextManager } from '@opentelemetry/context-async-hooks'
 import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http'
@@ -27,9 +26,6 @@ const pkg = JSON.parse(packageJsonData)
 
 const { PrismaInstrumentation } = instrumentation
 
-if (process.env.OTEL_DIAG) {
-  diag.setLogger(new DiagConsoleLogger(), DiagLogLevel.DEBUG)
-}
 const contextManager = new AsyncHooksContextManager().enable()
 
 api.context.setGlobalContextManager(contextManager)
