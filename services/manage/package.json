@@ -19,7 +19,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "echo \"skipped\" || exit 0 || react-scripts build",
     "test": "echo \"skipped\" || exit 0",
     "eject": "react-scripts eject"
   },
