@@ -46,6 +46,8 @@ jobs:
 
     - name: Install dependencies
       run: pnpm install --ignore-scripts
+
+    - run: npm rebuild --update-binary bcrypt
     
     - name: Test ${{ matrix.node-version }}
       run: pnpm test
