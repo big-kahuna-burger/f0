@@ -1,5 +1,6 @@
-import { PrismaClient } from '@prisma/client'
+import prism from '@prisma/client'
 import debug from 'debug'
+const { PrismaClient } = prism
 const dbg = debug('prisma:events')
 
 const prisma = new PrismaClient({
