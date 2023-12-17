@@ -1,6 +1,5 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { inspect } from 'util'
 import { readFile } from 'fs/promises'
 import { nanoid } from 'nanoid'
 import Account from '../oidc/support/account.js'

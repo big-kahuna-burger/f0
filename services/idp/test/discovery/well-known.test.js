@@ -4,7 +4,6 @@ import { beforeEach, expect, test, vi } from 'vitest'
 let fastify
 let port
 import { build } from '../helper.js'
-import { getCurrentKeys } from '../tests.dbmock.js'
 
 beforeEach(async () => {
   // called once before each test run
@@ -41,7 +40,7 @@ test('/jwks is working', async (t) => {
   expect(keys).toHaveLength(2)
   const [key1, key2] = keys
   expect(Object.keys(key1)).toStrictEqual(['kty', 'use', 'kid', 'e', 'n'])
-  const EC_PROPS = ['kty','use','kid','alg','crv','x','y']
+  const EC_PROPS = ['kty', 'use', 'kid', 'alg', 'crv', 'x', 'y']
   expect(Object.keys(key2)).toStrictEqual(EC_PROPS)
 })
 
