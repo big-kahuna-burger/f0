@@ -14,7 +14,7 @@ if (pathname === '/') {
 }
 
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-const { provider } = await configureOidc(host)
+const { provider, Account, AccountErrors } = await configureOidc(host)
 
 const transport = {
   target: 'pino-pretty',
@@ -36,7 +36,9 @@ await app.register(middie)
 app.use(pathname, provider.callback())
 const appService = await import('../app.js')
 app.register(appService, {
-  oidc: provider
+  oidc: provider,
+  Account,
+  AccountErrors
 })
 
 export default async (req, res) => {
