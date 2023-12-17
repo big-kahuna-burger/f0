@@ -45,7 +45,7 @@ jobs:
           ${{ runner.os }}-pnpm-store-
 
     - name: Install dependencies
-      run: pnpm install
+      run: pnpm install --ignore-scripts
     
     - name: Test ${{ matrix.node-version }}
       run: pnpm test

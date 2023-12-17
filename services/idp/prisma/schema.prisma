@@ -1,0 +1,126 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  extensions = [pgcrypto]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "tracing"]
+}
+
+model Config {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jwks       Json[]
+  cookieKeys String[]
+}
+
+model OidcModel {
+  id         String    @id
+  type       Int
+  payload    Json
+  grantId    String?
+  userCode   String?
+  uid        String?
+  expiresAt  DateTime?
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([id, type])
+  @@map("oidc_model")
+}
+
+model Account {
+  id        String     @id
+  updatedAt DateTime?  @default(now()) @updatedAt @db.Date
+  Login     Login[]
+  Identity  Identity[]
+  Profile   Profile[]
+
+  @@map("account")
+}
+
+model Profile {
+  id                  String    @id
+  email               String    @unique
+  Account             Account   @relation(fields: [id], references: [id])
+  birthdate           DateTime? @db.Date
+  emailVerified       Boolean   @default(false)
+  familyName          String?
+  gender              String?
+  givenName           String?
+  locale              String?
+  middleName          String?
+  name                String?
+  nickname            String?
+  phoneNumber         String?
+  phoneNumberVerified Boolean   @default(false)
+  picture             String?
+  preferredUsername   String?
+  profile             String?
+  updatedAt           DateTime? @default(now()) @updatedAt @db.Date
+  website             String?
+  zoneinfo            String?
+  Address             Address?  @relation(fields: [addressId], references: [id])
+  addressId           String?   @db.Uuid
+
+  @@map("profile")
+}
+
+model Address {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formatted     String?
+  streetAddress String?
+  locality      String?
+  region        String?
+  postalCode    String?
+  country       String?
+  updatedAt     DateTime? @default(now()) @updatedAt @db.Date
+  Profile       Profile[]
+
+  @@map("address")
+}
+
+model Login {
+  id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  loginTs DateTime? @default(now()) @db.Timestamptz
+  sub     String
+  Account Account?  @relation(fields: [sub], references: [id])
+  method  AMR       @default(PWD)
+
+  @@map("login")
+}
+
+model Identity {
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
+  sub          String
+  provider     String
+  updatedAt    DateTime?      @default(now()) @updatedAt @db.Date
+  Account      Account        @relation(fields: [sub], references: [id])
+  source       IDENTITY       @default(DB)
+  PasswordHash PasswordHash[]
+
+  @@index([sub])
+  @@map("identity")
+}
+
+model PasswordHash {
+  id         String    @id @default(dbgenerated("gen_random_uuid()"))
+  identityId String
+  hash       String
+  updatedAt  DateTime? @default(now()) @updatedAt @db.Date
+  Identity   Identity  @relation(fields: [identityId], references: [id])
+
+  @@map("password_hash")
+}
+
+enum IDENTITY {
+  DB
+  EXT
+}
+
+enum AMR {
+  PWD
+  PASSKEY
+}
