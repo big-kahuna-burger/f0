@@ -21,6 +21,7 @@
     "start": "react-scripts start",
     "build": "echo \"skipped\" || exit 0 || react-scripts build",
     "test": "echo \"skipped\" || exit 0",
+    "c8": "echo \"skipped\" || exit 0",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

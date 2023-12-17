@@ -5,7 +5,7 @@
   "main": "index.js",
   "packageManager": "pnpm@8.11.0",
   "scripts": {
-    "test": "pnpm -r --workspace-concurrency=1 test",
+    "test": "pnpm -r --workspace-concurrency=1 c8",
     "lint": "pnpm -r --workspace-concurrency=1 lint",
     "build": "pnpm -r --workspace-concurrency=1 run build",
     "clean": "rm -rf node_modules && rm -rf services/*/node_modules",
