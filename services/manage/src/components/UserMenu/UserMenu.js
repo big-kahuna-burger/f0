@@ -23,7 +23,7 @@ import {
 import { useContext } from 'react'
 import { AuthContext } from 'react-oauth2-code-pkce'
 export function UserMenu(props) {
-  const { token, idToken, login, logOut } = useContext(AuthContext)
+  const { token, login, logOut } = useContext(AuthContext)
   const theme = useMantineTheme()
 
   return (
