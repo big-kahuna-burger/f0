@@ -7,8 +7,13 @@ import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
 
+const { ISSUER, FASTIFY_CLOSE_GRACE_DELAY = 500 } = process.env
+const { port } = new URL(ISSUER)
+
+export default makeFastify
+
 async function makeFastify(config, pretty) {
-  const parsedHost = new URL(config?.issuer || process.env.ISSUER)
+  const parsedHost = new URL(config?.issuer || ISSUER)
   const { hostname, protocol, port, pathname } = parsedHost
   if (pathname === '/') {
     throw new Error(
@@ -17,7 +22,7 @@ async function makeFastify(config, pretty) {
     )
   }
 
-  const provider = await configureOidc(
+  const { provider, Account, AccountErrors } = await configureOidc(
     `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
   )
 
@@ -44,13 +49,15 @@ async function makeFastify(config, pretty) {
   app.use(pathname, oidCallback)
 
   const appService = await import('./app.js')
-  app.register(appService, {
+  await app.register(appService, {
     oidc: provider,
-    otel: { wrapRoutes: true }
+    otel: { wrapRoutes: true },
+    Account,
+    AccountErrors
   })
 
   // delay is the number of milliseconds for the graceful close to finish
-  const GRACE_DELAY = process.env.FASTIFY_CLOSE_GRACE_DELAY || 500
+  const GRACE_DELAY = FASTIFY_CLOSE_GRACE_DELAY || 500
   const closeListeners = closeWithGrace(
     { delay: GRACE_DELAY },
     gracefullCallback
@@ -86,10 +93,6 @@ async function start(port, pretty) {
     return `OP metadata at http://localhost:${port}/oidc/.well-known/openid-configuration`
   }
 }
-
-const { port } = new URL(process.env.ISSUER)
-
-export default makeFastify
 
 if (import.meta.url.startsWith('file:')) {
   const modulePath = filename(import.meta.url)

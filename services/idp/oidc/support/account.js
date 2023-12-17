@@ -1,7 +1,9 @@
+import { inspect } from 'util'
 import { customAlphabet, nanoid } from 'nanoid'
-import client from '../../db/client.js'
+import prisma from '../../db/client.js'
+
 import { compareHash, generateHash } from './password-tsc.js'
-const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz', 26)
+const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 26)
 // TODO implement persistence, by adding a DB client and fix a claims fn
 // TODO implement find by federated
 // TODO implement member check password fn
@@ -30,7 +32,7 @@ class Account {
 
   static async findByFederated(provider, claims) {
     const id = `${provider}.${claims.sub}`
-    const found = await client.account.findFirst({ where: { id } })
+    const found = await prisma.account.findFirst({ where: { id } })
 
     if (!found) {
       throw new Error('no account found')
@@ -39,7 +41,7 @@ class Account {
   }
 
   static async findByEmail(email) {
-    const found = await client.account.findFirst({ where: { email } })
+    const found = await prisma.account.findFirst({ where: { email } })
 
     if (!found) {
       throw new Error('no account found')
@@ -52,7 +54,7 @@ class Account {
     // token is a reference to the token used for which a given account is being loaded,
     //   it is undefined in scenarios where account claims are returned from authorization endpoint
     // ctx is the koa request context
-    const found = await client.account.findFirst({ where: { id } })
+    const found = await prisma.account.findFirst({ where: { id } })
 
     if (!found) {
       throw new Error('no account found')
@@ -61,8 +63,7 @@ class Account {
   }
 
   static async authenticate(email, password) {
-    // TODO check password and stuff
-    const found = await client.profile.findFirst({
+    const found = await prisma.profile.findFirst({
       where: { email },
       include: {
         Address: true,
@@ -77,95 +78,119 @@ class Account {
         }
       }
     })
-
     if (!found) {
-      throw new AccountNotFound()
+      throw new AccountNotFound('profile not found')
+    }
+    // console.log(inspect(found))
+    const loadedAccount = found.Account
+    if (!loadedAccount) {
+      throw new AccountNotFound('Account not found')
     }
 
-    return fromDbData(found)
+    const loadedIdentity = loadedAccount?.Identity[0]
+    if (!loadedIdentity) {
+      throw new AccountNotFound('Identity not found')
+    }
+
+    const loadedPasswordHash = loadedIdentity?.PasswordHash[0]
+    if (!loadedPasswordHash) {
+      throw new AccountNotFound('Hash not found')
+    }
+
+    const isPasswordValid = await compareHash(password, loadedPasswordHash.hash)
+
+    if (!isPasswordValid) {
+      throw new AccountNotFound('Invalid password')
+    }
+
+    return fromDbData(found.Account)
   }
 
   static async createFromClaims(claims, provider = 'f0') {
-    return client.$transaction(async (t) => {
-      const {
-        address,
-        birthdate,
-        email,
-        family_name,
-        gender,
-        given_name,
-        locale,
-        middle_name,
-        name,
-        nickname,
-        phone_number,
-        picture,
-        preferred_username,
-        profile,
-        website,
-        zoneinfo
-      } = claims
+    const {
+      address,
+      birthdate,
+      email,
+      family_name,
+      gender,
+      given_name,
+      locale,
+      middle_name,
+      name,
+      nickname,
+      phone_number,
+      picture,
+      preferred_username,
+      profile,
+      website,
+      zoneinfo,
+      password
+    } = claims
 
-      const ProfileData = {
-        birthdate,
-        email,
-        emailVerified: false,
-        phoneNumberVerified: false,
-        phoneNumber: phone_number,
-        familyName: family_name,
-        middleName: middle_name,
-        givenName: given_name,
-        preferredUsername: preferred_username,
-        name,
-        nickname,
-        picture,
-        gender,
-        locale,
-        profile,
-        website,
-        zoneinfo
-      }
-      if (address) {
-        const {
+    const ProfileData = {
+      birthdate,
+      email,
+      emailVerified: false,
+      phoneNumberVerified: false,
+      phoneNumber: phone_number,
+      familyName: family_name,
+      middleName: middle_name,
+      givenName: given_name,
+      preferredUsername: preferred_username,
+      name,
+      nickname,
+      picture,
+      gender,
+      locale,
+      profile,
+      website,
+      zoneinfo
+    }
+    if (address) {
+      const {
+        country,
+        formatted,
+        locality,
+        postal_code,
+        region,
+        street_address
+      } = address
+
+      ProfileData.Address = {
+        create: {
           country,
           formatted,
           locality,
-          postal_code,
+          postalCode: postal_code,
           region,
-          street_address
-        } = address
-
-        ProfileData.Address = {
-          create: {
-            country,
-            formatted,
-            locality,
-            postalCode: postal_code,
-            region,
-            streetAddress: street_address
-          }
+          streetAddress: street_address
         }
       }
-      const accountCreated = await t.account.create({
-        data: {
-          id: `${provider}.${customid()}`
+    }
+    const accountCreated = await prisma.account.create({
+      data: {
+        id: `${provider}.${customid()}`,
+        Identity: {
+          create: [
+            {
+              source: 'DB',
+              provider: 'f0',
+              PasswordHash: {
+                create: [{ hash: await generateHash(password) }]
+              }
+            }
+          ]
         }
-      })
-      ProfileData.Account = {
-        connect: { id: accountCreated.id }
       }
-      await t.profile.create({
-        data: ProfileData
-      })
-
-      await t.identity.create({
-        data: {
-          provider: 'f0',
-          sub: accountCreated.id
-        }
-      })
-      return fromDbData(accountCreated)
     })
+
+    ProfileData.Account = {
+      connect: { id: accountCreated.id }
+    }
+    await prisma.profile.create({
+      data: ProfileData
+    })
+    return fromDbData(accountCreated)
   }
 }
 
@@ -173,13 +198,11 @@ function fromDbData(data) {
   return new Account(data.id, data)
 }
 
-export default Account
-
 class AccountNotFound extends Error {
-  constructor(...args) {
+  constructor(message, ...args) {
     super(...args)
     this.name = 'InvalidCredentials'
-    this.message = 'Invalid email or password'
+    this.message = message || 'Invalid email or password'
     this.status = 401
   }
 }
@@ -188,9 +211,9 @@ export const errors = {
   AccountNotFound
 }
 
-// Account.createFromClaims({
-//   // sub: 'test1234', // it is essential to always return a sub claim
+export default Account
 
+// Account.createFromClaims({
 //   address: {
 //     country: '000',
 //     formatted: '000',
@@ -200,7 +223,7 @@ export const errors = {
 //     street_address: '000'
 //   },
 //   birthdate: new Date(1988, 10, 16),
-//   email: 'johndaasdoe@examplea1.com',
+//   email: 'arandjel@idp.dev',
 //   email_verified: false,
 //   family_name: 'Doe',
 //   gender: 'male',
@@ -215,5 +238,6 @@ export const errors = {
 //   preferred_username: 'johnny',
 //   profile: 'https://johnswebsite.com',
 //   website: 'http://example.com',
-//   zoneinfo: 'Europe/Berlin'
+//   zoneinfo: 'Europe/Berlin',
+//   password: 'icme'
 // })

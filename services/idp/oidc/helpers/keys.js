@@ -10,6 +10,13 @@ const ALG_TO_KTY = new Map(
   })
 )
 
+/**
+ * Initializes the keys for the OIDC provider.
+ * If no configuration exists in the database, it creates a new one with generated keys.
+ * If the configuration exists but has less than 2 keys, it adds the missing keys.
+ * If the configuration exists but has no cookie keys, it generates and adds them.
+ * @returns {Promise<void>} A promise that resolves when the keys are initialized.
+ */
 async function initializeKeys() {
   const configs = await prisma.config.findMany()
 
@@ -19,11 +26,13 @@ async function initializeKeys() {
     )
   )
 
-  if (!configs.length) {
+  if (!configs || !configs.length) {
     const result = await prisma.config.create({
-      data: { jwks: [privateEC, privateRSA] }
+      data: {
+        jwks: [privateEC, privateRSA],
+        cookieKeys: [nanoid(), nanoid()]
+      }
     })
-    console.log('new config generated and JWK keys added to db', result)
     return
   }
 
@@ -33,9 +42,7 @@ async function initializeKeys() {
       where: { id: id },
       data: { jwks: [privateEC, privateRSA] }
     })
-
-    console.log('initialized JWK in config', result)
-    return
+    return result
   }
   if (!cookieKeys || cookieKeys.length < 2) {
     const cookieSecrets = [nanoid(), nanoid()]
@@ -43,23 +50,24 @@ async function initializeKeys() {
       where: { id: id },
       data: { cookieKeys: cookieSecrets }
     })
-    console.log('cookie secrets initialized')
   }
-  console.log('found JWK in config, nothing changed')
 }
-
+/**
+ * Retrieves the configuration from the database.
+ * @returns {Promise<Object>} A promise that resolves with the configuration object.
+ */
 async function getConfig() {
-  const found = await prisma.config.findFirst()
-  if (!found.cookieKeys || found.cookieKeys.length < 2) {
-    const cookieSecrets = [nanoid(), nanoid()]
-    await prisma.config.update({
-      where: { id: found.id },
-      data: { cookieKeys: cookieSecrets }
-    })
-    console.log('cookie secrets initialized')
-  }
   return prisma.config.findFirst()
 }
+
+/**
+ * Naive key rotation implementation. Would need a key history record to be auditable.
+ * Rotates the key for the specified algorithm.
+ * Throws an error if the algorithm is not supported or if the configuration is not properly initialized.
+ * @param {string} alg - The algorithm to rotate the key for (must be 'ES256' or 'PS256').
+ * @returns {Promise<void>} A promise that resolves when the key rotation is complete.
+ * @throws {Error} If the algorithm is not supported or if the configuration is not properly initialized.
+ */
 
 async function rotateKey(alg) {
   if (!ALGS_SUPPORTED.has(alg)) {

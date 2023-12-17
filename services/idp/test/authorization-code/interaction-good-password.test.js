@@ -4,14 +4,15 @@ import { generators } from 'openid-client'
 import skp from 'set-cookie-parser'
 import { beforeEach, describe, expect, test } from 'vitest'
 import { decode } from '../../oidc/helpers/base64url.js'
-import { build } from '../helper.js'
+import * as helper from '../helper.js'
+import { clientMock } from '../tests.dbmock.js'
 
 describe('interaction router', () => {
   let fastify
   let port
   beforeEach(async () => {
     // called once before each test run
-    fastify = await build()
+    fastify = await helper.build()
     await fastify.ready()
     await fastify.listen()
     port = fastify.server.address().port
@@ -21,12 +22,16 @@ describe('interaction router', () => {
       await fastify.close()
     }
   })
+  test('random interaction hit will produce SessionNotFound', async (t) => {
+    const baseUrl = `http://localhost:${port}`
+    try {
+      await got.get(`${baseUrl}/interaction/random`)
+    } catch (error) {
+      expect(error?.response?.body).toEqual('Session not found')
+    }
+  })
 
   test('from /auth GET -> to /token POST Response', async (ctx) => {
-    const {
-      default: { clientMock }
-    } = await import('../tests.dbmock.js')
-
     const codeVerifier = generators.codeVerifier()
     const baseUrl = `http://localhost:${port}`
     const goodchallenge = {
@@ -41,9 +46,7 @@ describe('interaction router', () => {
       scope: 'openid'
     })
     const url = `${baseUrl}/oidc/auth/?${q}`
-
     const { statusCode, headers } = await got(url, { followRedirect: false })
-
     const interactionResponse = await got(`${baseUrl}${headers.location}`, {
       headers: {
         Cookie: headers['set-cookie'].join(';')
@@ -53,10 +56,8 @@ describe('interaction router', () => {
       '<title>Sign-in</title>'
     )
     expect(containsLoginTitle).toBe(true)
-
     expect(statusCode).toEqual(303)
     expect(headers.location).toMatch('/interaction')
-
     const loginResponse = await got.post(
       `${baseUrl}${headers.location}/login`,
       {
@@ -65,16 +66,15 @@ describe('interaction router', () => {
           Cookie: headers['set-cookie'].join(';')
         },
         form: {
-          login: 'lecler',
+          login: 'johndaasdoe23@examplea1.com',
           password: 'icme'
         }
       }
     )
-
     const authLocation = loginResponse.headers.location
+
     expect(authLocation).toMatch(/oidc\/auth/)
     expect(loginResponse.statusCode).toEqual(303)
-
     const consentInteraction = await got(authLocation, {
       followRedirect: false,
       headers: {
@@ -84,10 +84,14 @@ describe('interaction router', () => {
     const sessCookies = skp(consentInteraction.headers['set-cookie']).filter(
       (ck) => ck.name.startsWith('_session')
     )
-    expect(sessCookies.length).toEqual(4)
-    expect(consentInteraction.statusCode).toEqual(303)
-    expect(consentInteraction.headers.location).toMatch(/interaction/)
 
+    expect(consentInteraction.headers.location).toMatch(/interaction/)
+    expect(
+      sessCookies.length,
+      'expecting 4 session cookies for a logged in user'
+    ).toEqual(4)
+
+    expect(consentInteraction.statusCode).toEqual(303)
     const consentPage = await got(
       `${baseUrl}${consentInteraction.headers.location}`,
       {
@@ -97,11 +101,9 @@ describe('interaction router', () => {
         }
       }
     )
-
     expect(consentPage.statusCode).toEqual(200)
     const containsTitle = consentPage.body.includes('<title>Authorize</title>')
     expect(containsTitle).toBe(true)
-
     const consentConfirmed = await got.post(
       `${baseUrl}${consentInteraction.headers.location}/confirm`,
       {
@@ -111,10 +113,8 @@ describe('interaction router', () => {
         }
       }
     )
-
     const consentConfirmedAuthResume = consentConfirmed.headers.location
     expect(consentConfirmedAuthResume).toMatch(/oidc\/auth/)
-
     const rpRedirect = await got(consentConfirmedAuthResume, {
       followRedirect: false,
       headers: {
@@ -124,13 +124,11 @@ describe('interaction router', () => {
     const rpCodeUrl = rpRedirect.headers.location
     const { searchParams, pathname, host, protocol } = new URL(rpCodeUrl)
     const { code, iss } = Object.fromEntries(searchParams)
-
     expect(iss).toBe('http://idp.dev:9876/oidc')
     expect(code.length).toBe(43)
     expect(`${protocol}//${host}${pathname}`).toBe(
       clientMock.payload.redirect_uris[0]
     )
-
     const tokenUrl = `${baseUrl}/oidc/token`
     const token = await got.post(tokenUrl, {
       form: {
@@ -141,7 +139,6 @@ describe('interaction router', () => {
         code_verifier: codeVerifier
       }
     })
-
     const {
       access_token: accessToken,
       expires_in: expiresIn,
@@ -149,7 +146,6 @@ describe('interaction router', () => {
       scope,
       token_type: tokenType
     } = JSON.parse(token.body)
-
     expect(accessToken).toBeTruthy()
     expect(expiresIn).toEqual(3600)
     expect(idToken).toBeTruthy()

@@ -1,11 +1,10 @@
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
-import { getConfig, initializeKeys } from '../helpers/keys.js'
-import Account from '../support/account.js'
 import ttl from './ttl.js'
 
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 // TODO dynamic cookies config loading
+import { getConfig, initializeKeys } from '../helpers/keys.js'
 let config = await getConfig()
 
 if (!config) {
@@ -13,7 +12,12 @@ if (!config) {
   config = await getConfig()
 }
 
+if (!config) {
+  throw new Error('failed to initialize config')
+}
+
 const CORS_PROP = 'urn:f0:ACO'
+
 const isOrigin = (value) => {
   if (typeof value !== 'string') {
     return false
@@ -55,9 +59,9 @@ export default {
     return client[CORS_PROP].includes(origin)
   },
   async renderError(ctx, out, error) {
+    console.log('renderError', error)
     defaults.renderError(ctx, out, error)
   },
-  findAccount: Account.findAccount,
   clients: [
     {
       client_id: 'myClientID',
@@ -76,16 +80,6 @@ export default {
   },
   cookies: {
     keys: config.cookieKeys
-    // short: {
-    //   httpOnly: false,
-    //   overwrite: true,
-    //   sameSite: 'lax'
-    // },
-    // long: {
-    //   httpOnly: false,
-    //   overwrite: true,
-    //   sameSite: 'lax'
-    // }
   },
   claims: {
     openid: ['sub'],

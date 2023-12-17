@@ -6,12 +6,11 @@ import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import isEmpty from 'lodash/isEmpty.js'
 import { errors } from 'oidc-provider'
-import Account from '../../oidc/support/account.js'
-import { errors as accountErrors } from '../../oidc/support/account.js'
 const { errorCodes } = Fastify
 const { FST_ERR_BAD_STATUS_CODE } = errorCodes
 const { SessionNotFound } = errors
 const keys = new Set()
+
 const debug = (obj) =>
   querystring.stringify(
     Object.entries(obj).reduce((acc, [key, value]) => {
@@ -28,19 +27,29 @@ const debug = (obj) =>
       }
     }
   )
-function errorHandler(error, request, reply) {
-  if (error instanceof FST_ERR_BAD_STATUS_CODE) {
-    this.log.error(error)
-    reply.status(500).send({ ok: false })
-  } else if (error instanceof SessionNotFound) {
-    return reply.code(400).send('Session not found')
-  } else if (error instanceof accountErrors.AccountNotFound) {
-    return reply.code(401).send(error.message)
-  }
 
-  reply.send(error)
+const MERGE = {
+  mergeWithLastSubmission: true
 }
+const NO_MERGE = {
+  mergeWithLastSubmission: false
+}
+
 export default async function interactionsRouter(fastify, opts) {
+  const Account = opts.Account
+  const AccountErrors = opts.AccountErrors
+  function errorHandler(error, request, reply) {
+    if (error instanceof FST_ERR_BAD_STATUS_CODE) {
+      this.log.error(error)
+      reply.status(500).send({ ok: false })
+    } else if (error instanceof SessionNotFound) {
+      return reply.code(400).send('Session not found')
+    } else if (error instanceof AccountErrors.AccountNotFound) {
+      return reply.code(401).send(error.message)
+    }
+
+    reply.send(error)
+  }
   fastify.setErrorHandler(errorHandler)
   fastify.register(FormBody)
   fastify.register(NoCache)
@@ -111,26 +120,23 @@ export default async function interactionsRouter(fastify, opts) {
         request.body.password
       )
     } catch (error) {
-      if (error instanceof accountErrors.AccountNotFound) {
-        const errResult = {
-          user_error: 'access_denied',
-          user_error_desc: error.message
-        }
-        const returnTo = await provider.interactionResult(
-          request,
-          reply,
-          errResult,
-          {
-            mergeWithLastSubmission: true
-          }
-        )
-        return reply.redirect(303, returnTo)
+      this.log.error(error)
+
+      if (!(error instanceof AccountErrors.AccountNotFound)) {
+        throw error
       }
-      throw error
+      const iErr = {
+        user_error: 'access_denied',
+        user_error_desc: 'Invalid email or password'
+      }
+      const returnTo = await provider.interactionResult(
+        request,
+        reply,
+        iErr,
+        MERGE
+      )
+      return reply.redirect(303, returnTo)
     }
-    console.log(account)
-    // // const { login, password } = request.body
-    // // TODO check password and stuff (login, password)
 
     const result = {
       login: {
@@ -138,10 +144,12 @@ export default async function interactionsRouter(fastify, opts) {
       }
     }
 
-    const returnTo = await provider.interactionResult(request, reply, result, {
-      mergeWithLastSubmission: false
-    })
-    console.log('sending them to ', returnTo, reply.raw.headers)
+    const returnTo = await provider.interactionResult(
+      request,
+      reply,
+      result,
+      NO_MERGE
+    )
     return reply.redirect(303, returnTo)
   }
 
@@ -192,9 +200,12 @@ export default async function interactionsRouter(fastify, opts) {
     }
 
     const result = { consent }
-    const returnTo = await provider.interactionResult(request, reply, result, {
-      mergeWithLastSubmission: false
-    })
+    const returnTo = await provider.interactionResult(
+      request,
+      reply,
+      result,
+      MERGE
+    )
     reply.header('Content-Length', 0)
     return reply.redirect(303, returnTo)
   }
@@ -205,9 +216,12 @@ export default async function interactionsRouter(fastify, opts) {
       error: 'access_denied',
       error_description: 'End-User aborted interaction'
     }
-    const returnTo = await provider.interactionResult(request, reply, result, {
-      mergeWithLastSubmission: false
-    })
+    const returnTo = await provider.interactionResult(
+      request,
+      reply,
+      result,
+      NO_MERGE
+    )
     reply.header('Content-Length', 0)
     return reply.redirect(303, returnTo)
   }

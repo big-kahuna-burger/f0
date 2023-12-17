@@ -13,7 +13,9 @@ export default configure
 
 async function configure(iss, adapterArg) {
   const { default: configuration } = await import('./support/configuration.js')
-
+  // TODO make this into explicit static vs dynamic loader
+  const { default: Account, errors } = await import('./support/account.js')
+  configuration.findAccount = Account.findAccount
   const adapter = adapterArg || (await import('./support/adapter.js')).default
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
 
@@ -22,15 +24,15 @@ async function configure(iss, adapterArg) {
   }
 
   if (prod) {
-    // provider.proxy = true
-    // provider.use(redirectToHttps)
+    provider.proxy = true
+    provider.use(redirectToHttps)
   }
 
   if (process.env.OTEL) {
     provider.use(koaActiveSpan) // do this until auto instrumentation starts working
   }
 
-  return provider
+  return { provider, configuration, Account, AccountErrors: errors }
 }
 
 async function koaActiveSpan(ctx, next) {

@@ -14,7 +14,7 @@ if (pathname === '/') {
 }
 
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-const provider = await configureOidc(host)
+const { provider } = await configureOidc(host)
 
 const transport = {
   target: 'pino-pretty',

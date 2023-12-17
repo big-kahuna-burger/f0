@@ -1,17 +1,20 @@
 import got from 'got'
-import { beforeEach, expect, test } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 
 import { build } from '../helper.js'
 let fastify
 let port
+vi.mock('../../db/client.js')
+import prisma from '../../db/__mocks__/client.js'
+import { setupPrisma } from '../tests.dbmock.js'
 
 beforeEach(async () => {
   // called once before each test run
+  await setupPrisma(prisma)
   fastify = await build()
   await fastify.ready()
   await fastify.listen()
   port = fastify.server.address().port
-
   // clean up function, called once after each test run
   return async () => {
     await fastify.close()
@@ -96,6 +99,7 @@ const expected = (port) => ({
   ],
   token_endpoint: `http://localhost:${port}/oidc/token`,
   id_token_signing_alg_values_supported: ['PS256', 'RS256', 'ES256'],
+  registration_endpoint: `http://localhost:${port}/oidc/reg`,
   pushed_authorization_request_endpoint: `http://localhost:${port}/oidc/request`,
   request_parameter_supported: false,
   request_uri_parameter_supported: false,
