@@ -38,7 +38,8 @@ const appService = await import('../app.js')
 app.register(appService, {
   oidc: provider,
   Account,
-  AccountErrors
+  AccountErrors,
+  isVercel: true
 })
 
 export default async (req, res) => {
