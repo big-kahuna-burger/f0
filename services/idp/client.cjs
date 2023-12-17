@@ -26,6 +26,7 @@ server.once('listening', () => {
     server.on('request', async (req, res) => {
       res.setHeader('connection', 'close')
       const params = client.callbackParams(req)
+
       console.log(params)
       if (Object.keys(params).length) {
         const tokenSet = await client.callback(redirect_uri, params, {
@@ -49,7 +50,8 @@ server.once('listening', () => {
           redirect_uri,
           code_challenge,
           code_challenge_method: 'S256',
-          scope: 'openid email'
+          scope: 'openid email',
+          prompt: 'login'
         }),
         { wait: false }
       )
