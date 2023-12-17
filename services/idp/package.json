@@ -17,7 +17,7 @@
     "lint": "biome check .",
     "lint:ci": "biome ci .",
     "build": "prisma generate",
-    "postinstall": "prisma migrate deploy --schema=./db/schema.prisma"
+    "postinstall": "prisma migrate deploy"
   },
   "keywords": [],
   "author": "",
