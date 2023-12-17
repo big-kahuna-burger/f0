@@ -13,6 +13,7 @@ model Config {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   jwks       Json[]
   cookieKeys String[]
+  grantDebug Boolean? @default(false)
 }
 
 model OidcModel {
