@@ -1,8 +1,11 @@
-import * as api from '../../db/api.js'
+import * as api from '../../../db/api.js'
+import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
+import { getResourceServers } from '../../../resource-servers/index.js'
 
 export default async function interactionsRouter(fastify, opts) {
   fastify.get('/users/:id', getUser)
   fastify.get('/users', getUsers)
+  fastify.get('/apis', getAllResourceServers)
 
   async function getUser(request, reply) {
     const account = await api.getAccount(request.params.id)
@@ -15,14 +18,9 @@ export default async function interactionsRouter(fastify, opts) {
     const accounts = await api.loadAccounts({ page, size })
     return accounts.map(accountMAP)
   }
-}
 
-function accountMAP(acct) {
-  return Object.entries(acct).reduce((acc, [key, value]) => {
-    acc[snakeCase(key)] = value
-    return acc
-  }, {})
+  async function getAllResourceServers(request, reply) {
+    const resourceServers = await getResourceServers()
+    return resourceServers.map(resourceServerMap)
+  }
 }
-
-const snakeCase = (str = '') =>
-  str.replace(/([A-Z][a-z])/g, (x) => `_${x}`.toLowerCase()).replace(/^_+/, '')

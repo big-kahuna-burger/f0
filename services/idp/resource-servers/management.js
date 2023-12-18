@@ -1,4 +1,8 @@
 import '../env.js'
-const scopes = []
-const identifier = `${process.env.ISSUER}/manage`
-export default { scopes, identifier }
+const { ISSUER } = process.env
+const { protocol, hostname, port } = new URL(ISSUER)
+const combined = port ? `${hostname}:${port}` : hostname
+
+export const scopes = []
+export const identifier = `${protocol}//${combined}/manage/v1`
+export const rsInfo = { scopes, identifier}

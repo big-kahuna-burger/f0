@@ -1,6 +1,18 @@
-export { getUsers }
+export { getUsers, getResourceServers }
+const baseUrl = 'http://localhost:9876/manage/v1'
 
-const usersUrl = 'http://localhost:9876/manage/users'
+const usersUrl = `${baseUrl}/users`
+const resourceServersUrl = `${baseUrl}/apis`
+
+async function getResourceServers() {
+  const token = getToken()
+  const opts = { headers: { Authorization: `Bearer ${token}` } }
+  const resourceServersResponse = await fetch(
+    resourceServersUrl,
+    opts
+  )
+  return resourceServersResponse.json()
+}
 
 async function getUsers() {
   const token = getToken()

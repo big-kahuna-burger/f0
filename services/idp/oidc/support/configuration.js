@@ -67,29 +67,36 @@ export default {
     ]
   },
   scopes: ['openid', 'offline_access', 'address', 'email', 'phone', 'profile'],
+  clientAuthMethods: [
+    'client_secret_basic',
+    'client_secret_jwt',
+    'client_secret_post',
+    'private_key_jwt',
+    'none'
+  ],
   features: {
     clientCredentials: { enabled: true },
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
-    registration: { enabled: true },
+    registration: { enabled: true }, // deal with open registration
+    registrationManagement: { enabled: true }, // deal with open registration
     revocation: { enabled: true },
     claimsParameter: { enabled: true },
     backchannelLogout: { enabled: false },
     ciba: { enabled: false },
     dPoP: { enabled: true },
-    // encryption: { enabled: true },
-    // fapi: { enabled: true },
-    // introspection: { enabled: true },
+    encryption: { enabled: true },
+    jwtUserinfo: { enabled: true },
+    mTLS: { enabled: true },
     // jwtIntrospection: { enabled: true },
     // jwtResponseModes: { enabled: true },
-    // jwtUserinfo: { enabled: true },
-    // mTLS: { enabled: true },
     // pushedAuthorizationRequests: { enabled: true },
-    // registrationManagement: { enabled: true },
     // requestObjects: { enabled: true },
     // resourceIndicators: { enabled: true },
+    // introspection: { enabled: true },
     // rpInitiatedLogout: { enabled: true },
-    // userinfo: { enabled: true }
+    // fapi: { enabled: true },
+    userinfo: { enabled: true }
   },
   jwks: { keys: [] }, // will be dynamically loaded
   ttl
