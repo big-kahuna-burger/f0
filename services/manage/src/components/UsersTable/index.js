@@ -13,29 +13,26 @@ import { Await } from 'react-router-dom'
 import { SelectedUserContext } from '../../SelectedUser.context'
 import { getUsers } from '../../api'
 import classes from './UserTable.module.css'
+
 export function UsersTable() {
   const { token } = useContext(AuthContext)
   const theme = useMantineTheme()
   const selectedUserContext = useContext(SelectedUserContext)
   const [users, setUsers] = useState([])
+
   useEffect(() => {
     if (token && !users.length && !users.then) {
+      console.log('riggers')
       const pm = getUsers(token).then((users) => setUsers(users))
       setUsers(pm)
     }
   }, [users, token])
 
-  const [selectedUser, setSelectedUser] = useState({})
-  useEffect(() => {
-    if (!selectedUser.name && users.length) {
-      setSelectedUser(users[0])
-    }
-  }, [users, selectedUser])
   const [activeIndex, setActiveIndex] = useState(0)
+  
 
   useEffect(() => {
     if (users.length) {
-      setSelectedUser(users[activeIndex])
       selectedUserContext.setUser(users[activeIndex])
     }
   }, [users, activeIndex, selectedUserContext])
@@ -66,6 +63,7 @@ export function UsersTable() {
       document.removeEventListener('keydown', handleSelection)
     }
   }, [handleSelection])
+
   const clickRow = (item, i) => {
     setActiveIndex(i)
   }
@@ -88,10 +86,13 @@ export function UsersTable() {
                     className={classes['user-row']}
                     key={item.id}
                     c={
-                      item.name === selectedUser.name
+                      i === activeIndex
                         ? theme.colors.myAltColor[6]
                         : undefined
                     }
+                    h={i === activeIndex
+                      ? '120px'
+                      : undefined}
                     onClick={() => clickRow(item, i)}
                   >
                     <Table.Td>

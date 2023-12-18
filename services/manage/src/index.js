@@ -70,6 +70,12 @@ const authConfig = {
     ) && event.login(),
   //logoutEndpoint: `${ISSUER}/session/end`,
   //logoutRedirect: `${ORIGIN}/logged-out`,
+  // extraAuthParams: {
+  //   resource: 'urn:manage'
+  // }, // this is confusing... if they remove the param from auth then what?
+  extraTokenParameters: {
+    resource: 'urn:manage'
+  },
   postLogin: () => {
     window.location.href = `${ORIGIN}/`
   },

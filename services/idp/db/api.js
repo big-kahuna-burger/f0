@@ -19,17 +19,12 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
 }
 
 const updateAccount = async (id, data) => {
-  const account = await client.account.update({
-    where: { id },
-    data
-  })
+  const account = await client.account.update({ where: { id }, data })
   return account
 }
 
 const getAccount = async (id) => {
-  const account = await client.account.findFirst({
-    where: { id }
-  })
+  const account = await client.account.findFirst({ where: { id } })
   return account
 }
 

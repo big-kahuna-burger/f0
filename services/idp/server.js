@@ -22,7 +22,7 @@ async function makeFastify(config, pretty) {
     )
   }
 
-  const { provider, Account, AccountErrors } = await configureOidc(
+  const { provider, Account, AccountErrors, configuration } = await configureOidc(
     `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
   )
 
@@ -54,7 +54,8 @@ async function makeFastify(config, pretty) {
     otel: { wrapRoutes: true },
     Account,
     AccountErrors,
-    grantsDebug: process.env.GRANTS_DEBUG
+    grantsDebug: process.env.GRANTS_DEBUG,
+    publicJwks: configuration.publicJwks
   })
 
   // delay is the number of milliseconds for the graceful close to finish
