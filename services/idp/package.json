@@ -8,9 +8,9 @@
   },
   "type": "module",
   "scripts": {
-    "test": "ENV=test vitest run --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
-    "w": "ENV=test vitest",
-    "c8": "ENV=test vitest run --coverage --logHeapUsage --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
+    "test": "vitest run --coverage --logHeapUsage --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
+    "c8": "vitest run --coverage --logHeapUsage --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
+    "w": "vitest",
     "start": "OTEL=1 OTEL_SAMPLER=0.1 node --import ./otel.js server.js",
     "dev": "OTEL=1 node --watch --import ./otel.js server.js",
     "lint:fix": "biome check --apply .",
