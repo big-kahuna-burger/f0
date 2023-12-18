@@ -41,7 +41,9 @@ app.register(appService, {
   grantsDebug: process.env.GRANTS_DEBUG
 })
 
-export default async (req, res) => {
+export const handler = async (req, res) => {
   await app.ready()
   app.server.emit('request', req, res)
 }
+
+export default handler
