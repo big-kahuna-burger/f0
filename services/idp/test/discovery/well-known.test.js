@@ -45,7 +45,8 @@ test('/jwks is working', async (t) => {
 const expectedMetadata = (port) => ({
   authorization_endpoint: `http://localhost:${port}/oidc/auth`,
   device_authorization_endpoint: `http://localhost:${port}/oidc/device/auth`,
-  claims_parameter_supported: false,
+  dpop_signing_alg_values_supported: ['ES256', 'EdDSA'],
+  claims_parameter_supported: true,
   claims_supported: [
     'sub',
     'address',

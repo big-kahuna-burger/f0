@@ -1,41 +1,16 @@
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
-
-const CORS_PROP = 'urn:f0:ACO'
-
-const isOrigin = (value) => {
-  if (typeof value !== 'string') {
-    return false
-  }
-  try {
-    const { origin } = new URL(value)
-    // Origin: <scheme> "://" <hostname> [ ":" <port> ]
-    return value === origin
-  } catch (err) {
-    return false
-  }
-}
 
 export default {
   extraClientMetadata: {
     properties: [CORS_PROP],
     validator(ctx, key, value, metadata) {
       if (key === CORS_PROP) {
-        // set default (no CORS)
-        if (value === undefined) {
-          // eslint-disable-next-line no-param-reassign
-          metadata[CORS_PROP] = []
-          return metadata
-        }
-        // validate an array of Origin strings
-        if (!Array.isArray(value) || !value.every(isOrigin)) {
-          throw new errors.InvalidClientMetadata(
-            `${CORS_PROP} must be an array of origins`
-          )
-        }
+        return corsPropValidator(value, metadata) // this can be context aware but not async really
       }
       return {}
     }
@@ -64,7 +39,7 @@ export default {
     }
   ],
   interactions: {
-    url: (ctx, interaction) => `/interaction/${interaction.uid}`
+    url: (ctx, { uid }) => `/interaction/${uid}`
   },
   cookies: {
     keys: [] // will be dynamically loaded
@@ -93,11 +68,28 @@ export default {
   },
   scopes: ['openid', 'offline_access', 'address', 'email', 'phone', 'profile'],
   features: {
+    clientCredentials: { enabled: true },
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
+    registration: { enabled: true },
     revocation: { enabled: true },
-    clientCredentials: { enabled: true },
-    registration: { enabled: true }
+    claimsParameter: { enabled: true },
+    backchannelLogout: { enabled: false },
+    ciba: { enabled: false },
+    dPoP: { enabled: true },
+    // encryption: { enabled: true },
+    // fapi: { enabled: true },
+    // introspection: { enabled: true },
+    // jwtIntrospection: { enabled: true },
+    // jwtResponseModes: { enabled: true },
+    // jwtUserinfo: { enabled: true },
+    // mTLS: { enabled: true },
+    // pushedAuthorizationRequests: { enabled: true },
+    // registrationManagement: { enabled: true },
+    // requestObjects: { enabled: true },
+    // resourceIndicators: { enabled: true },
+    // rpInitiatedLogout: { enabled: true },
+    // userinfo: { enabled: true }
   },
   jwks: { keys: [] }, // will be dynamically loaded
   ttl
