@@ -3,7 +3,7 @@
 process.env.ENV = 'test'
 import { vi } from 'vitest'
 import prisma from '../db/__mocks__/client.js'
-import '../oidc/helpers/config.js'
+import '../env.js'
 import { setupPrisma } from './tests.dbmock.js'
 
 vi.mock('../db/client.js')
