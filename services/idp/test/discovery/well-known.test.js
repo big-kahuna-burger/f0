@@ -1,17 +1,15 @@
 import got from 'got'
-import { beforeEach, expect, test, vi } from 'vitest'
+import { beforeEach, expect, test } from 'vitest'
 
 let fastify
 let port
 import { build } from '../helper.js'
 
 beforeEach(async () => {
-  // called once before each test run
   fastify = await build()
   await fastify.ready()
   await fastify.listen()
   port = fastify.server.address().port
-  // clean up function, called once after each test run
   return async () => {
     await fastify.close()
   }
