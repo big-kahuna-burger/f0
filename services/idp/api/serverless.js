@@ -28,7 +28,7 @@ const logger = {
 }
 const fastifyOpts = { logger }
 
-const app = Fastify(fastifyOpts)
+export const app = Fastify(fastifyOpts)
 
 await app.register(middie)
 app.use(pathname, provider.callback())
