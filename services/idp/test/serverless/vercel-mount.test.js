@@ -12,7 +12,7 @@ let server
 const port = 9876
 
 beforeEach(async () => {
-  setupPrisma(prisma)
+  await setupPrisma(prisma)
   const { default: handler, app } = await import('../../api/serverless.js')
   sls = handler
   return async () => {
@@ -22,7 +22,9 @@ beforeEach(async () => {
 })
 
 test('/jwks is working', async (t) => {
-  server = http.createServer(sls).listen(port)
+  server = http.createServer(async (req, res) => {
+    await sls(req, res)
+  }).listen(port)
 
   const { statusCode, headers } = await got(
     `http://localhost:${port}/oidc/jwks`

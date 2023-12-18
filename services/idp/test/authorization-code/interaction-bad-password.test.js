@@ -1,9 +1,7 @@
 import { stringify } from 'querystring'
 import got from 'got'
 import { generators } from 'openid-client'
-import skp from 'set-cookie-parser'
 import { beforeEach, describe, expect, test } from 'vitest'
-import { decode } from '../../oidc/helpers/base64url.js'
 import * as helper from '../helper.js'
 import { clientMock } from '../tests.dbmock.js'
 

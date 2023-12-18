@@ -46,10 +46,10 @@ const debug =
   }
 
 export const setupPrisma = async (prisma) => {
-  prisma.config.findMany.mockImplementation(debug(configFindMany))
+  prisma.config.findMany.mockImplementation(configFindMany)
   prisma.config.findFirst.mockImplementation(configFindFirst)
-  prisma.config.update.mockImplementation(debug(configUpdate))
-  prisma.config.create.mockImplementation(debug(configCreate))
+  prisma.config.update.mockImplementation(configUpdate)
+  prisma.config.create.mockImplementation(configCreate)
   prisma.oidcModel.findUnique.mockImplementation(oidcModelFindUnique)
   prisma.oidcModel.delete.mockImplementation(oidcModelDelete)
   prisma.oidcModel.upsert.mockImplementation(oidcModelUpsert)
