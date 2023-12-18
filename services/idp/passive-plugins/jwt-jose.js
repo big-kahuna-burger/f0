@@ -4,9 +4,9 @@ import { jwtVerify } from 'jose'
 const pluginFn = async (fastify, opts) => {
   const { key = 'jwtVerify', secret, options } = opts
 
-  if (!secret) {
-    throw new Error('"KeyLike" secret must be provided. See jose docs')
-  }
+  // if (!secret) {
+  //   throw new Error('"KeyLike" secret must be provided. See jose docs')
+  // }
   if (!options || typeof options !== 'object') {
     throw new Error('options must be provided and must be an object')
   }

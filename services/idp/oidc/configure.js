@@ -16,12 +16,13 @@ async function configure(iss, adapterArg) {
   const { protocol } = new URL(ISSUER)
   const secureContextRequired = protocol === 'https:'
 
+  const localKeySet = await calculateJwks(dynamicConf)
   const configuration = {
     ...staticConfig,
     jwks: { keys: dynamicConf.jwks },
     cookies: { ...staticConfig.cookies, keys: dynamicConf.cookieKeys },
     findAccount: Account.findAccount,
-    publicJwks: calculateJwks(dynamicConf)
+    localKeySet,
   }
 
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })

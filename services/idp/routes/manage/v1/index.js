@@ -1,15 +1,17 @@
 import * as api from '../../../db/api.js'
 import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
-import fastifyJoseVerify from '../../../passive-plugins/jwt-jose.js'
+import joseVerify from '../../../passive-plugins/jwt-jose.js'
 import { getResourceServers } from '../../../resource-servers/index.js'
 
-export default async function interactionsRouter(fastify, opts) {
-  fastify.register(fastifyJoseVerify, {
-    secret: opts.publicJwks,
-    options: {
-      algorithms: ['ES256', 'RS256']
-    }
+const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
+
+export default async function managementRouter(fastify, opts) {
+  fastify.register(joseVerify, {
+    secret: opts.localKeySet,
+    options: { algorithms: ACCEPTED_ALGORITHMS }
   })
+
+  // set error handler and inherit unauthorized error handling it with 401 from here
 
   fastify.addHook('onRequest', async function onRequest(request, reply) {
     try {
