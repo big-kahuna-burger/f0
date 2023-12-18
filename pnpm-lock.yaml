@@ -196,6 +196,9 @@ importers:
 
   services/manage:
     dependencies:
+      '@babel/plugin-proposal-private-property-in-object':
+        specifier: ^7.21.11
+        version: 7.21.11(@babel/core@7.23.3)
       '@mantine/core':
         specifier: ^7.3.2
         version: 7.3.2(@mantine/hooks@7.3.2)(react-dom@18.2.0)(react@18.2.0)

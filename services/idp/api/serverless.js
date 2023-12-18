@@ -12,7 +12,7 @@ if (pathname === '/') {
 }
 
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-const { provider, Account, AccountErrors } = await configureOidc(host)
+const { provider, Account, AccountErrors, configuration } = await configureOidc(host)
 
 const transport = {
   target: 'pino-pretty',
@@ -38,7 +38,8 @@ app.register(appService, {
   Account,
   AccountErrors,
   isVercel: true,
-  grantsDebug: process.env.GRANTS_DEBUG
+  grantsDebug: process.env.GRANTS_DEBUG,
+  publicJwks: configuration.publicJwks
 })
 
 export const handler = async (req, res) => {

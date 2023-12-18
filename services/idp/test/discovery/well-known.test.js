@@ -37,8 +37,8 @@ test('/jwks is working', async (t) => {
   const { keys } = JSON.parse(body)
   expect(keys).toHaveLength(2)
   const [key1, key2] = keys
-  expect(Object.keys(key1)).toStrictEqual(['kty', 'use', 'kid', 'e', 'n'])
-  const EC_PROPS = ['kty', 'use', 'kid', 'alg', 'crv', 'x', 'y']
+  expect(Object.keys(key1)).toStrictEqual(['kty', 'kid', 'e', 'n'])
+  const EC_PROPS = ['kty', 'kid', 'crv', 'x', 'y']
   expect(Object.keys(key2)).toStrictEqual(EC_PROPS)
 })
 

@@ -15,6 +15,7 @@ model Config {
   jwks       Json[]
   cookieKeys String[]
   grantDebug Boolean? @default(false)
+  updatedAt  DateTime @default(now()) @updatedAt // think of auditing this single record for changes. Maybe new entry and order by updatedAt desc?
 }
 
 model OidcModel {
@@ -35,7 +36,7 @@ model OidcModel {
 
 model Account {
   id        String     @id
-  updatedAt DateTime?  @default(now()) @updatedAt @db.Date
+  updatedAt DateTime   @updatedAt
   Login     Login[]
   Identity  Identity[]
   Profile   Profile[]
@@ -61,7 +62,7 @@ model Profile {
   picture             String?
   preferredUsername   String?
   profile             String?
-  updatedAt           DateTime? @default(now()) @updatedAt @db.Date
+  updatedAt           DateTime  @updatedAt
   website             String?
   zoneinfo            String?
   Address             Address?  @relation(fields: [addressId], references: [id])
@@ -78,7 +79,7 @@ model Address {
   region        String?
   postalCode    String?
   country       String?
-  updatedAt     DateTime? @default(now()) @updatedAt @db.Date
+  updatedAt     DateTime  @updatedAt
   Profile       Profile[]
 
   @@map("address")
@@ -98,7 +99,7 @@ model Identity {
   id           String         @id @default(dbgenerated("gen_random_uuid()"))
   sub          String
   provider     String
-  updatedAt    DateTime?      @default(now()) @updatedAt @db.Date
+  updatedAt    DateTime       @updatedAt
   Account      Account        @relation(fields: [sub], references: [id])
   source       IDENTITY       @default(DB)
   PasswordHash PasswordHash[]
@@ -108,11 +109,11 @@ model Identity {
 }
 
 model PasswordHash {
-  id         String    @id @default(dbgenerated("gen_random_uuid()"))
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
   identityId String
   hash       String
-  updatedAt  DateTime? @default(now()) @updatedAt @db.Date
-  Identity   Identity  @relation(fields: [identityId], references: [id])
+  updatedAt  DateTime @updatedAt
+  Identity   Identity @relation(fields: [identityId], references: [id])
 
   @@map("password_hash")
 }

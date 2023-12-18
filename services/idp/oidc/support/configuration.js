@@ -1,7 +1,7 @@
+import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
-
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 
@@ -67,29 +67,78 @@ export default {
     ]
   },
   scopes: ['openid', 'offline_access', 'address', 'email', 'phone', 'profile'],
+  clientAuthMethods: [
+    'client_secret_basic',
+    'client_secret_jwt',
+    'client_secret_post',
+    'private_key_jwt',
+    'none'
+  ],
   features: {
     clientCredentials: { enabled: true },
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
-    registration: { enabled: true },
+    registration: { enabled: true }, // deal with open registration
+    registrationManagement: { enabled: true }, // deal with open registration
     revocation: { enabled: true },
     claimsParameter: { enabled: true },
     backchannelLogout: { enabled: false },
     ciba: { enabled: false },
     dPoP: { enabled: true },
-    // encryption: { enabled: true },
-    // fapi: { enabled: true },
-    // introspection: { enabled: true },
+    encryption: { enabled: true },
+    jwtUserinfo: { enabled: true },
+    mTLS: { enabled: true },
     // jwtIntrospection: { enabled: true },
     // jwtResponseModes: { enabled: true },
-    // jwtUserinfo: { enabled: true },
-    // mTLS: { enabled: true },
     // pushedAuthorizationRequests: { enabled: true },
-    // registrationManagement: { enabled: true },
     // requestObjects: { enabled: true },
-    // resourceIndicators: { enabled: true },
+    resourceIndicators: {
+      enabled: true,
+      async defaultResource(ctx, client, oneOf) {
+        // @param ctx - koa request context
+        // @param client - client making the request
+        // @param oneOf {string[]} - The OP needs to select **one** of the values provided.
+        //                           Default is that the array is provided so that the request will fail.
+        //                           This argument is only provided when called during
+        //                           Authorization Code / Refresh Token / Device Code exchanges.
+        if (oneOf) return oneOf
+        return client.clientId === 'myClientID' ? 'urn:manage' : null // TODO: make this better
+      },
+      async getResourceServerInfo(ctx, resourceIndicator, client) {
+        // @param ctx - koa request context
+        // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
+        // @param client - client making the request
+        if (
+          resourceIndicator === 'urn:manage' &&
+          client.clientId === 'myClientID'
+        ) {
+          // TODO: Make this better
+          return {
+            scope: 'read:users update:users',
+            audience: resourceIndicator,
+            accessTokenTTL: 30 * 60, // 1/2 hours
+            accessTokenFormat: 'jwt',
+            jwt: {
+              sign: { alg: 'ES256' }
+            }
+          }
+        }
+        throw new errors.InvalidTarget(
+          `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
+        )
+      },
+      async useGrantedResource(ctx, model) {
+        // @param ctx - koa request context
+        // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
+        //                RefreshToken, or DeviceCode model instance.
+        //                You can use the instanceof operator to determine the type.
+        return true
+      }
+    },
+    // introspection: { enabled: true },
     // rpInitiatedLogout: { enabled: true },
-    // userinfo: { enabled: true }
+    // fapi: { enabled: true },
+    userinfo: { enabled: true }
   },
   jwks: { keys: [] }, // will be dynamically loaded
   ttl
