@@ -19,27 +19,7 @@ export default async function interactionsRouter(fastify, opts) {
 
 function accountMAP(acct) {
   return Object.entries(acct).reduce((acc, [key, value]) => {
-    if (key === 'Profile') {
-      acc.profile = Object.entries(value).reduce((acc, [key, value]) => {
-        if (key === 'addressId') {
-          return acc
-        }
-        if (key === 'address') {
-          acc.address = Object.entries(value).reduce((acc, [key, value]) => {
-            if (key === 'id') {
-              return acc
-            }
-            acc[snakeCase(key)] = value
-            return acc
-          }, {})
-        } else {
-          acc[snakeCase(key)] = value
-        }
-        return acc
-      }, {})
-    } else {
-      acc[snakeCase(key)] = value
-    }
+    acc[snakeCase(key)] = value
     return acc
   }, {})
 }

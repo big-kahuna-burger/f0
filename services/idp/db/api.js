@@ -1,5 +1,4 @@
 import client from './client.js'
-
 const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
   const accounts = await client.account.findMany({
     include: {
@@ -12,7 +11,11 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
       updatedAt: 'asc'
     }
   })
-  return accounts
+  const flat = accounts.map((acc) => {
+    const { Profile, ...account } = acc
+    return { ...Profile[0], ...account }
+  })
+  return flat
 }
 
 const updateAccount = async (id, data) => {

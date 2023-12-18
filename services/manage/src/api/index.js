@@ -7,9 +7,10 @@ async function getUsers() {
   const opts = { headers: { Authorization: `Bearer ${token}` } }
   const usersResponse = await fetch(usersUrl, opts)
   const usersJson = await usersResponse.json()
+
   return usersJson.map((u, i) => ({
     ...u,
-    name: `${u.profile.given_name} ${u.profile.family_name}`,
+    name: `${u.given_name} ${u.family_name}`,
     picture: `https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-${
       (i % 10) + 1
     }.png`,
