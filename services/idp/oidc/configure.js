@@ -6,8 +6,7 @@ import redirectToHttps from './helpers/koa-https-redirect.js'
 
 const tracer = trace.getTracer('oidc-provider')
 
-const { ISSUER, NODE_ENV } = process.env
-const prod = NODE_ENV === 'production'
+const { ISSUER } = process.env
 
 export default configure
 
@@ -16,7 +15,8 @@ async function configure(iss, adapterArg) {
   const { default: Account, errors } = await import('./support/account.js')
   const { default: dynamicConf } = await import('./support/dynamic-config.js')
   const adapter = adapterArg || (await import('./support/adapter.js')).default
-
+  const { protocol } = new URL(ISSUER)
+  const secureContextRequired = protocol === 'https:'
   const configuration = {
     ...staticConfig,
     jwks: { keys: dynamicConf.jwks },
@@ -30,7 +30,7 @@ async function configure(iss, adapterArg) {
     provider.use(koaPino())
   }
 
-  if (prod) {
+  if (secureContextRequired) {
     provider.proxy = true
     provider.use(redirectToHttps)
   }
