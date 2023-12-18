@@ -32,7 +32,7 @@ export default async function interactionsRouter(fastify, opts) {
 
   async function getUsers(request, reply) {
     const { page = 1, size = 20 } = request.query
-    
+
     const accounts = await api.loadAccounts({ page, size })
     return accounts.map(accountMAP)
   }

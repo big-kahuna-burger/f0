@@ -22,9 +22,10 @@ async function makeFastify(config, pretty) {
     )
   }
 
-  const { provider, Account, AccountErrors, configuration } = await configureOidc(
-    `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-  )
+  const { provider, Account, AccountErrors, configuration } =
+    await configureOidc(
+      `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
+    )
 
   const transport = pretty
     ? {

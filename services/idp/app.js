@@ -56,6 +56,6 @@ export default async function runme(fastify, opts) {
 
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
-    options: Object.assign({},  { maxDepth: 3 }, opts)
+    options: Object.assign({}, { maxDepth: 3 }, opts)
   })
 }
