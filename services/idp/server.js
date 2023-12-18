@@ -1,5 +1,5 @@
 // import './otel.js'
-import './oidc/helpers/config.js'
+import './env.js'
 
 import middie from '@fastify/middie'
 import closeWithGrace from 'close-with-grace'

@@ -1,7 +1,7 @@
 import { trace } from '@opentelemetry/api'
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
-import './helpers/config.js'
+import '../env.js'
 import redirectToHttps from './helpers/koa-https-redirect.js'
 
 const tracer = trace.getTracer('oidc-provider')
