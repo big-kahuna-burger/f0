@@ -57,7 +57,8 @@ async function initializeKeys() {
  * @returns {Promise<Object>} A promise that resolves with the configuration object.
  */
 async function getConfig() {
-  return prisma.config.findFirst()
+  const found = await prisma.config.findFirst()
+  return found
 }
 
 /**

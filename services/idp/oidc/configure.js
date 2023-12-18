@@ -16,13 +16,12 @@ async function configure(iss, adapterArg) {
   const { protocol } = new URL(ISSUER)
   const secureContextRequired = protocol === 'https:'
 
-  const localKeySet = await calculateJwks(dynamicConf)
+  const localKeySet = await calculateJwks(dynamicConf.jwks)
   const configuration = {
     ...staticConfig,
     jwks: { keys: dynamicConf.jwks },
     cookies: { ...staticConfig.cookies, keys: dynamicConf.cookieKeys },
-    findAccount: Account.findAccount,
-    localKeySet,
+    findAccount: Account.findAccount
   }
 
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
@@ -38,5 +37,5 @@ async function configure(iss, adapterArg) {
 
   configureKoaOtel(provider)
 
-  return { provider, configuration, Account, AccountErrors: errors }
+  return { provider, localKeySet, configuration, Account, AccountErrors: errors }
 }

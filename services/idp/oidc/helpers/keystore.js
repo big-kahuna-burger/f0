@@ -3,8 +3,8 @@ import { createLocalJWKSet } from 'jose'
 
 const JWK_PRIVATE_PROPS = new Set(['d', 'p', 'q', 'dp', 'dq', 'qi', 'oth'])
 
-export const calculateJwks = async (dynamicConf) => {
-  const publicJwksNoKid = dynamicConf.jwks.map((key) => {
+export const calculateJwks = async (jwks) => {
+  const publicJwksNoKid = jwks.map((key) => {
     return Object.entries(key).reduce((acc, [k, v]) => {
       if (!JWK_PRIVATE_PROPS.has(k)) {
         acc[k] = v
