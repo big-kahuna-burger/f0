@@ -1,12 +1,11 @@
 export { getUsers }
 
+const usersUrl = 'http://localhost:9876/manage/users'
+
 async function getUsers() {
-  const token =
-    localStorage.getItem('ROCP_token') ||
-    ''.split('"').filter((x) => x.length)[0]
-  const usersResponse = await fetch('http://localhost:9876/manage/users', {
-    headers: { Authorization: `Bearer ${token}` }
-  })
+  const token = getToken()
+  const opts = { headers: { Authorization: `Bearer ${token}` } }
+  const usersResponse = await fetch(usersUrl, opts)
   const usersJson = await usersResponse.json()
   return usersJson.map((u, i) => ({
     ...u,
@@ -23,3 +22,8 @@ async function getUsers() {
     ]
   }))
 }
+
+const getToken = () =>
+  (localStorage.getItem('ROCP_token') || '')
+    .split('"')
+    .filter((x) => x.length)[0]

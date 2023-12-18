@@ -22,7 +22,10 @@
     "build": "echo \"skipped\" || exit 0 || react-scripts build",
     "test": "echo \"skipped\" || exit 0",
     "c8": "echo \"skipped\" || exit 0",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint:fix": "biome check --apply .",
+    "lint": "biome check .",
+    "lint:ci": "biome ci ."
   },
   "eslintConfig": {
     "extends": [
@@ -41,5 +44,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.4.1"
   }
 }

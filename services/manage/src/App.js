@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
-import { SelectedUserContext } from './SelectedUser.context' // Import the SelectedUserContext component
+import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'

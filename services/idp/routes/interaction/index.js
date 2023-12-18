@@ -10,8 +10,6 @@ const { errorCodes } = Fastify
 const { FST_ERR_BAD_STATUS_CODE } = errorCodes
 const { SessionNotFound } = errors
 
-
-
 const MERGE = {
   mergeWithLastSubmission: true
 }
