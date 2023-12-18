@@ -32,9 +32,11 @@ export default async function runme(fastify, opts) {
       }
     }
   })
+
   fastify.register(Static, {
     root: path.join(__dirname, 'public')
   })
+
   fastify.register(View, {
     engine: { ejs },
     root: path.join(__dirname, 'ejs-templates'),

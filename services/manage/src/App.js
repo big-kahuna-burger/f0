@@ -4,6 +4,7 @@ import { SelectedUserContext } from './SelectedUser.context' // Import the Selec
 import Shell from './Shell'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
+
 const routes = [
   {
     root: '*',
@@ -57,7 +58,7 @@ function App() {
   const [user, setUser] = useState({})
   return (
     <SelectedUserContext.Provider value={{ user, setUser }}>
-      <RouterProvider router={router} fallbackElement={<div>LOADING</div>} />
+      <RouterProvider router={router} fallbackElement={<div>LOADING...</div>} />
     </SelectedUserContext.Provider>
   )
 }
