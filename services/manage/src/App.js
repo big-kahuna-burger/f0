@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
+import { AppServers } from './components/ApplicationServers'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -16,7 +17,7 @@ const routes = [
       },
       {
         path: '/apis',
-        element: <></>
+        element:<AppServers />
       },
       {
         path: '/apps',
