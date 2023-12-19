@@ -18,7 +18,7 @@ export const calculateJwks = async (jwks) => {
     kid: key.kid ? key.kid : calculateKid(key)
   }))
 
-  const localSet = await createLocalJWKSet({ keys: publicKeys })
+  const localSet = createLocalJWKSet({ keys: publicKeys })
   return localSet
 }
 
