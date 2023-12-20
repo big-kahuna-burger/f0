@@ -31,7 +31,7 @@ describe('interaction router', () => {
     }
   })
 
-  test('from /auth GET -> to /token POST Response', async (ctx) => {
+  test('from /auth GET -> to /token POST Response', async () => {
     const codeVerifier = generators.codeVerifier()
     const baseUrl = `http://localhost:${port}`
     const goodchallenge = {
@@ -124,7 +124,7 @@ describe('interaction router', () => {
     const rpCodeUrl = rpRedirect.headers.location
     const { searchParams, pathname, host, protocol } = new URL(rpCodeUrl)
     const { code, iss } = Object.fromEntries(searchParams)
-    expect(iss).toBe('http://idp.dev:9876/oidc')
+    expect(iss).toBe('http://localhost:9876/oidc')
     expect(code.length).toBe(43)
     expect(`${protocol}//${host}${pathname}`).toBe(
       clientMock.payload.redirect_uris[0]

@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-
+    environment: TEST
     runs-on: ubuntu-latest
 
     strategy:
@@ -53,3 +53,5 @@ jobs:
 
     - name: Test ${{ matrix.node-version }}
       run: pnpm test
+      env:
+        ISSUER: ${{ vars.ISSUER }}

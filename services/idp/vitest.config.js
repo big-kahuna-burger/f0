@@ -4,11 +4,7 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
-      exclude: [
-        ...configDefaults.coverage.exclude,
-        '*.cjs',
-        'device-flow.js'
-      ]
+      exclude: [...configDefaults.coverage.exclude, '*.cjs', 'device-flow.js']
     }
   }
 })

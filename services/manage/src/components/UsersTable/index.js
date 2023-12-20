@@ -1,6 +1,7 @@
 import {
   Anchor,
   Avatar,
+  Badge,
   Group,
   Table,
   Text,
@@ -29,7 +30,6 @@ export function UsersTable() {
   }, [users, token])
 
   const [activeIndex, setActiveIndex] = useState(0)
-  
 
   useEffect(() => {
     if (users.length) {
@@ -72,7 +72,7 @@ export function UsersTable() {
       <Await resolve={users} errorElement={<p>Error loading Users!</p>}>
         {() => (
           <Table.ScrollContainer>
-            <Table verticalSpacing="sm">
+            <Table verticalSpacing="lg">
               <Table.Thead>
                 <Table.Tr>
                   <Table.Th>User</Table.Th>
@@ -83,20 +83,16 @@ export function UsersTable() {
               <Table.Tbody>
                 {users.map((item, i) => (
                   <Table.Tr
-                    className={classes['user-row']}
+                    className={classes[i === activeIndex ? 'user-row-selected':  'user-row']}
                     key={item.id}
                     c={
-                      i === activeIndex
-                        ? theme.colors.myAltColor[6]
-                        : undefined
+                      i === activeIndex ? theme.colors.myAltColor[6] : undefined
                     }
-                    h={i === activeIndex
-                      ? '120px'
-                      : undefined}
+                    h={i === activeIndex ? '150px' : undefined}
                     onClick={() => clickRow(item, i)}
                   >
                     <Table.Td>
-                      <Group gap="sm">
+                      <Group gap="lg">
                         <Avatar size={30} src={item.picture} radius={30} />
                         <Text fz="sm" fw={500}>
                           {item.name}
@@ -104,9 +100,18 @@ export function UsersTable() {
                       </Group>
                     </Table.Td>
                     <Table.Td>
-                      <Anchor component="button" size="sm">
-                        {item.email}
-                      </Anchor>
+                      <Group gap="lg">
+                        <Anchor component="button">
+                          {item.email}
+                        </Anchor>
+                        {item.email_verified ? (
+                          <Badge variant="light">verified</Badge>
+                        ) : (
+                          <Badge color="red" variant="light">
+                            not_verified
+                          </Badge>
+                        )}
+                      </Group>
                     </Table.Td>
                   </Table.Tr>
                 ))}

@@ -64,7 +64,7 @@ describe('interaction router', () => {
     const { error, error_description, iss } = Object.fromEntries(
       rpRedirect.searchParams
     )
-    expect(iss).toEqual('http://idp.dev:9876/oidc')
+    expect(iss).toEqual('http://localhost:9876/oidc')
     expect(error).toEqual('access_denied')
     expect(error_description).toEqual('End-User aborted interaction')
   })

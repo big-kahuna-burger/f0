@@ -7,12 +7,15 @@ const pluginFn = async (fastify, opts) => {
   if (!secret) {
     throw new Error('"KeyLike" secret must be provided. See jose docs')
   }
+  
   if (!options || typeof options !== 'object') {
     throw new Error('options must be provided and must be an object')
   }
+  
   const { requestExtractor = defaultRequestExtractor, ..._options } = {
     ...options
   }
+  
   if (requestExtractor && typeof requestExtractor !== 'function') {
     throw new Error(
       'options.requestExtractor must be a function taking in a (request)'

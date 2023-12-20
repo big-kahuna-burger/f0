@@ -81,7 +81,7 @@ const expectedMetadata = (port) => ({
     'client_credentials',
     'urn:ietf:params:oauth:grant-type:device_code'
   ],
-  issuer: 'http://idp.dev:9876/oidc',
+  issuer: 'http://localhost:9876/oidc',
   jwks_uri: `http://localhost:${port}/oidc/jwks`,
   authorization_response_iss_parameter_supported: true,
   response_modes_supported: ['form_post', 'fragment', 'query'],

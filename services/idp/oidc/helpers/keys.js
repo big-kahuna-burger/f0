@@ -1,5 +1,5 @@
 import { exportJWK, generateKeyPair } from 'jose'
-import nanoid from 'oidc-provider/lib/helpers/nanoid.js'
+import { nanoid } from 'nanoid'
 import prisma from '../../db/client.js'
 
 const ALGS_SUPPORTED = new Set(['ES256', 'PS256'])
@@ -57,7 +57,8 @@ async function initializeKeys() {
  * @returns {Promise<Object>} A promise that resolves with the configuration object.
  */
 async function getConfig() {
-  return prisma.config.findFirst()
+  const found = await prisma.config.findFirst()
+  return found
 }
 
 /**

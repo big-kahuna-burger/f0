@@ -22,9 +22,10 @@ async function makeFastify(config, pretty) {
     )
   }
 
-  const { provider, Account, AccountErrors, configuration } = await configureOidc(
-    `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-  )
+  const { provider, Account, AccountErrors, configuration, localKeySet } =
+    await configureOidc(
+      `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
+    )
 
   const transport = pretty
     ? {
@@ -55,7 +56,7 @@ async function makeFastify(config, pretty) {
     Account,
     AccountErrors,
     grantsDebug: process.env.GRANTS_DEBUG,
-    publicJwks: configuration.publicJwks
+    localKeySet
   })
 
   // delay is the number of milliseconds for the graceful close to finish

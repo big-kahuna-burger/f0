@@ -5,6 +5,7 @@
   "dependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@mantine/core": "^7.3.2",
+    "@mantine/form": "^7.3.2",
     "@mantine/hooks": "^7.3.2",
     "@tabler/icons-react": "^2.44.0",
     "@testing-library/jest-dom": "^5.17.0",

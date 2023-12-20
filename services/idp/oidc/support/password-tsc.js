@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 
-const saltRounds = 12
+const saltRounds = process.env.SALT_ROUNDS || 12
 
 async function generateHash(plainText) {
   const hash = await bcrypt.hash(plainText, saltRounds)
