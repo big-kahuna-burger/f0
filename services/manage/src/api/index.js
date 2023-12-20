@@ -1,22 +1,28 @@
-export { getUsers, getResourceServers }
+export { getUsers, getResourceServers, createResourceServer }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
+const apiCreateUrl = `${baseUrl}/apis/create`
+
+async function createResourceServer({ name, identifier, signingAlg }) {
+  const opts = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({ name, identifier, signingAlg })
+  }
+  const resourceServersCreateResponse = await fetch(apiCreateUrl, opts)
+  return resourceServersCreateResponse.json()
+}
 
 async function getResourceServers() {
-  const token = getToken()
-  const opts = { headers: { Authorization: `Bearer ${token}` } }
-  const resourceServersResponse = await fetch(
-    resourceServersUrl,
-    opts
-  )
+  const opts = { headers: getHeaders() }
+  const resourceServersResponse = await fetch(resourceServersUrl, opts)
   return resourceServersResponse.json()
 }
 
 async function getUsers() {
-  const token = getToken()
-  const opts = { headers: { Authorization: `Bearer ${token}` } }
+  const opts = { headers: getHeaders() }
   const usersResponse = await fetch(usersUrl, opts)
   const usersJson = await usersResponse.json()
 
@@ -40,3 +46,4 @@ const getToken = () =>
   (localStorage.getItem('ROCP_token') || '')
     .split('"')
     .filter((x) => x.length)[0]
+const getHeaders = () => ({ Authorization: `Bearer ${getToken()}` })

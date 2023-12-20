@@ -18,16 +18,16 @@ const colorSchemeManager = localStorageColorSchemeManager({
 })
 
 const myColor = [
-  '#f6eeff',
-  '#e7daf7',
-  '#cab1ea',
-  '#ad86dd',
-  '#9562d2',
-  '#854bcb',
-  '#7d3ec9',
-  '#6b31b2',
-  '#5f2aa0',
-  '#52228d'
+  "#f7f2f6",
+  "#e9e2e8",
+  "#d4c3d1",
+  "#bfa2ba",
+  "#ad85a5",
+  "#a27398",
+  "#9d6993",
+  "#895980",
+  "#7a4e72",
+  "#6c4264"
 ]
 const myAltColor = [
   '#f6fae8',

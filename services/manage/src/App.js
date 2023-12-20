@@ -3,6 +3,7 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import { AppServers } from './components/ApplicationServers'
+import { Apps } from './components/Applications'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -21,7 +22,7 @@ const routes = [
       },
       {
         path: '/apps',
-        element: <></>
+        element: <Apps/>
       },
       {
         path: '/authn/db',

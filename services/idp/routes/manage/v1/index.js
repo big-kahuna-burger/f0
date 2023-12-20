@@ -1,7 +1,7 @@
 import * as api from '../../../db/api.js'
 import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
-import { getResourceServers } from '../../../resource-servers/index.js'
+import { getReadOnlyRServer } from '../../../resource-servers/index.js'
 
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 
@@ -25,6 +25,7 @@ export default async function managementRouter(fastify, opts) {
 
   fastify.get('/users/:id', getUser)
   fastify.get('/users', getUsers)
+  fastify.post('/apis/create', createResourceServer)
   fastify.get('/apis', getAllResourceServers)
 
   async function getUser(request, reply) {
@@ -40,7 +41,17 @@ export default async function managementRouter(fastify, opts) {
   }
 
   async function getAllResourceServers(request, reply) {
-    const resourceServers = await getResourceServers()
+    const resourceServers = [await getReadOnlyRServer(), ...(await api.getResourceServers())]
     return resourceServers.map(resourceServerMap)
+  }
+
+  async function createResourceServer(request, reply) {
+    const { name, identifier, signingAlg } = request.body || {}
+    const resourceServer = await api.createResourceServer({
+      name,
+      identifier,
+      signingAlg
+    })
+    return resourceServerMap(resourceServer)
   }
 }

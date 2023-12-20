@@ -118,6 +118,22 @@ model PasswordHash {
   @@map("password_hash")
 }
 
+model ResourceServer {
+  id         String         @id @default(dbgenerated("gen_random_uuid()"))
+  name       String
+  identifier String         @unique
+  signingAlg RS_SIGNING_ALG @default(RS256)
+  scopes     String[]
+  updatedAt  DateTime       @updatedAt
+
+  @@map("resource_server")
+}
+
+enum RS_SIGNING_ALG {
+  RS256
+  HS256
+}
+
 enum IDENTITY {
   DB
   EXT

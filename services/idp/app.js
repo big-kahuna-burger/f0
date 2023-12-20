@@ -13,7 +13,7 @@ const __dirname = desm(import.meta.url)
 
 export default async function runme(fastify, opts) {
   await fastify.register(Cors, {
-    origin: 'http://localhost:3036'
+    origin: '*'
   })
 
   fastify.register(helmet, {
