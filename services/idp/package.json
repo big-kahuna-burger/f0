@@ -9,7 +9,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest run --coverage --logHeapUsage --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
-    "c8": "vitest run --coverage --logHeapUsage --sequence.shuffle --pool threads --poolOptions.threads.singleThread",
+    "c8": "vitest run",
     "w": "vitest",
     "start": "OTEL=1 OTEL_SAMPLER=0.1 node --import ./otel.js server.js",
     "dev": "OTEL=1 node --watch --import ./otel.js server.js",
