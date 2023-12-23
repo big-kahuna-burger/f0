@@ -1,7 +1,10 @@
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import { getReadOnlyRServer } from '../../resource-servers/index.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
+const MANAGEMENT = await getReadOnlyRServer()
+
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 
@@ -102,14 +105,14 @@ export default {
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
         if (oneOf) return oneOf
-        return client.clientId === 'myClientID' ? 'urn:manage' : null // TODO: make this better
+        return client.clientId === 'myClientID' ? MANAGEMENT.identifier : null // TODO: make this better
       },
       async getResourceServerInfo(ctx, resourceIndicator, client) {
         // @param ctx - koa request context
         // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
         // @param client - client making the request
         if (
-          resourceIndicator === 'urn:manage' &&
+          resourceIndicator === MANAGEMENT.identifier &&
           client.clientId === 'myClientID'
         ) {
           // TODO: Make this better

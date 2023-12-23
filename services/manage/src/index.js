@@ -74,7 +74,7 @@ const authConfig = {
   //   resource: 'urn:manage'
   // }, // this is confusing... if they remove the param from auth then what?
   extraTokenParameters: {
-    resource: 'urn:manage'
+    resource: 'http://localhost:9876/manage/v1'
   },
   postLogin: () => {
     window.location.href = `${ORIGIN}/`

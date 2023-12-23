@@ -6,9 +6,14 @@ import { getReadOnlyRServer } from '../../../resource-servers/index.js'
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 
 export default async function managementRouter(fastify, opts) {
+  const MANAGEMENT = await getReadOnlyRServer()
   fastify.register(joseVerify, {
     secret: opts.localKeySet,
-    options: { algorithms: ACCEPTED_ALGORITHMS } // TODO subj, aud iss, exp, iat
+    options: {
+      issuer: process.env.ISSUER,
+      algorithms: ACCEPTED_ALGORITHMS,
+      audience: MANAGEMENT.identifier,
+    }
   })
 
   // set error handler and inherit unauthorized error handling it with 401 from here
@@ -47,11 +52,24 @@ export default async function managementRouter(fastify, opts) {
 
   async function createResourceServer(request, reply) {
     const { name, identifier, signingAlg } = request.body || {}
-    const resourceServer = await api.createResourceServer({
-      name,
-      identifier,
-      signingAlg
-    })
-    return resourceServerMap(resourceServer)
+    if (identifier === MANAGEMENT.identifier) { 
+      return reply.code(409).send({ error: 'erm... NOPE' })
+    }
+    try {
+      const resourceServer = await api.createResourceServer({
+        name,
+        identifier,
+        signingAlg
+      })
+      
+      return resourceServerMap(resourceServer)
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        if (e.code === 'P2002') {
+          return reply.code(409).send({ error: `resource indicator "${identifier}" is already registered with oidc server` })
+        }
+      }
+      throw e
+    }
   }
 }
