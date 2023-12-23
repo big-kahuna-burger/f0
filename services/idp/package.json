@@ -13,6 +13,7 @@
     "w": "vitest",
     "start": "OTEL=1 OTEL_SAMPLER=0.1 node --import ./otel.js server.js",
     "dev": "OTEL=1 node --watch --import ./otel.js server.js",
+    "debug": "node --inspect server.js",
     "lint:fix": "biome check --apply .",
     "lint": "biome check .",
     "lint:ci": "biome ci .",

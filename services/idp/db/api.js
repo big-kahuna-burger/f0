@@ -29,7 +29,12 @@ const getAccount = async (id) => {
   return account
 }
 
-const createResourceServer = async ({ name, identifier, signingAlg, scopes = [] }) => {
+const createResourceServer = async ({
+  name,
+  identifier,
+  signingAlg,
+  scopes = []
+}) => {
   const resourceServer = await prisma.resourceServer.create({
     data: {
       name,
@@ -46,6 +51,12 @@ const getResourceServers = async () => {
   return resourceServers
 }
 
-export { getAccount, loadAccounts, updateAccount, createResourceServer, getResourceServers }
+export {
+  getAccount,
+  loadAccounts,
+  updateAccount,
+  createResourceServer,
+  getResourceServers
+}
 
 // console.log(await loadAccounts())

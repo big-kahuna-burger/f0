@@ -20,6 +20,7 @@ import {
   useMantineColorScheme,
   useMantineTheme
 } from '@mantine/core'
+import { formatDistanceToNow, parseJSON } from 'date-fns'
 
 import { useForm } from '@mantine/form'
 
@@ -38,7 +39,7 @@ export function AppServers() {
   const colorScheme = useMantineColorScheme()
   const theme = useMantineTheme()
   const [apis, setApis] = useState([])
-  
+
   useEffect(() => {
     if (token && !apis.length && !apis.then) {
       console.log('app servers')
@@ -46,11 +47,28 @@ export function AppServers() {
       setApis(pm)
     }
   }, [apis, token])
+  useEffect(() => {
+    if (apis.length) {
+      setApis(
+        apis.map((api) => {
+          if (!api.updatedAt) {
+            return api
+          }
+          const parsed = parseJSON(api.updatedAt)
+          const formatted = formatDistanceToNow(parsed, { addSuffix: true })
+          return { ...api, formattedUpdatedAt: formatted }
+        })
+      )
+    }
+    return () => {}
+  }, [apis])
   return (
     <Suspense fallback={<p>Loading APIS...</p>}>
-      <CreateModal onApiCreated={(api) => {
-        setApis([...apis, api])
-      }}/>
+      <CreateModal
+        onApiCreated={(api) => {
+          setApis([...apis, api])
+        }}
+      />
       <Await resolve={apis} errorElement={<p>Error loading APIs!</p>}>
         {() => (
           <Table.ScrollContainer>
@@ -60,7 +78,7 @@ export function AppServers() {
                   <Table.Th>API</Table.Th>
                   <Table.Th>Identifier</Table.Th>
                   <Table.Th>Signing Alg</Table.Th>
-                  <Table.Th>+</Table.Th>
+                  <Table.Th>Updated At</Table.Th>
                 </Table.Tr>
               </Table.Thead>
               <Table.Tbody>
@@ -126,6 +144,14 @@ export function AppServers() {
                         {item.signingAlg}
                       </Badge>
                     </Table.Td>
+                    <Table.Td>
+                      <Badge
+                        color={theme.colors.myAltColor[3]}
+                        variant={colorScheme.colorScheme}
+                      >
+                        {item.formattedUpdatedAt}
+                      </Badge>
+                    </Table.Td>
                   </Table.Tr>
                 ))}
               </Table.Tbody>
@@ -162,18 +188,21 @@ function CreateModal(props) {
   const [submitStatus, setSubmitStatus] = useState(null)
 
   useEffect(() => {
-    if (submitting) {
+    if (submitStatus !== 'submitting' && submitting) {
+      setSubmitStatus('submitting')
       createResourceServer(submitting)
         .then((api) => {
-          setSubmitting(false)
           setSubmitStatus('success')
           close()
           props?.onApiCreated(api)
         })
-        .catch(console.error)
+        .catch(error => {
+          console.error(error)
+          setSubmitStatus('error')
+        })
         .finally(() => setSubmitting(false))
     }
-  }, [submitting, close, props])
+  }, [submitStatus, submitting, close, props])
 
   return (
     <>
@@ -183,7 +212,7 @@ function CreateModal(props) {
         title="Create new API (Resource server)"
       >
         <Anchor>https://datatracker.ietf.org/doc/html/rfc8707</Anchor>
-        <CreateFormBox onSubmit={values => setSubmitting(values)}/>
+        <CreateFormBox onSubmit={(values) => setSubmitting(values)} />
       </Modal>
 
       <ButtonCreate onClick={open}>Create API</ButtonCreate>
