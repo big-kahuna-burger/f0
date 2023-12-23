@@ -1,9 +1,8 @@
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
-import { getReadOnlyRServer } from '../../resource-servers/index.js'
+import * as MANAGEMENT from '../../resource-servers/management.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
-const MANAGEMENT = await getReadOnlyRServer()
 
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
