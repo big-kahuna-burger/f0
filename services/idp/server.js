@@ -6,6 +6,7 @@ import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
+import { MANAGEMENT } from './resource-servers/management.js'
 
 const { ISSUER, FASTIFY_CLOSE_GRACE_DELAY = 500 } = process.env
 const { port } = new URL(ISSUER)
@@ -60,7 +61,8 @@ async function makeFastify(config, pretty) {
     Account,
     AccountErrors,
     grantsDebug: process.env.GRANTS_DEBUG,
-    localKeySet
+    localKeySet,
+    MANAGEMENT_API: MANAGEMENT
   })
 
   // delay is the number of milliseconds for the graceful close to finish

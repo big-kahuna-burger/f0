@@ -2,10 +2,10 @@ import * as api from '../../../db/api.js'
 import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
 
-import { MANAGEMENT } from '../../../resource-servers/management.js'
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 
 export default async function managementRouter(fastify, opts) {
+  const MANAGEMENT = opts.MANAGEMENT_API
   fastify.register(joseVerify, {
     secret: opts.localKeySet,
     options: {

@@ -1,9 +1,23 @@
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
-import { MANAGEMENT } from '../../resource-servers/management.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 
+const { ISSUER } = process.env
+const { protocol, hostname, port } = new URL(ISSUER)
+const combined = port ? `${hostname}:${port}` : hostname
+
+const scopes = ['users:read', 'users:write', 'apis:read', 'apis:write']
+
+const identifier = `${protocol}//${combined}/manage/v1`
+
+const MANAGEMENT = {
+  id: 'management',
+  name: 'Management API',
+  scopes,
+  identifier,
+  readonly: true
+}
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 
