@@ -8,7 +8,7 @@ const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 export default async function managementRouter(fastify, opts) {
   fastify.register(joseVerify, {
     secret: opts.localKeySet,
-    options: { algorithms: ACCEPTED_ALGORITHMS }
+    options: { algorithms: ACCEPTED_ALGORITHMS } // TODO subj, aud iss, exp, iat
   })
 
   // set error handler and inherit unauthorized error handling it with 401 from here

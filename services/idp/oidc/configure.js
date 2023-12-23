@@ -25,12 +25,9 @@ async function configure(iss, adapterArg) {
   }
 
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
-
-  if (process.env.ENV !== 'test') {
-    provider.use(koaPino())
-  }
-
+  
   if (secureContextRequired) {
+    provider.use(koaPino())
     provider.proxy = true
     provider.use(redirectToHttps)
   }
