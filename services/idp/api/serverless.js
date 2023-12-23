@@ -25,7 +25,7 @@ const transport = {
 }
 
 const logger = {
-  msgPrefix: 'pino:',
+  msgPrefix: 'api:',
   transport
 }
 const fastifyOpts = { logger }
@@ -34,7 +34,9 @@ export const app = Fastify(fastifyOpts)
 
 await app.register(middie)
 app.use(pathname, provider.callback())
+
 const appService = await import('../app.js')
+
 app.register(appService, {
   oidc: provider,
   Account,
