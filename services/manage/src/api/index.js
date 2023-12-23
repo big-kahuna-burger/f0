@@ -1,10 +1,10 @@
-export { getUsers, getResourceServers, createResourceServer }
+import { formatDistanceToNow, parseJSON } from 'date-fns'
+export { getUsers, getResourceServer, getResourceServers, createResourceServer }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
-
 async function createResourceServer({ name, identifier, signingAlg }) {
   const opts = {
     method: 'POST',
@@ -18,7 +18,34 @@ async function createResourceServer({ name, identifier, signingAlg }) {
 async function getResourceServers() {
   const opts = { headers: getHeaders() }
   const resourceServersResponse = await fetch(resourceServersUrl, opts)
-  return resourceServersResponse.json()
+  const json = await resourceServersResponse.json()
+
+  return json.map((x) => ({
+    ...x,
+    formattedUpdatedAt: x.updatedAt
+      ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
+      : undefined
+  }))
+}
+
+async function getResourceServer(id) {
+  try {
+    const opts = { headers: getHeaders() }
+    const resourceServerResponse = await fetch(
+      `${resourceServersUrl}/${id}`,
+      opts
+    )
+    const json = await resourceServerResponse.json()
+    if (json.updatedAt) {
+      return {
+        ...json,
+        formattedUpdatedAt: formatDistanceToNow(parseJSON(json.updatedAt), { addSuffix: true })
+      }
+    }
+    return json
+  } catch (error) {
+    console.log(error)
+  }
 }
 
 async function getUsers() {

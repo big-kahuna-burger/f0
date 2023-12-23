@@ -46,6 +46,11 @@ const createResourceServer = async ({
   return resourceServer
 }
 
+const getResourceServer = async (id) => {
+  const resourceServer = await prisma.resourceServer.findFirst({ where: { id } })
+  return resourceServer
+}
+
 const getResourceServers = async () => {
   const resourceServers = await prisma.resourceServer.findMany()
   return resourceServers
@@ -56,7 +61,8 @@ export {
   loadAccounts,
   updateAccount,
   createResourceServer,
-  getResourceServers
+  getResourceServers,
+  getResourceServer
 }
 
 // console.log(await loadAccounts())

@@ -48,6 +48,10 @@ async function makeFastify(config, pretty) {
 
   const oidCallback = provider.callback()
   app.use(pathname, oidCallback)
+  const slower = seconds => (req, res, next) => {
+    return setTimeout(next, seconds * 1000)
+  }
+  app.use(slower(0.1))
 
   const appService = await import('./app.js')
   await app.register(appService, {

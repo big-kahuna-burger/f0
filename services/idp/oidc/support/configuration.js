@@ -1,6 +1,6 @@
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
-import * as MANAGEMENT from '../../resource-servers/management.js'
+import { MANAGEMENT } from '../../resource-servers/management.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 

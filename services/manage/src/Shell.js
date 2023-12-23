@@ -26,7 +26,7 @@ function Shell() {
       <AppShell.Main w="75%">
         <Outlet />
       </AppShell.Main>
-      <AppShell.Aside w="25%">
+      <AppShell.Aside w="2%">
         {location.pathname.startsWith('/users') && (
           <SelectedUserContext.Consumer>
             {({ user }) => user && <UserCardImage user={user} />}

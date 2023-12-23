@@ -10,159 +10,161 @@ import {
   InputBase,
   LoadingOverlay,
   Modal,
+  NavLink,
   Table,
-  Text,
   TextInput,
   ThemeIcon,
-  Tooltip,
   rem,
   useCombobox,
   useMantineColorScheme,
   useMantineTheme
 } from '@mantine/core'
-import { formatDistanceToNow, parseJSON } from 'date-fns'
 
 import { useForm } from '@mantine/form'
 
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus, IconServer2 } from '@tabler/icons-react'
 
-import { Suspense } from 'react'
-import { useContext, useEffect, useState } from 'react'
-import { AuthContext } from 'react-oauth2-code-pkce'
-import { Await } from 'react-router-dom'
-import { createResourceServer, getResourceServers } from '../../api'
+import { useEffect, useState } from 'react'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { createResourceServer } from '../../api'
 import classes from './AppServers.module.css'
 
 export function AppServers() {
-  const { token } = useContext(AuthContext)
+  const { apis } = useLoaderData()
   const colorScheme = useMantineColorScheme()
   const theme = useMantineTheme()
-  const [apis, setApis] = useState([])
-
-  useEffect(() => {
-    if (token && !apis.length && !apis.then) {
-      console.log('app servers')
-      const pm = getResourceServers(token).then((apis) => setApis(apis))
-      setApis(pm)
-    }
-  }, [apis, token])
-  useEffect(() => {
-    if (apis.length) {
-      setApis(
-        apis.map((api) => {
-          if (!api.updatedAt) {
-            return api
-          }
-          const parsed = parseJSON(api.updatedAt)
-          const formatted = formatDistanceToNow(parsed, { addSuffix: true })
-          return { ...api, formattedUpdatedAt: formatted }
-        })
-      )
-    }
-    return () => {}
-  }, [apis])
+  const navigate = useNavigate()
   return (
-    <Suspense fallback={<p>Loading APIS...</p>}>
+    <>
       <CreateModal
         onApiCreated={(api) => {
-          setApis([...apis, api])
+          navigate(`/api/${api.id}`)
         }}
       />
-      <Await resolve={apis} errorElement={<p>Error loading APIs!</p>}>
-        {() => (
-          <Table.ScrollContainer>
-            <Table verticalSpacing="lg">
-              <Table.Thead>
-                <Table.Tr>
-                  <Table.Th>API</Table.Th>
-                  <Table.Th>Identifier</Table.Th>
-                  <Table.Th>Signing Alg</Table.Th>
-                  <Table.Th>Updated At</Table.Th>
-                </Table.Tr>
-              </Table.Thead>
-              <Table.Tbody>
-                {apis.map((item, i) => (
-                  <Table.Tr
-                    className={classes['api-row']}
-                    key={item.identifier}
+      <Table.ScrollContainer>
+        <Table verticalSpacing="lg">
+          <Table.Thead>
+            <Table.Tr>
+              <Table.Th>API</Table.Th>
+              <Table.Th>Identifier</Table.Th>
+              <Table.Th>Signing Alg</Table.Th>
+              <Table.Th>Updated At</Table.Th>
+            </Table.Tr>
+          </Table.Thead>
+          <Table.Tbody>
+            {apis.map((item, i) => (
+              <Table.Tr
+                className={classes['api-row']}
+                key={item.identifier}
+                variant={colorScheme.colorScheme}
+              >
+                <Table.Td>
+                  <Group gap="sm">
+                    <ThemeIcon
+                      variant={colorScheme.colorScheme}
+                      size={38}
+                      color={theme.colors.myAltColor[3]}
+                    >
+                      <IconServer2
+                        style={{ width: rem(20), height: rem(20) }}
+                      />
+                    </ThemeIcon>
+                    <Flex
+                      mih={50}
+                      gap="sm"
+                      justify="center"
+                      align="flex-start"
+                      direction="column"
+                      wrap="wrap"
+                    >
+                      <NavLink label={item.name} href={`/api/${item.id}`} />
+                      {item.readonly && (
+                        <Badge
+                          color={theme.colors.myAltColor[3]}
+                          variant={colorScheme.colorScheme}
+                        >
+                          readonly
+                        </Badge>
+                      )}
+                    </Flex>
+                  </Group>
+                </Table.Td>
+                <Table.Td>
+                  <Group>
+                    <Anchor
+                      c={
+                        colorScheme.colorScheme === 'light'
+                          ? theme.colors.myAltColor[7]
+                          : theme.colors.myColor[3]
+                      }
+                      variant={colorScheme.colorScheme}
+                      component="button"
+                    >
+                      {item.identifier}
+                    </Anchor>
+                  </Group>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    color={theme.colors.myAltColor[3]}
                     variant={colorScheme.colorScheme}
                   >
-                    <Table.Td>
-                      <Group gap="sm">
-                        <ThemeIcon
-                          variant={colorScheme.colorScheme}
-                          size={38}
-                          color={theme.colors.myAltColor[3]}
-                        >
-                          <IconServer2
-                            style={{ width: rem(20), height: rem(20) }}
-                          />
-                        </ThemeIcon>
-                        <Flex
-                          mih={50}
-                          gap="sm"
-                          justify="center"
-                          align="flex-start"
-                          direction="column"
-                          wrap="wrap"
-                        >
-                          <Text fz="sm" fw={500}>
-                            {item.name}
-                          </Text>
-                          {item.readonly && (
-                            <Badge
-                              color={theme.colors.myAltColor[3]}
-                              variant={colorScheme.colorScheme}
-                            >
-                              readonly
-                            </Badge>
-                          )}
-                        </Flex>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>
-                      <Group>
-                        <Anchor
-                          c={
-                            colorScheme.colorScheme === 'light'
-                              ? theme.colors.myAltColor[7]
-                              : theme.colors.myColor[3]
-                          }
-                          variant={colorScheme.colorScheme}
-                          component="button"
-                        >
-                          {item.identifier}
-                        </Anchor>
-                      </Group>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge
-                        color={theme.colors.myAltColor[3]}
-                        variant={colorScheme.colorScheme}
-                      >
-                        {item.signingAlg}
-                      </Badge>
-                    </Table.Td>
-                    <Table.Td>
-                      <Badge
-                        color={theme.colors.myAltColor[3]}
-                        variant={colorScheme.colorScheme}
-                      >
-                        {item.formattedUpdatedAt}
-                      </Badge>
-                    </Table.Td>
-                  </Table.Tr>
-                ))}
-              </Table.Tbody>
-            </Table>
-          </Table.ScrollContainer>
-        )}
-      </Await>
-    </Suspense>
+                    {item.signingAlg}
+                  </Badge>
+                </Table.Td>
+                <Table.Td>
+                  <Badge
+                    color={theme.colors.myAltColor[3]}
+                    variant={colorScheme.colorScheme}
+                  >
+                    {item.formattedUpdatedAt}
+                  </Badge>
+                </Table.Td>
+              </Table.Tr>
+            ))}
+          </Table.Tbody>
+        </Table>
+      </Table.ScrollContainer>
+    </>
   )
 }
 
+function CreateModal(props) {
+  const [opened, { open, close }] = useDisclosure(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState(null)
+
+  useEffect(() => {
+    if (submitStatus !== 'submitting' && submitting) {
+      setSubmitStatus('submitting')
+      createResourceServer(submitting)
+        .then((api) => {
+          props?.onApiCreated(api)
+        })
+        .catch((error) => {
+          console.error(error)
+          setSubmitStatus('error')
+        })
+        .finally(() => setSubmitting(false))
+    }
+  }, [submitStatus, submitting, props])
+
+  return (
+    <>
+      <Modal
+        opened={opened}
+        onClose={close}
+        title="Create new API (Resource server)"
+      >
+        <Anchor>https://datatracker.ietf.org/doc/html/rfc8707</Anchor>
+        <CreateFormBox onSubmit={(values) => setSubmitting(values)} />
+      </Modal>
+
+      <ButtonCreate onClick={open}>Create API</ButtonCreate>
+    </>
+  )
+}
 function ButtonCreate({ ...props }) {
   return (
     <Button
@@ -181,45 +183,6 @@ function ButtonCreate({ ...props }) {
     </Button>
   )
 }
-
-function CreateModal(props) {
-  const [opened, { open, close }] = useDisclosure(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitStatus, setSubmitStatus] = useState(null)
-
-  useEffect(() => {
-    if (submitStatus !== 'submitting' && submitting) {
-      setSubmitStatus('submitting')
-      createResourceServer(submitting)
-        .then((api) => {
-          setSubmitStatus('success')
-          close()
-          props?.onApiCreated(api)
-        })
-        .catch(error => {
-          console.error(error)
-          setSubmitStatus('error')
-        })
-        .finally(() => setSubmitting(false))
-    }
-  }, [submitStatus, submitting, close, props])
-
-  return (
-    <>
-      <Modal
-        opened={opened}
-        onClose={close}
-        title="Create new API (Resource server)"
-      >
-        <Anchor>https://datatracker.ietf.org/doc/html/rfc8707</Anchor>
-        <CreateFormBox onSubmit={(values) => setSubmitting(values)} />
-      </Modal>
-
-      <ButtonCreate onClick={open}>Create API</ButtonCreate>
-    </>
-  )
-}
-
 const algosSupported = ['RS256', 'HS256']
 
 function CreateFormBox(props) {

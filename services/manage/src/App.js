@@ -2,8 +2,12 @@ import { useState } from 'react'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
+import {
+  getResourceServer,
+  getResourceServers
+} from './api'
+import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
-import { Apps } from './components/Applications'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -18,11 +22,23 @@ const routes = [
       },
       {
         path: '/apis',
+        loader: async ({ params }) => {
+          const apis = await getResourceServers()
+          return { apis }
+        },
         element:<AppServers />
       },
       {
+        path: '/api/:id',
+        loader: async ({ params }) => {
+          const activeApi = await getResourceServer(params.id)
+          return { activeApi }
+        },
+        element: <AppServer />
+      },
+      {
         path: '/apps',
-        element: <Apps/>
+        element: <></>
       },
       {
         path: '/authn/db',
