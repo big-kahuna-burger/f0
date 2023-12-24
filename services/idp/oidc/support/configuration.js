@@ -1,23 +1,9 @@
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import dbClient from '../../db/client.js'
+import { MANAGEMENT } from '../../resource-servers/management.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
-
-const { ISSUER } = process.env
-const { protocol, hostname, port } = new URL(ISSUER)
-const combined = port ? `${hostname}:${port}` : hostname
-
-const scopes = ['users:read', 'users:write', 'apis:read', 'apis:write']
-
-const identifier = `${protocol}//${combined}/manage/v1`
-
-const MANAGEMENT = {
-  id: 'management',
-  name: 'Management API',
-  scopes,
-  identifier,
-  readonly: true
-}
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 
@@ -28,7 +14,7 @@ export default {
       if (key === CORS_PROP) {
         return corsPropValidator(value, metadata) // this can be context aware but not async really
       }
-      return {}
+      return metadata
     }
   },
   clientBasedCORS(ctx, origin, client) {
@@ -117,28 +103,49 @@ export default {
         //                           Default is that the array is provided so that the request will fail.
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
-        if (oneOf) return oneOf
-        return client.clientId === 'myClientID' ? MANAGEMENT.identifier : null // TODO: make this better
+        if (oneOf) return oneOf[0]
+        return client.clientId === 'myClientID'
+          ? 'http://localhost:9876/manage/v1'
+          : null
       },
       async getResourceServerInfo(ctx, resourceIndicator, client) {
         // @param ctx - koa request context
         // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
         // @param client - client making the request
-        if (
-          resourceIndicator === MANAGEMENT.identifier &&
-          client.clientId === 'myClientID'
-        ) {
-          // TODO: Make this better
-          return {
-            scope: 'read:users update:users',
-            audience: resourceIndicator,
-            accessTokenTTL: 30 * 60, // 1/2 hours
-            accessTokenFormat: 'jwt',
-            jwt: {
-              sign: { alg: 'ES256' }
+        if (resourceIndicator === MANAGEMENT.identifier) {
+          console.log('MANAGEMENT API REQUESTED', client.clientId)
+          if (client.clientId === 'myClientID') {
+            console.log(
+              'static myClient REQUESTED, allowing everything!',
+              client.clientId
+            )
+            return {
+              scope: MANAGEMENT.scopes.join(' '),
+              audience: MANAGEMENT.identifier,
+              accessTokenTTL: 30 * 60, // 1/2 hours
+              accessTokenFormat: 'jwt',
+              jwt: {
+                sign: { alg: 'ES256' }
+              }
             }
           }
+          // find grant by client id and a resource indicator identifier/ a audience
         }
+        const resourceServerInfo = await dbClient.resourceServer.findFirst({
+          where: {
+            identifier: resourceIndicator
+          }
+        })
+        console.log({ resourceServerInfo, resourceIndicator })
+        // return {
+        //   scope: 'read:users',
+        //   audience: resourceIndicator,
+        //   accessTokenTTL: 30 * 60, // 1/2 hours
+        //   accessTokenFormat: 'jwt',
+        //   jwt: {
+        //     sign: { alg: 'ES256' }
+        //   }
+        // }
         throw new errors.InvalidTarget(
           `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
         )

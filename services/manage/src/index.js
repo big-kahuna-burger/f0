@@ -63,16 +63,29 @@ const authConfig = {
   tokenEndpoint: `${ISSUER}/token`,
   redirectUri: `${ORIGIN}/cb`,
   postLogoutRedirectUri: `${ORIGIN}/`,
-  scope: 'openid email profile',
+  scope: [
+    'read:users',
+    'write:users',
+    'update:users',
+    'delete:users',
+    'read:apis',
+    'write:apis',
+    'update:apis',
+    'delete:apis',
+    'read:client_grants',
+    'write:client_grants',
+    'update:client_grants',
+    'delete:client_grants'
+  ].join(' '),
   onRefreshTokenExpire: (event) =>
     window.confirm(
       'Session expired. Refresh page to continue using the site?'
     ) && event.login(),
-  //logoutEndpoint: `${ISSUER}/session/end`,
+  logoutEndpoint: `${ISSUER}/session/end`,
   //logoutRedirect: `${ORIGIN}/logged-out`,
-  // extraAuthParams: {
-  //   resource: 'urn:manage'
-  // }, // this is confusing... if they remove the param from auth then what?
+  extraAuthParams: {
+    resource: 'http://localhost:9876/manage/v1'
+  }, // this is confusing... if they remove the param from auth then what?
   extraTokenParameters: {
     resource: 'http://localhost:9876/manage/v1'
   },

@@ -3,6 +3,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import {
+  getApplications,
+  getApplicationsGrantable,
   getResourceServer,
   getResourceServers
 } from './api'
@@ -32,7 +34,8 @@ const routes = [
         path: '/api/:id',
         loader: async ({ params }) => {
           const activeApi = await getResourceServer(params.id)
-          return { activeApi }
+          const clients = await getApplicationsGrantable(params.id)
+          return { activeApi, clients }
         },
         element: <AppServer />
       },

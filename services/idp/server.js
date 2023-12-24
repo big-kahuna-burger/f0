@@ -60,7 +60,6 @@ async function makeFastify(config, pretty) {
     otel: { wrapRoutes: true },
     Account,
     AccountErrors,
-    grantsDebug: process.env.GRANTS_DEBUG,
     localKeySet,
     MANAGEMENT_API: MANAGEMENT
   })

@@ -3,7 +3,20 @@ const { ISSUER } = process.env
 const { protocol, hostname, port } = new URL(ISSUER)
 const combined = port ? `${hostname}:${port}` : hostname
 
-const scopes = ['users:read', 'users:write', 'apis:read', 'apis:write']
+const scopes = [
+  'read:users',
+  'write:users',
+  'update:users',
+  'delete:users',
+  'read:apis',
+  'write:apis',
+  'update:apis',
+  'delete:apis',
+  'read:client_grants',
+  'write:client_grants',
+  'update:client_grants',
+  'delete:client_grants'
+]
 
 const identifier = `${protocol}//${combined}/manage/v1`
 

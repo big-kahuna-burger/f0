@@ -13,7 +13,7 @@ if (pathname === '/') {
 }
 
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-const { provider, Account, AccountErrors, configuration, localKeySet } =
+const { provider, Account, AccountErrors, localKeySet } =
   await configureOidc(host)
 
 const transport = {
@@ -42,7 +42,6 @@ app.register(appService, {
   Account,
   AccountErrors,
   isVercel: true,
-  grantsDebug: process.env.GRANTS_DEBUG,
   localKeySet,
   MANAGEMENT_API: MANAGEMENT
 })

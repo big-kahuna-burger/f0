@@ -19,6 +19,41 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
   return flat
 }
 
+const loadClients = async ({ skip = 0, take = 100, cursor } = {}) => {
+  const clients = await prisma.oidcModel.findMany({
+    skip,
+    take,
+    cursor,
+    orderBy: {
+      updatedAt: 'asc'
+    },
+    where: {
+      type: 7
+    }
+  })
+  console.log('clients', clients)
+  return clients
+}
+
+const loadGrantableClients = async ({ skip = 0, take = 100, cursor } = {}) => {
+  const clients = await prisma.oidcModel.findMany({
+    skip,
+    take,
+    cursor,
+    orderBy: {
+      updatedAt: 'asc'
+    },
+    where: {
+      type: 7,
+      payload: {
+        path: ['grant_types'],
+        array_contains: 'client_credentials'
+      }
+    }
+  })
+  return clients
+}
+
 const updateAccount = async (id, data) => {
   const account = await prisma.account.update({ where: { id }, data })
   return account
@@ -59,6 +94,8 @@ const getResourceServers = async () => {
 export {
   getAccount,
   loadAccounts,
+  loadClients,
+  loadGrantableClients,
   updateAccount,
   createResourceServer,
   getResourceServers,

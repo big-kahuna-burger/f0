@@ -17,14 +17,14 @@ import { useLoaderData } from 'react-router-dom'
 import classes from './AppServer.module.css'
 
 export function AppServer() {
-  const { activeApi } = useLoaderData()
+  const { activeApi, clients } = useLoaderData()
   return (
     <>
       <Tabs defaultValue="permissions">
         <Tabs.List>
           <Tabs.Tab value="quick">Quick Start</Tabs.Tab>
           <Tabs.Tab value="permissions">Permissions</Tabs.Tab>
-          <Tabs.Tab value="applications">Applications</Tabs.Tab>
+          <Tabs.Tab value="applications">Grants</Tabs.Tab>
         </Tabs.List>
 
         <Tabs.Panel value="quick">
@@ -37,7 +37,9 @@ export function AppServer() {
             isReadonly={activeApi.readonly}
           />
         </Tabs.Panel>
-        <Tabs.Panel value="applications">Applications</Tabs.Panel>
+        <Tabs.Panel value="applications">
+          <GrantsPanel api={activeApi} clients={clients} />
+        </Tabs.Panel>
       </Tabs>
     </>
   )
@@ -53,13 +55,13 @@ const Permissions = ({
 }) => {
   const icon = <IconInfoCircle />
   return (
-    <Stack w="100%" h="100%" bg="var(--mantine-color-body)" align="center">
+    <Stack w="100%" h="100%" bg="var(--mantine-color-body)">
       <h1>{name}</h1>
       <h3>Scopes</h3>
 
-      <Text ta="center" fw={500} mt="sm">
+      <Text fw={500} mt="sm">
         Scopes are permissions that can be requested by applications to access
-        your API.
+        APIs.
       </Text>
       <AddAScope available={!isReadonly} />
       {scopes.length ? (
@@ -126,7 +128,7 @@ function scopeDescription(element) {
 function AddAScope({ available }) {
   const icon = <IconInfoCircle />
   return (
-    <>
+    <Stack>
       <h3>Add a Permission</h3>
       {!available ? (
         <Alert variant="light" color="yellow" title="Not Available" icon={icon}>
@@ -137,7 +139,7 @@ function AddAScope({ available }) {
       ) : (
         <AddAPermissionForm />
       )}
-    </>
+    </Stack>
   )
 }
 
@@ -158,29 +160,35 @@ const AddAPermissionForm = () => {
     }
   })
   return (
-    <Stack mx="auto" w={{ base: 200, sm: 400, lg: 1000 }}>
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
-        <Group grow align="center" mt="lg">
-          <TextInput
-            radius="xl"
-            withAsterisk
-            label="Value"
-            placeholder="read:products"
-            {...form.getInputProps('value')}
-          />
-          <TextInput
-            radius="xl"
-            withAsterisk
-            label="Description"
-            placeholder="Read All Products"
-            {...form.getInputProps('description')}
-          />
+    <form onSubmit={form.onSubmit((values) => console.log(values))}>
+      <Group grow align="center" mt="lg">
+        <TextInput
+          radius="xl"
+          withAsterisk
+          label="Value"
+          placeholder="read:products"
+          {...form.getInputProps('value')}
+        />
+        <TextInput
+          radius="xl"
+          withAsterisk
+          label="Description"
+          placeholder="Read All Products"
+          {...form.getInputProps('description')}
+        />
 
-          <Group align="center" mt="lg">
-            <Button type="submit">Submit</Button>
-          </Group>
+        <Group align="center" mt="lg">
+          <Button type="submit">Submit</Button>
         </Group>
-      </form>
+      </Group>
+    </form>
+  )
+}
+
+function GrantsPanel({ api, clients = [] }) {
+  return (
+    <Stack>
+      <Code block>{JSON.stringify({ api, clients }, null, 2)}</Code>
     </Stack>
   )
 }

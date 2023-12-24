@@ -31,7 +31,16 @@ export default async function managementRouter(fastify, opts) {
   fastify.get('/users', getUsers)
   fastify.post('/apis/create', createResourceServer)
   fastify.get('/apis/:id', getResourceServer)
+  fastify.get('/api/:id/grantable', getResourceServerGrantable)
   fastify.get('/apis', getAllResourceServers)
+  fastify.get('/apps', getAllClients)
+
+  async function getAllClients(request) {
+    const { page = 1, size = 20 } = request.query
+
+    const clients = await api.loadClients({ page, size })
+    return clients
+  }
 
   async function getUser(request) {
     const account = await api.getAccount(request.params.id)
@@ -49,7 +58,21 @@ export default async function managementRouter(fastify, opts) {
     const resourceServers = [MANAGEMENT, ...(await api.getResourceServers())]
     return resourceServers.map(resourceServerMap)
   }
-
+  async function getResourceServerGrantable(request) {
+    const { page = 1, size = 20 } = request.query
+    const { id } = request.params
+    console.log({ id })
+    if (id === 'management') {
+      const clients = await api.loadGrantableClients({ page, size, forApi: MANAGEMENT.identifier })
+      return clients
+    }
+    const rs = await api.getResourceServer(id)
+    if (!rs) {
+      return []
+    }
+    const clients = await api.loadGrantableClients({ page, size, forApi: rs.identifier })
+    return clients
+  }
   async function getResourceServer(request, reply) {
     const { id } = request.params
     if (id === MANAGEMENT.id) {

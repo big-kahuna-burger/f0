@@ -1,6 +1,7 @@
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
 import '../env.js'
+import subscribe from './events.js'
 import { calculateJwks } from './helpers/keystore.js'
 import redirectToHttps from './helpers/koa-https-redirect.js'
 import configureKoaOtel from './helpers/koa-otel.js'
@@ -26,6 +27,7 @@ async function configure(iss, adapterArg) {
 
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
   
+  subscribe(provider)
   if (secureContextRequired) {
     provider.use(koaPino())
     provider.proxy = true
