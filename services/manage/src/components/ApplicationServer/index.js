@@ -31,14 +31,9 @@ import {
   IconInfoCircle,
   IconTrash
 } from '@tabler/icons-react'
-import {
-  useLoaderData,
-  useLocation,
-  useNavigate,
-  useSearchParams
-} from 'react-router-dom'
+import { useLoaderData, useNavigate } from 'react-router-dom'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import classes from './AppServer.module.css'
 
 import { useColorScheme } from '@mantine/hooks'
@@ -50,48 +45,32 @@ import {
   updateResourceServerScopes
 } from '../../api'
 
-function useQuery() {
-  const { search } = useLocation()
-  return useMemo(() => new URLSearchParams(search), [search])
-}
-
 export function AppServer() {
-  const query = useQuery()
-  const fromQuery = query.get('tab')
-  const activeTab = ['quick', 'permissions', 'grants', 'settings'].includes(
-    fromQuery
-  )
-    ? fromQuery
-    : 'quick'
-  const { activeApi, grants, applications } = useLoaderData()
-  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const { activeApi, grants, applications, tab } = useLoaderData()
   return (
-    <>
+    <Group grow align="center" justify="center">
       <Tabs
-        defaultValue={activeTab}
-        onChange={(value) => {
-          setSearchParams({ tab: value })
-        }}
+        defaultValue={tab}
+        onChange={(value) => navigate(`/api/${activeApi.id}/${value}`)}
       >
-        <Tabs.List>
+        <Tabs.List grow justify="center">
           <Tabs.Tab value="quick">Quick Start</Tabs.Tab>
           <Tabs.Tab value="settings">Settings</Tabs.Tab>
           <Tabs.Tab value="permissions">Permissions</Tabs.Tab>
           <Tabs.Tab value="grants">Grants</Tabs.Tab>
         </Tabs.List>
 
-        <Tabs.Panel value="quick">
-          <ApiHeader api={activeApi} />
-        </Tabs.Panel>
+        <ApiHeader api={activeApi} />
+        <Tabs.Panel value="quick">NONE</Tabs.Panel>
         <Tabs.Panel value="settings">
-          <ApiHeader api={activeApi} />
           <Settings api={activeApi} />
         </Tabs.Panel>
         <Tabs.Panel value="permissions">
           <Permissions
             name={activeApi.name}
             scopes={activeApi.scopes}
-            isReadonly={activeApi.readonly}
+            isReadonly={activeApi.readOnly}
             api={activeApi}
           />
         </Tabs.Panel>
@@ -103,23 +82,21 @@ export function AppServer() {
           />
         </Tabs.Panel>
       </Tabs>
-    </>
+    </Group>
   )
 }
 
 const Permissions = ({ api }) => {
   const icon = <IconInfoCircle />
   return (
-    <Stack w="100%" h="100%" bg="var(--mantine-color-body)">
-      <ApiHeader api={api} />
-
+    <Stack maw={1200} bg="var(--mantine-color-body)">
       <Text fw={500} mt="sm">
         Scopes are permissions that can be requested by applications to access
         APIs.
       </Text>
-      <AddAScope available={!api.readonly} api={api} />
-      {api.scopes.length ? (
-        <Scopes items={api.scopes} isReadonly={api.readonly} />
+      <AddAScope available={!api.readOnly} api={api} />
+      {Object.keys(api.scopes).length ? (
+        <Scopes api={api} />
       ) : (
         <Alert variant="light" color="blue" title="No Scopes" icon={icon}>
           No scopes are defined for this API
@@ -129,31 +106,42 @@ const Permissions = ({ api }) => {
   )
 }
 
-const Scopes = ({ items = [], isReadonly }) => {
+const Scopes = ({ api }) => {
   return (
     <>
       <h3>List of Permissions</h3>
-      <Demo elements={items} isReadonly={isReadonly} />
+      <ScopeListEditable api={api} />
     </>
   )
 }
 
-function Demo({ elements, isReadonly = false }) {
-  const rows = elements.map((element) => (
-    <Table.Tr key={element}>
+function ScopeListEditable({ api }) {
+  const elements = api.scopes
+  const navigate = useNavigate()
+  const handleScopeDelete = (scope) => {
+    updateResourceServerScopes(api.id, {
+      add: [],
+      remove: [scope]
+    }).then(() => {
+      navigate(`/api/${api.id}/permissions`)
+    })
+  }
+  const readonly = api.readOnly
+  const rows = Object.entries(elements).map(([scope, description]) => (
+    <Table.Tr key={scope}>
       <Table.Td>
-        <Code>{element}</Code>
+        <Code>{scope}</Code>
       </Table.Td>
-      <Table.Td>{scopeDescription(element)}</Table.Td>
-      {!isReadonly && (
+      <Table.Td>{description}</Table.Td>
+      {!readonly && (
         <Table.Td>
-          {
-            <IconTrash
-              style={{ width: rem(16), height: rem(16) }}
-              stroke={1.5}
-              color="red"
-            />
-          }
+          <ActionIcon
+            variant="filled"
+            aria-label="Delete Scope"
+            onClick={(e) => handleScopeDelete(scope)}
+          >
+            <IconTrash style={{ width: '70%', height: '70%' }} stroke={1.5} />
+          </ActionIcon>
         </Table.Td>
       )}
     </Table.Tr>
@@ -173,10 +161,6 @@ function Demo({ elements, isReadonly = false }) {
       </Table>
     </Table.ScrollContainer>
   )
-}
-
-function scopeDescription(element) {
-  return {}[element] || 'No description'
 }
 
 function AddAScope({ available, api }) {
@@ -199,6 +183,7 @@ function AddAScope({ available, api }) {
 
 const AddAPermissionForm = ({ api }) => {
   const navigate = useNavigate()
+  const existing = Object.keys(api.scopes)
   const form = useForm({
     initialValues: {
       value: '',
@@ -208,7 +193,7 @@ const AddAPermissionForm = ({ api }) => {
     validate: {
       value: (value) =>
         value.length >= 2
-          ? !api.scopes.includes(value)
+          ? !existing.includes(value)
             ? null
             : 'Should be a new scope value. This one exists.'
           : 'Invalid value. Must be at least 2 chars at least.'
@@ -227,7 +212,7 @@ const AddAPermissionForm = ({ api }) => {
       add: [{ value, description }],
       remove: []
     }).then(() => {
-      navigate(`/api/${api.id}?tab=permissions`)
+      navigate(`/api/${api.id}/permissions`)
     })
   }
 
@@ -258,8 +243,7 @@ const AddAPermissionForm = ({ api }) => {
 
 function GrantsPanel({ api, grants = [], applications }) {
   return (
-    <Stack>
-      <ApiHeader api={api} />
+    <Stack maw={1200}>
       <AppsAccordion applications={applications} grants={grants} api={api} />
     </Stack>
   )
@@ -275,12 +259,12 @@ function AppsAccordion({ applications, grants = [], api }) {
         clientId: item.client_id,
         identifier: api.identifier
       }).then(() => {
-        navigate(`/api/${api.id}?tab=grants`)
+        navigate(`/api/${api.id}/grants`)
       })
     }
     const handleWithDelete = () => {
       deleteGrantById(grantFound.grantId).then(() => {
-        navigate(`/api/${api.id}?tab=grants`)
+        navigate(`/api/${api.id}/grants`)
       })
     }
     return (
@@ -340,9 +324,9 @@ export function ActiveOptionsFilter({ api, item }) {
   const navigate = useNavigate()
   const theme = useMantineTheme()
   const scheme = useColorScheme(localStorage.getItem('mng-color-scheme'))
-  const apiScopes = api.scopes.filter((s) => s.length)
+  const apiScopes = Object.keys(api.scopes)
   const [possible] = useState(apiScopes)
-  const grantedScopes = item.scopes.filter((s) => s.length)
+  const grantedScopes = item.scopes
   const [given, setGiven] = useState(grantedScopes)
   const [dirty, setDirty] = useState(false)
 
@@ -355,7 +339,7 @@ export function ActiveOptionsFilter({ api, item }) {
 
   const handleSaveGrant = () => {
     updateGrantById(item.grantId, given, api.identifier).then(() => {
-      navigate(`/api/${api.id}?tab=grants`)
+      navigate(`/api/${api.id}/grants`)
     })
   }
 
@@ -439,35 +423,19 @@ export function ActiveOptionsFilter({ api, item }) {
 
 function ApiHeader({ api }) {
   return (
-    <>
+    <Group maw={600} justify="space-around" align="center">
       <h3>{api.name}</h3>
-      <Group>
-        <Badge size="md" color="blue">
-          {api.identifier}
-        </Badge>
-        <CopyButton value={api.identifier} timeout={2000}>
-          {({ copied, copy }) => (
-            <Tooltip
-              label={copied ? 'Copied' : 'Copy'}
-              withArrow
-              position="right"
-            >
-              <ActionIcon
-                color={copied ? 'teal' : 'gray'}
-                variant="subtle"
-                onClick={copy}
-              >
-                {copied ? (
-                  <IconCheck style={{ width: rem(18) }} />
-                ) : (
-                  <IconCopy style={{ width: rem(18) }} />
-                )}
-              </ActionIcon>
-            </Tooltip>
-          )}
-        </CopyButton>
-      </Group>
-    </>
+      {/* {Object.entries(api).map(([key, value]) => {
+        return (
+          <Badge key={key} size="xs" color="blue">
+            {key}: {JSON.stringify(value)}
+          </Badge>
+        )
+      })} */}
+      <Badge size="md" color="blue">
+        {api.identifier}
+      </Badge>
+    </Group>
   )
 }
 
@@ -478,8 +446,8 @@ function Settings({ api }) {
     initialValues: {
       name: api.name,
       ttl: api.ttl || 86000,
-      ttl_browser: api.ttl_browser || 7200,
-      allow_skip_consent: api.allow_skip_consent || true
+      ttlBrowser: api.ttlBrowser || 7200,
+      allowSkipConsent: api.allowSkipConsent || true
     },
     onValuesChange: () => setDirty(true),
     validate: {
@@ -491,25 +459,28 @@ function Settings({ api }) {
         Number.isFinite(value) && value > 0
           ? null
           : 'Invalid value. Must be a number greater than 0',
-      ttl_browser: (value) =>
+      ttlBrowser: (value) =>
         Number.isFinite(value) && value > 0 && value <= form.values.ttl
           ? null
           : 'Invalid value. Must be a number greater than 0 and less than TTL',
-      allow_skip_consent: (value) => null
+      allowSkipConsent: (value) => null
     }
   })
+  const [checked, setChecked] = useState(api.allowSkipConsent)
 
   const handleSave = () => {
     if (form.validate().hasErrors) {
       return
     }
+    setDirty(false)
     updateApi(api.id, form.values).then(() => {
-      navigate(`/api/${api.id}?tab=settings`)
+      setDirty(false)
+      navigate(`/api/${api.id}/settings`)
     })
   }
 
   return (
-    <Stack gap="xl">
+    <Stack maw={1200}>
       <Divider />
       <Group grow align="center" justify="space-around" gap="xs">
         General Settings
@@ -583,14 +554,15 @@ function Settings({ api }) {
             withAsterisk
             label="Token Expiration for Browser Flows (in seconds)"
             description="Expiration value (in seconds) for access tokens issued for this API using Implicit flow. Cannot be greater than the Token TTL value."
-            {...form.getInputProps('ttl_browser')}
+            {...form.getInputProps('ttlBrowser')}
             onChange={(e) => {
-              form.setFieldValue('ttl_browser', parseInt(e.target.value))
+              form.setFieldValue('ttlBrowser', parseInt(e.target.value))
               form.validate()
             }}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
           />
           <TextInput
+            w={150}
             withAsterisk
             label="Signing Algorithm"
             value={api.signingAlg}
@@ -605,26 +577,21 @@ function Settings({ api }) {
         Access Settings
         <Stack gap="sm">
           <Switch.Group
-            defaultValue={['react']}
             label="Skip user consent for first party apps"
             description="Toggling this on will allow first party applications to skip the consent prompt when requesting access to this API."
             withAsterisk
-          >
-            <Group mt="xs">
-              <Switch
-                {...form.getInputProps('allow_skip_consent')}
-                onChange={(e) => {
-                  form.setFieldValue(
-                    'allow_skip_consent',
-                    !form.values.allow_skip_consent
-                  )
-                }}
-                value="allow_skip_consent"
-                label="Allow"
-                size="lg"
-              />
-            </Group>
-          </Switch.Group>
+          />
+          <Switch
+            checked={checked}
+            onChange={(event) => {
+              setDirty(true)
+              setChecked(event.currentTarget.checked)
+              form.setFieldValue(
+                'allowSkipConsent',
+                event.currentTarget.checked
+              )
+            }}
+          />
         </Stack>
       </Group>
       <Group justify="center">

@@ -208,12 +208,18 @@ const updateResourceServerScopes = async (id, add, remove) => {
   if (!resourceServer) {
     throw new Error('resource server not found')
   }
-  const { scopes } = resourceServer
-  const newScopes = scopes.filter((x) => !remove.includes(x)).concat(add)
-  const unique = [...new Set(newScopes)]
+  const scopes = { ...resourceServer.scopes }
+  for (const { value, description } of add) {
+    scopes[value] = description
+  }
+
+  for (const value of remove) {
+    delete scopes[value]
+  }
+
   const updated = await prisma.resourceServer.update({
     where: { id },
-    data: { scopes: unique }
+    data: { scopes: scopes }
   })
   return updated
 }
@@ -257,16 +263,11 @@ const loadGrantsByResourceIdentifier = async ({
 
 async function updateResourceServer(
   id,
-  { name, ttl, ttl_browser, allow_skipping_consent }
+  { name, ttl, ttlBrowser, allowSkipConsent }
 ) {
   const rs = await prisma.resourceServer.update({
     where: { id },
-    data: {
-      name,
-      ttl,
-      ttlBrowser: ttl_browser,
-      allowSkipConsent: allow_skipping_consent
-    }
+    data: { name, ttl, ttlBrowser, allowSkipConsent }
   })
   return rs
 }

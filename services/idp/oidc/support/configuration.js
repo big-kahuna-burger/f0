@@ -120,6 +120,9 @@ export default {
         //                           Default is that the array is provided so that the request will fail.
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
+        if (client.clientId === 'myClientID') {
+          return 'http://localhost:9876/manage/v1'
+        }
         console.log('defaultResource', client.clientId, oneOf)
         return undefined
         // if (oneOf) return oneOf[0]
@@ -140,7 +143,7 @@ export default {
               client.clientId
             )
             return {
-              scope: MANAGEMENT.scopes.join(' '),
+              scope: Object.keys(MANAGEMENT.scopes).join(' '),
               audience: MANAGEMENT.identifier,
               accessTokenTTL: 30 * 60, // 1/2 hours
               accessTokenFormat: 'jwt',

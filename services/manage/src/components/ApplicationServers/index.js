@@ -39,7 +39,7 @@ export function AppServers() {
     <>
       <CreateModal
         onApiCreated={(api) => {
-          navigate(`/api/${api.id}`)
+          navigate(`/api/${api.id}/quick`)
         }}
       />
       <Table.ScrollContainer>
@@ -78,7 +78,7 @@ export function AppServers() {
                       direction="column"
                       wrap="wrap"
                     >
-                      <NavLink label={item.name} href={`/api/${item.id}`} />
+                      <NavLink label={item.name} href={`/api/${item.id}/quick`} />
                       {item.readonly && (
                         <Badge
                           color={theme.colors.myAltColor[3]}

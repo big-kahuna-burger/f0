@@ -11,7 +11,7 @@ const openregClient = await issuer.Client.register({
   response_types: [],
   application_type: 'native',
   client_name: `Dynamic Client Registration at ${Date.now()}`,
-  token_endpoint_auth_method: 'client_secret_basic',
+  token_endpoint_auth_method: 'client_secret_post',
   grant_types: ['client_credentials']
 })
 
