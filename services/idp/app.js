@@ -32,7 +32,7 @@ export default async function runme(fastify, opts) {
       }
     }
   })
-
+  
   fastify.register(Static, {
     root: path.join(__dirname, 'public')
   })
@@ -45,7 +45,7 @@ export default async function runme(fastify, opts) {
     defaultContext: {
       uid: '',
       vercel: opts.isVercel,
-      showDebug: opts.grantsDebug
+      showDebug: process.env.GRANTS_DEBUG
     }
   })
 

@@ -1,6 +1,7 @@
 import middie from '@fastify/middie'
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
+import { MANAGEMENT } from '../resource-servers/management.js'
 const config = {}
 const parsedHost = new URL(config?.issuer || process.env.ISSUER)
 const { hostname, protocol, port, pathname } = parsedHost
@@ -12,7 +13,7 @@ if (pathname === '/') {
 }
 
 const host = `${protocol}//${hostname}${port ? `:${port}` : ''}${pathname}`
-const { provider, Account, AccountErrors, configuration, localKeySet } =
+const { provider, Account, AccountErrors, localKeySet } =
   await configureOidc(host)
 
 const transport = {
@@ -24,7 +25,7 @@ const transport = {
 }
 
 const logger = {
-  msgPrefix: 'pino:',
+  msgPrefix: 'api:',
   transport
 }
 const fastifyOpts = { logger }
@@ -33,14 +34,16 @@ export const app = Fastify(fastifyOpts)
 
 await app.register(middie)
 app.use(pathname, provider.callback())
+
 const appService = await import('../app.js')
+
 app.register(appService, {
   oidc: provider,
   Account,
   AccountErrors,
   isVercel: true,
-  grantsDebug: process.env.GRANTS_DEBUG,
-  localKeySet
+  localKeySet,
+  MANAGEMENT_API: MANAGEMENT
 })
 
 export const handler = async (req, res) => {

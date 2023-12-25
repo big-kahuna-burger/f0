@@ -119,12 +119,15 @@ model PasswordHash {
 }
 
 model ResourceServer {
-  id         String         @id @default(dbgenerated("gen_random_uuid()"))
-  name       String
-  identifier String         @unique
-  signingAlg RS_SIGNING_ALG @default(RS256)
-  scopes     String[]
-  updatedAt  DateTime       @updatedAt
+  id               String         @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  identifier       String         @unique
+  signingAlg       RS_SIGNING_ALG @default(RS256)
+  scopes           String[]
+  updatedAt        DateTime       @updatedAt
+  ttl              Int            @default(86400)
+  ttlBrowser       Int            @default(7200)
+  allowSkipConsent Boolean        @default(false)
 
   @@map("resource_server")
 }

@@ -12,9 +12,7 @@ const pluginFn = async (fastify, opts) => {
     throw new Error('options must be provided and must be an object')
   }
   
-  const { requestExtractor = defaultRequestExtractor, ..._options } = {
-    ...options
-  }
+  const { requestExtractor = defaultRequestExtractor, ..._options } = options
   
   if (requestExtractor && typeof requestExtractor !== 'function') {
     throw new Error(
@@ -28,13 +26,11 @@ const pluginFn = async (fastify, opts) => {
   }
 
   fastify.decorate(key, async function verifyToken(token) {
-    const { protectedHeader, payload } = await jwtVerify(token, secret, options)
+    const { protectedHeader, payload } = await jwtVerify(token, secret, _options)
     return { protectedHeader, payload }
   })
 
-  fastify.decorateRequest(key, requestVerify)
-
-  async function requestVerify() {
+  fastify.decorateRequest(key, async function requestVerify() {
     const token = await requestExtractor(this)
     if (!token) {
       throw new Error('No token found in request')
@@ -42,10 +38,10 @@ const pluginFn = async (fastify, opts) => {
     const { protectedHeader, payload } = await fastify.jwtVerify(
       token,
       secret,
-      options
+      _options
     )
     this.joseResult = { token, protectedHeader, payload }
-  }
+  })  
 }
 
 const pluginOpts = { fastify: '^4.x', name: 'fastify-jose-verify' }

@@ -1,5 +1,8 @@
+import Prisma from '@prisma/client'
 import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
+import dbClient from '../../db/client.js'
+import { MANAGEMENT } from '../../resource-servers/management.js'
 import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 // TODO dynamic features state loading
@@ -12,7 +15,7 @@ export default {
       if (key === CORS_PROP) {
         return corsPropValidator(value, metadata) // this can be context aware but not async really
       }
-      return {}
+      return metadata
     }
   },
   clientBasedCORS(ctx, origin, client) {
@@ -31,11 +34,14 @@ export default {
       client_secret: 'myClientSecret',
       client_name: 'My Client',
       grant_types: ['authorization_code', 'refresh_token'],
-      redirect_uris: ['http://localhost:3036/cb'],
+      redirect_uris: [
+        'http://localhost:3036/cb',
+        'http://localhost:9876/documentation/static/oauth2-redirect.html'
+      ],
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
-      post_logout_redirect_uris: ['http://localhost:3036/logged-out'],
-      [CORS_PROP]: ['http://localhost:3036']
+      post_logout_redirect_uris: [],
+      [CORS_PROP]: ['http://localhost:3036', 'http://localhost:9876']
     }
   ],
   interactions: {
@@ -88,6 +94,19 @@ export default {
     encryption: { enabled: true },
     jwtUserinfo: { enabled: true },
     mTLS: { enabled: true },
+    introspection: {
+      enabled: true,
+      allowedPolicy: async (ctx, client, token) => {
+        console.log('ALLOWED', client, token, 'END ALLOWED')
+        if (
+          client.clientAuthMethod === 'none' &&
+          token.clientId !== ctx.oidc.client.clientId
+        ) {
+          return false
+        }
+        return true
+      }
+    },
     // jwtIntrospection: { enabled: true },
     // jwtResponseModes: { enabled: true },
     // pushedAuthorizationRequests: { enabled: true },
@@ -101,30 +120,83 @@ export default {
         //                           Default is that the array is provided so that the request will fail.
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
-        if (oneOf) return oneOf
-        return client.clientId === 'myClientID' ? 'urn:manage' : null // TODO: make this better
+        console.log('defaultResource', client.clientId, oneOf)
+        return undefined
+        // if (oneOf) return oneOf[0]
+        // return 'http://localhost:9876/manage/v1'
+        // // return client.clientId === 'myClientID'
+        // //   ? 'http://localhost:9876/manage/v1'
+        // //   : null
       },
       async getResourceServerInfo(ctx, resourceIndicator, client) {
         // @param ctx - koa request context
         // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
         // @param client - client making the request
-        if (
-          resourceIndicator === 'urn:manage' &&
-          client.clientId === 'myClientID'
-        ) {
-          // TODO: Make this better
-          return {
-            scope: 'read:users update:users',
-            audience: resourceIndicator,
-            accessTokenTTL: 30 * 60, // 1/2 hours
-            accessTokenFormat: 'jwt',
-            jwt: {
-              sign: { alg: 'ES256' }
+        console.log('getResourceServerInfo', resourceIndicator, client)
+        if (resourceIndicator === MANAGEMENT.identifier) {
+          if (client.clientId === 'myClientID') {
+            console.log(
+              'static myClient REQUESTED, allowing everything!',
+              client.clientId
+            )
+            return {
+              scope: MANAGEMENT.scopes.join(' '),
+              audience: MANAGEMENT.identifier,
+              accessTokenTTL: 30 * 60, // 1/2 hours
+              accessTokenFormat: 'jwt',
+              jwt: {
+                sign: { alg: 'ES256' }
+              }
             }
           }
+          // find grant by client id and a resource indicator identifier/ a audience
         }
+        try {
+          const grant = await dbClient.oidcModel.findFirst({
+            where: {
+              AND: [
+                {
+                  type: 13
+                },
+                {
+                  payload: {
+                    path: ['clientId'],
+                    equals: client.clientId
+                  }
+                },
+                {
+                  payload: {
+                    path: ['resources', resourceIndicator],
+                    not: Prisma.DbNull
+                  }
+                },
+                {
+                  payload: {
+                    path: ['exp'],
+                    equals: 0
+                  }
+                }
+              ]
+            }
+          })
+          console.log({ grant, ci: client.clientId, resourceIndicator })
+          if (grant) {
+            return {
+              scope: grant.payload.resources[resourceIndicator],
+              audience: resourceIndicator,
+              accessTokenTTL: 30 * 60,
+              accessTokenFormat: 'jwt',
+              jwt: {
+                sign: { alg: 'ES256' }
+              }
+            }
+          }
+        } catch (error) {
+          console.log(error)
+        }
+        
         throw new errors.InvalidTarget(
-          `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
+         `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
         )
       },
       async useGrantedResource(ctx, model) {
@@ -132,6 +204,7 @@ export default {
         // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
         //                RefreshToken, or DeviceCode model instance.
         //                You can use the instanceof operator to determine the type.
+        
         return true
       }
     },
@@ -141,5 +214,11 @@ export default {
     userinfo: { enabled: true }
   },
   jwks: { keys: [] }, // will be dynamically loaded
-  ttl
+  ttl,
+  pkce: {
+    methods: ['S256'],
+    required: function pkceRequired(ctx, client) {
+      return client.clientId !== 'myClientID'
+    }
+  }
 }

@@ -2,11 +2,14 @@
 import './env.js'
 
 import middie from '@fastify/middie'
+import FastifySwagger from '@fastify/swagger'
+import FastifySwaggerUI from '@fastify/swagger-ui'
 import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import { configureOidc } from './oidc/index.js'
-
+import { MANAGEMENT } from './resource-servers/management.js'
+import { swaggerOpts } from './swagger-opts.js'
 const { ISSUER, FASTIFY_CLOSE_GRACE_DELAY = 500 } = process.env
 const { port } = new URL(ISSUER)
 
@@ -48,6 +51,10 @@ async function makeFastify(config, pretty) {
 
   const oidCallback = provider.callback()
   app.use(pathname, oidCallback)
+  const slower = seconds => (req, res, next) => {
+    return setTimeout(next, seconds * 1000)
+  }
+  app.use(slower(0.1))
 
   const appService = await import('./app.js')
   await app.register(appService, {
@@ -55,8 +62,8 @@ async function makeFastify(config, pretty) {
     otel: { wrapRoutes: true },
     Account,
     AccountErrors,
-    grantsDebug: process.env.GRANTS_DEBUG,
-    localKeySet
+    localKeySet,
+    MANAGEMENT_API: MANAGEMENT
   })
 
   // delay is the number of milliseconds for the graceful close to finish
@@ -85,7 +92,25 @@ async function makeFastify(config, pretty) {
 
 async function start(port, pretty) {
   const app = await makeFastify(null, pretty)
+  await app.register(FastifySwagger, swaggerOpts)
+  await app.register(FastifySwaggerUI, {
+    routePrefix: '/documentation',
+    uiConfig: {
+      docExpansion: 'full',
+      deepLinking: false
+    },
+    uiHooks: {
+      onRequest: (request, reply, next) => { next() },
+      preHandler: (request, reply, next) => { next() }
+    },
+    staticCSP: true,
+    transformStaticCSP: (header) => header,
+    transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+    transformSpecificationClone: true
+  })
   await app.ready()
+  app.swagger()
+  
   // console.log(
   //   app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] })
   // )

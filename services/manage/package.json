@@ -12,10 +12,11 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "clsx": "^2.0.0",
+    "date-fns": "^3.0.6",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-oauth2-code-pkce": "^1.16.0",
-    "react-router-dom": "^6.21.0",
+    "react-router-dom": "^6.21.1",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4"
   },
@@ -26,12 +27,6 @@
     "lint:fix": "biome check --apply .",
     "lint": "biome check .",
     "lint:ci": "biome ci ."
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
