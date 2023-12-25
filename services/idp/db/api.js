@@ -219,7 +219,7 @@ const updateResourceServerScopes = async (id, add, remove) => {
 
   const updated = await prisma.resourceServer.update({
     where: { id },
-    data: { scopes: scopes }
+    data: { scopes }
   })
   return updated
 }
