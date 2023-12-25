@@ -62,7 +62,7 @@ const authConfig = {
   authorizationEndpoint: `${ISSUER}/auth`,
   tokenEndpoint: `${ISSUER}/token`,
   redirectUri: `${ORIGIN}/cb`,
-  postLogoutRedirectUri: `${ORIGIN}/`,
+  postLogoutRedirectUri: `${ORIGIN}/cb`,
   scope: [
     'openid',
     'offline_access',

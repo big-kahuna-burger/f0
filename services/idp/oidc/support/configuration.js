@@ -40,7 +40,7 @@ export default {
       ],
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
-      post_logout_redirect_uris: [],
+      post_logout_redirect_uris: ['http://localhost:3036/cb', 'http://localhost:3036/'],
       [CORS_PROP]: ['http://localhost:3036', 'http://localhost:9876']
     }
   ],

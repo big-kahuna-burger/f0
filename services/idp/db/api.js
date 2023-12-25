@@ -196,8 +196,12 @@ const getResourceServer = async (id) => {
   return resourceServer
 }
 
-const getResourceServers = async () => {
-  const resourceServers = await prisma.resourceServer.findMany()
+const getResourceServers = async ({ sort = 'desc' }) => {
+  const resourceServers = await prisma.resourceServer.findMany({
+    orderBy: {
+      updatedAt: sort
+    }
+  })
   return resourceServers
 }
 
