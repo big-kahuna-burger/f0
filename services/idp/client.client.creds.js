@@ -10,16 +10,39 @@ const openregClient = await issuer.Client.register({
   redirect_uris: [],
   response_types: [],
   application_type: 'native',
-  token_endpoint_auth_method: 'client_secret_post',
+  client_name: `Dynamic Client Registration at ${Date.now()}`,
+  token_endpoint_auth_method: 'client_secret_basic',
   grant_types: ['client_credentials']
 })
 
-const tokenSet = await openregClient.grant({
-  grant_type: 'client_credentials',
-  scope: 'read:users write:users',
-  resource: 'http://localhost:9876/manage/v1'
+process.stdin.pause();
+query('http://localhost:9876/manage/v1', async () => {
+  try {
+    const tokenSet = await openregClient.grant({
+      grant_type: 'client_credentials',
+      scope: 'read:users write:users kobas',
+      resource: 'http://localhost:9876/manage/v1'
+    })
+    // const grant = await got.post(grantsCreateUrl, {
+    //   json: {
+    //     identifier: 'http://localhost:9876/manage/v1',
+    //     clientId: openregClient.client_id,
+    //     scope: 'read:users write:users'
+    //   },
+    //   headers: {
+    //     Authorization: `Bearer ${tokenSet.access_token}`
+    //   }
+    // })
+    console.log(tokenSet)
+  } catch (error) {
+    console.log(error)
+  }
 })
 
-const { body } = await openregClient.requestResource('http://localhost:9876/manage/v1/users', tokenSet.access_token)
-
-console.log(tokenSet, JSON.parse(body.toString())[0])
+function query(text, callback) {
+  process.stdin.resume()
+  process.stdout.write(`Please wait until granted access: ${text}`)
+  process.stdin.once('data', (data) => {
+    callback(data.toString().trim())
+  })
+}

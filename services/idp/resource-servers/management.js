@@ -25,7 +25,8 @@ const MANAGEMENT = {
   name: 'Management API',
   scopes,
   identifier,
-  readonly: true
+  readonly: true,
+  signingAlg: 'RS256'
 }
 //comment
 const READONLY = { MANAGEMENT, identifier, scopes }

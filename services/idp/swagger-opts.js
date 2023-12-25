@@ -1,40 +1,26 @@
 export const swaggerOpts = {
-  swagger: {
+  openapi: {
     info: {
-      title: 'Test swagger',
-      description: 'Testing the Fastify swagger API',
-      version: '0.1.0'
+      title: 'Management API',
+      description: 'Use to test mgmt api v1',
+      version: '1.0.0'
     },
-    externalDocs: {
-      url: 'https://swagger.io',
-      description: 'Find more info here'
-    },
-    host: 'localhost',
-    schemes: ['http'],
-    consumes: ['application/json'],
-    produces: ['application/json'],
-    tags: [
-      { name: 'user', description: 'User related end-points' },
-      { name: 'code', description: 'Code related end-points' }
+    servers: [
+      {
+        url: 'http://localhost:9876'
+      }
     ],
-    definitions: {
-      User: {
-        type: 'object',
-        required: ['id', 'email'],
-        properties: {
-          id: { type: 'string', format: 'uuid' },
-          firstName: { type: 'string' },
-          lastName: { type: 'string' },
-          email: { type: 'string', format: 'email' }
+    components: {
+      securitySchemes: {
+        oidc: {
+          type: 'openIdConnect',
+          openIdConnectUrl: 'http://localhost:9876/oidc/.well-known/openid-configuration',
+          description: 'OpenID Connect'
+          
         }
       }
-    },
-    securityDefinitions: {
-      apiKey: {
-        type: 'apiKey',
-        name: 'apiKey',
-        in: 'header'
-      }
     }
-  }
+  },
+  hideUntagged: true,
+  exposeRoute: true
 }

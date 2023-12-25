@@ -1,7 +1,7 @@
 import * as api from '../../../db/api.js'
 import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
+import { allowedClientFields } from '../../../helpers/validation-constants.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
-
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 
 export default async function managementRouter(fastify, opts) {
@@ -31,15 +31,39 @@ export default async function managementRouter(fastify, opts) {
   fastify.get('/users', getUsers)
   fastify.post('/apis/create', createResourceServer)
   fastify.get('/apis/:id', getResourceServer)
-  fastify.get('/api/:id/grantable', getResourceServerGrantable)
+  fastify.put('/api/:id/scopes', updateScopes)
+  fastify.put('/api/:id', updateApi)
+  fastify.get('/api/:id/grants', getGrantsByResourceServerId)
+  fastify.post('/grants/create', createGrant)
+  fastify.put('/grants/:id', updateGrant)
+  fastify.delete('/grants/:id', deleteGrant)
   fastify.get('/apis', getAllResourceServers)
   fastify.get('/apps', getAllClients)
 
   async function getAllClients(request) {
-    const { page = 1, size = 20 } = request.query
+    const {
+      page = 1,
+      size = 20,
+      grant_types_include,
+      include,
+      token_endpoint_auth_method_not
+    } = request.query
+    const fields = include ? include.split(',') : []
+    if (!fields.every((f) => allowedClientFields.includes(f))) {
+      throw new Error('invalid fields found in include query param')
+    }
+    const clients = await api.loadClients({
+      page,
+      size,
+      grant_types_include,
+      include,
+      token_endpoint_auth_method_not
+    })
+    const payloads = clients.map((x) =>
+      Object.fromEntries(fields.map((f) => [f, x[f] || x.payload[f]]))
+    )
 
-    const clients = await api.loadClients({ page, size })
-    return clients
+    return payloads
   }
 
   async function getUser(request) {
@@ -58,20 +82,21 @@ export default async function managementRouter(fastify, opts) {
     const resourceServers = [MANAGEMENT, ...(await api.getResourceServers())]
     return resourceServers.map(resourceServerMap)
   }
-  async function getResourceServerGrantable(request) {
+  async function getGrantsByResourceServerId(request) {
     const { page = 1, size = 20 } = request.query
     const { id } = request.params
-    console.log({ id })
-    if (id === 'management') {
-      const clients = await api.loadGrantableClients({ page, size, forApi: MANAGEMENT.identifier })
-      return clients
-    }
-    const rs = await api.getResourceServer(id)
+    const rs =
+      id === MANAGEMENT.id ? MANAGEMENT : await api.getResourceServer(id)
     if (!rs) {
-      return []
+      throw new Error(`resource server not found ${id}`)
     }
-    const clients = await api.loadGrantableClients({ page, size, forApi: rs.identifier })
-    return clients
+
+    const grants = await api.loadGrantsByResourceIdentifier({
+      page,
+      size,
+      identifier: rs.identifier
+    })
+    return grants
   }
   async function getResourceServer(request, reply) {
     const { id } = request.params
@@ -101,14 +126,49 @@ export default async function managementRouter(fastify, opts) {
     } catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError) {
         if (e.code === 'P2002') {
-          return reply
-            .code(409)
-            .send({
-              error: `resource indicator "${identifier}" is already registered with oidc server`
-            })
+          return reply.code(409).send({
+            error: `resource indicator "${identifier}" is already registered with oidc server`
+          })
         }
       }
       throw e
     }
+  }
+
+  async function createGrant(request, reply) {
+    const { clientId, identifier } = request.body || {}
+    console.log(JSON.stringify({ clientId, identifier }, null, 2))
+    const grantCreated = await api.createGrant({
+      clientId,
+      identifier,
+      scope: ''
+    })
+    return grantCreated
+  }
+  async function updateGrant(request, reply) {
+    const {
+      body: { scopes, identifier },
+      params: { id }
+    } = request
+    const grantUpdated = await api.updateScopesForIdentifier(id, scopes, identifier)
+    return grantUpdated
+  }
+  async function deleteGrant(request, reply) {
+    const { id } = request.params
+    const grantDeleted = await api.deleteGrant(id)
+    return grantDeleted
+  }
+  async function updateScopes (request, reply) {
+    const { id } = request.params
+    const { add, remove } = request.body
+    const rs = await api.updateResourceServerScopes(id, add.map(a => a.value), remove)
+    return rs
+  }
+
+  async function updateApi (request, reply) {
+    const { id } = request.params
+    const { name, ttl, ttl_browser, allow_skip_consent } = request.body
+    const rs = await api.updateResourceServer(id, { name, ttl, ttl_browser, allow_skip_consent })
+    return rs
   }
 }

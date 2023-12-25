@@ -3,8 +3,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import {
+  getApplicationGrants,
   getApplications,
-  getApplicationsGrantable,
   getResourceServer,
   getResourceServers
 } from './api'
@@ -28,14 +28,21 @@ const routes = [
           const apis = await getResourceServers()
           return { apis }
         },
-        element:<AppServers />
+        element: <AppServers />
       },
       {
         path: '/api/:id',
-        loader: async ({ params }) => {
+        loader: async ({ params, request }) => {
           const activeApi = await getResourceServer(params.id)
-          const clients = await getApplicationsGrantable(params.id)
-          return { activeApi, clients }
+          const grants = await getApplicationGrants(params.id)
+          const applications = await getApplications({
+            page: 0,
+            size: 20,
+            include: ['client_id', 'client_name'],
+            grant_types_include: 'client_credentials',
+            token_endpoint_auth_method_not: 'none'
+          })
+          return { activeApi, grants, applications }
         },
         element: <AppServer />
       },

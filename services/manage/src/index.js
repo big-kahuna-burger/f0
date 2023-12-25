@@ -18,28 +18,28 @@ const colorSchemeManager = localStorageColorSchemeManager({
 })
 
 const myColor = [
-  "#f7f2f6",
-  "#e9e2e8",
-  "#d4c3d1",
-  "#bfa2ba",
-  "#ad85a5",
-  "#a27398",
-  "#9d6993",
-  "#895980",
-  "#7a4e72",
-  "#6c4264"
+  "#ffecff",
+  "#f8d7f8",
+  "#eeaded",
+  "#e380e1",
+  "#da5bd7",
+  "#d542d2",
+  "#d335d0",
+  "#bb28b8",
+  "#a71fa5",
+  "#921490"
 ]
 const myAltColor = [
-  '#f6fae8',
-  '#edf1da',
-  '#dae1b9',
-  '#c6d094',
-  '#b4c274',
-  '#aab95f',
-  '#a4b454',
-  '#8f9e44',
-  '#7e8c39',
-  '#6b7a2b'
+  "#e8fcf2",
+  "#daf2e7",
+  "#b9e1cf",
+  "#94d0b5",
+  "#75c29e",
+  "#60b990",
+  "#54b489",
+  "#439e76",
+  "#378d68",
+  "#267b57"
 ]
 
 const theme = createTheme({
@@ -83,9 +83,6 @@ const authConfig = {
     ) && event.login(),
   logoutEndpoint: `${ISSUER}/session/end`,
   //logoutRedirect: `${ORIGIN}/logged-out`,
-  extraAuthParams: {
-    resource: 'http://localhost:9876/manage/v1'
-  }, // this is confusing... if they remove the param from auth then what?
   extraTokenParameters: {
     resource: 'http://localhost:9876/manage/v1'
   },
@@ -102,7 +99,6 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 root.render(
   <React.StrictMode>
     <MantineProvider
-      defaultColorScheme="dark"
       theme={theme}
       colorSchemeManager={colorSchemeManager}
     >
