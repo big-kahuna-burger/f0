@@ -121,11 +121,12 @@ export default {
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
         console.log('defaultResource', client.clientId, oneOf)
-        if (oneOf) return oneOf[0]
-        return 'http://localhost:9876/manage/v1'
-        // return client.clientId === 'myClientID'
-        //   ? 'http://localhost:9876/manage/v1'
-        //   : null
+        return undefined
+        // if (oneOf) return oneOf[0]
+        // return 'http://localhost:9876/manage/v1'
+        // // return client.clientId === 'myClientID'
+        // //   ? 'http://localhost:9876/manage/v1'
+        // //   : null
       },
       async getResourceServerInfo(ctx, resourceIndicator, client) {
         // @param ctx - koa request context
