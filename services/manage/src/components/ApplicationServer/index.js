@@ -44,6 +44,7 @@ import {
   updateGrantById,
   updateResourceServerScopes
 } from '../../api'
+import QuickStart from './QuickStart'
 
 export function AppServer() {
   const navigate = useNavigate()
@@ -62,7 +63,7 @@ export function AppServer() {
         </Tabs.List>
 
         <ApiHeader api={activeApi} />
-        <Tabs.Panel value="quick">NONE</Tabs.Panel>
+        <Tabs.Panel value="quick"><QuickStart api={activeApi}/></Tabs.Panel>
         <Tabs.Panel value="settings">
           <Settings api={activeApi} />
         </Tabs.Panel>
@@ -570,6 +571,43 @@ function Settings({ api }) {
             inputWrapperOrder={['label', 'input', 'description']}
             disabled
           />
+          {api.signingAlg === 'HS256' && (
+            <Group>
+              <TextInput
+                w={400}
+                fw={300}
+                withAsterisk
+                label="Signing Secret"
+                value={api.signingSecret}
+                description="Secret to be used when signing the access tokens for this API."
+                inputWrapperOrder={['label', 'input', 'description']}
+                disabled
+                rightSection={
+                  <CopyButton value={api.signingSecret} timeout={2000}>
+                    {({ copied, copy }) => (
+                      <Tooltip
+                        label={copied ? 'Copied' : 'Copy'}
+                        withArrow
+                        position="right"
+                      >
+                        <ActionIcon
+                          color={copied ? 'teal' : 'gray'}
+                          variant="subtle"
+                          onClick={copy}
+                        >
+                          {copied ? (
+                            <IconCheck style={{ width: rem(18) }} />
+                          ) : (
+                            <IconCopy style={{ width: rem(18) }} />
+                          )}
+                        </ActionIcon>
+                      </Tooltip>
+                    )}
+                  </CopyButton>
+                }
+              />
+            </Group>
+          )}
         </Stack>
       </Group>
       <Divider />

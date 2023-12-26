@@ -7,8 +7,48 @@ import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
+const isFirstParty = (client) => client.clientId === 'myClientID'
 
 export default {
+  async loadExistingGrant(ctx) {
+    console.log('LOAD EXISTING GRANT', ctx.oidc)
+    const grantId =
+      ctx.oidc.result?.consent?.grantId ||
+      ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId)
+
+    if (grantId) {
+      // keep grant expiry aligned with session expiry
+      // to prevent consent prompt being requested when grant expires
+      const grant = await ctx.oidc.provider.Grant.find(grantId)
+      console.log('grant', grant)
+      // this aligns the Grant ttl with that of the current session
+      // if the same Grant is used for multiple sessions, or is set
+      // to never expire, you probably do not want this in your code
+      if (ctx.oidc.account && grant.exp < ctx.oidc.session.exp) {
+        grant.exp = ctx.oidc.session.exp
+        console.log('grant aligned with session expiry')
+        await grant.save()
+      }
+
+      return grant
+    }
+    // if (isFirstParty(ctx.oidc.client)) {
+    //   console.log(ctx.oidc)
+    //   const grant = new ctx.oidc.provider.Grant({
+    //     clientId: ctx.oidc.client.clientId,
+    //     accountId: ctx.oidc.session.accountId
+    //   })
+
+    //   grant.addOIDCScope('openid email profile')
+    //   grant.addOIDCClaims(['first_name'])
+    //   grant.addResourceScope(
+    //     'urn:example:resource-indicator',
+    //     'api:read api:write'
+    //   )
+    //   await grant.save()
+    //   return grant
+    // }
+  },
   extraClientMetadata: {
     properties: [CORS_PROP],
     validator(ctx, key, value, metadata) {
@@ -28,6 +68,7 @@ export default {
     console.log('renderError', error)
     defaults.renderError(ctx, out, error)
   },
+  // TODO fully remove this static client
   clients: [
     {
       client_id: 'myClientID',
@@ -40,7 +81,10 @@ export default {
       ],
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
-      post_logout_redirect_uris: ['http://localhost:3036/cb', 'http://localhost:3036/'],
+      post_logout_redirect_uris: [
+        'http://localhost:3036/cb',
+        'http://localhost:3036/'
+      ],
       [CORS_PROP]: ['http://localhost:3036', 'http://localhost:9876']
     }
   ],
@@ -135,26 +179,29 @@ export default {
         // @param ctx - koa request context
         // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
         // @param client - client making the request
-        console.log('getResourceServerInfo', resourceIndicator, client)
-        if (resourceIndicator === MANAGEMENT.identifier) {
-          if (client.clientId === 'myClientID') {
-            console.log(
-              'static myClient REQUESTED, allowing everything!',
-              client.clientId
-            )
-            return {
-              scope: Object.keys(MANAGEMENT.scopes).join(' '),
-              audience: MANAGEMENT.identifier,
-              accessTokenTTL: 30 * 60, // 1/2 hours
-              accessTokenFormat: 'jwt',
-              jwt: {
-                sign: { alg: 'ES256' }
-              }
+        const rs = await dbClient.resourceServer.findFirst({
+          where: { identifier: resourceIndicator }
+        })
+        console.log('rs info', rs, resourceIndicator, client)
+        if (client.clientId === 'myClientID') {
+          return {
+            scope: Object.keys(rs.scopes).join(' '),
+            audience: resourceIndicator,
+            accessTokenTTL: rs.ttl,
+            accessTokenFormat: 'jwt',
+            jwt: {
+              sign:
+                rs.signingAlg === 'HS256'
+                  ? {
+                      alg: 'HS256',
+                      key: rs.signingSecret
+                    }
+                  : { alg: 'RS256' }
             }
           }
-          // find grant by client id and a resource indicator identifier/ a audience
         }
         try {
+          console.log('probing client grants...')
           const grant = await dbClient.oidcModel.findFirst({
             where: {
               AND: [
@@ -187,19 +234,25 @@ export default {
             return {
               scope: grant.payload.resources[resourceIndicator],
               audience: resourceIndicator,
-              accessTokenTTL: 30 * 60,
+              accessTokenTTL: rs.ttl,
               accessTokenFormat: 'jwt',
               jwt: {
-                sign: { alg: 'ES256' }
+                sign:
+                  rs.signingAlg === 'HS256'
+                    ? {
+                        alg: 'HS256',
+                        key: rs.signingSecret
+                      }
+                    : { alg: 'RS256' }
               }
             }
           }
         } catch (error) {
           console.log(error)
         }
-        
+
         throw new errors.InvalidTarget(
-         `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
+          `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
         )
       },
       async useGrantedResource(ctx, model) {
@@ -207,7 +260,7 @@ export default {
         // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
         //                RefreshToken, or DeviceCode model instance.
         //                You can use the instanceof operator to determine the type.
-        
+
         return true
       }
     },
@@ -221,7 +274,7 @@ export default {
   pkce: {
     methods: ['S256'],
     required: function pkceRequired(ctx, client) {
-      return client.clientId !== 'myClientID'
+      return true
     }
   }
 }

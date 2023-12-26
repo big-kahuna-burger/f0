@@ -129,6 +129,7 @@ model ResourceServer {
   ttlBrowser       Int            @default(7200)
   allowSkipConsent Boolean        @default(false)
   readOnly         Boolean        @default(false)
+  signingSecret    String?
 
   @@map("resource_server")
 }

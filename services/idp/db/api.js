@@ -175,12 +175,17 @@ const createResourceServer = async ({
   signingAlg,
   scopes = []
 }) => {
+  let signingSecret
+  if (signingAlg === 'HS256') {
+    signingSecret = nanoid(43)
+  }
   const resourceServer = await prisma.resourceServer.create({
     data: {
       name,
       identifier,
       signingAlg,
-      scopes
+      scopes,
+      signingSecret
     }
   })
   return resourceServer
@@ -222,52 +227,53 @@ const updateResourceServerScopes = async (id, add, remove) => {
       scopeKeys.splice(scopeKeys.indexOf(value), 1)
     }
 
-    const foundGrants = await t.oidcModel.findMany({
-      where: {
-        type: 13,
-        AND: [
-          {
-            payload: { path: ['accountId'], equals: Prisma.DbNull }
-          },
-          {
-            payload: { path: ['exp'], equals: 0 }
-          },
-          {
-            payload: {
-              path: ['resources', resourceServer.identifier],
-              not: Prisma.DbNull
+    if (remove.length) {
+      console.log('entering removal part for grants')
+      const foundGrants = await t.oidcModel.findMany({
+        where: {
+          type: 13,
+          AND: [
+            {
+              payload: { path: ['accountId'], equals: Prisma.DbNull }
+            },
+            {
+              payload: { path: ['exp'], equals: 0 }
+            },
+            {
+              payload: {
+                path: ['resources', resourceServer.identifier],
+                not: Prisma.DbNull
+              }
             }
-          }
-        ]
-      }
-    })
-    for (const { payload, id } of foundGrants) {
-      const { resources } = payload
-      const nextGrantedScopes = resources[resourceServer.identifier]
-        .split(' ')
-        .filter((s) => !scopeKeys[s])
-        .join(' ')
-
-      await t.oidcModel.update({
-        where: { id },
-        data: {
-          payload: {
-            ...payload,
-            resources: {
-              ...resources,
-              [resourceServer.identifier]: nextGrantedScopes
-            }
-          }
+          ]
         }
       })
-      console.log(
-        'updated client grant id',
-        id,
-        'scopes',
-        resourceServer.scopes,
-        { scopeKeys, scopeCopy },
-        { nextGrantedScopes }
-      )
+      for (const { payload, id } of foundGrants) {
+        const { resources } = payload
+        const nextGrantedScopes = resources[resourceServer.identifier]
+          .split(' ')
+          .filter((s) => scopeCopy[s])
+          .join(' ')
+
+        await t.oidcModel.update({
+          where: { id },
+          data: {
+            payload: {
+              ...payload,
+              resources: {
+                ...resources,
+                [resourceServer.identifier]: nextGrantedScopes
+              }
+            }
+          }
+        })
+        console.log(
+          'updated client grant id',
+          id,
+          { scopeKeys, scopeCopy, 'for client': payload.clientId },
+          { nextGrantedScopes, 'for client': payload.clientId }
+        )
+      }
     }
     const updated = await t.resourceServer.update({
       where: { id },
@@ -280,7 +286,7 @@ const updateResourceServerScopes = async (id, add, remove) => {
 const loadGrantsByResourceIdentifier = async ({
   identifier,
   skip = 0,
-  take = 20,
+  take = 100,
   cursor
 } = {}) => {
   if (!identifier) {
@@ -307,8 +313,8 @@ const loadGrantsByResourceIdentifier = async ({
     .map((x) => x.payload)
     .reduce((acc, x) => {
       const { jti, clientId, resources } = x
-      const scope = resources[identifier] || ''
-      const scopes = scope.split(' ')
+      const scope = resources[identifier]
+      const scopes = scope.split(' ').filter(x => Boolean(x.length))
       acc.push({ grantId: jti, clientId, scopes })
       return acc
     }, [])

@@ -1,4 +1,6 @@
+import '@mantine/code-highlight/styles.css'
 import '@mantine/core/styles.css'
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AuthProvider } from 'react-oauth2-code-pkce'
