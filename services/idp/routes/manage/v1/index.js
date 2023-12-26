@@ -3,6 +3,7 @@ import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
 import { allowedClientFields } from '../../../helpers/validation-constants.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
+import Prisma from '@prisma/client'
 
 export default async function managementRouter(fastify, opts) {
   const MANAGEMENT = opts.MANAGEMENT_API

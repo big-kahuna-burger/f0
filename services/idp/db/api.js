@@ -177,7 +177,7 @@ const createResourceServer = async ({
 }) => {
   let signingSecret
   if (signingAlg === 'HS256') {
-    signingSecret = nanoid(43)
+    signingSecret = nanoid(32)
   }
   const resourceServer = await prisma.resourceServer.create({
     data: {

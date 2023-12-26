@@ -227,7 +227,7 @@ export default {
       }
     },
     // introspection: { enabled: true },
-    // rpInitiatedLogout: { enabled: true },
+    rpInitiatedLogout: { enabled: true },
     // fapi: { enabled: true },
     userinfo: { enabled: true }
   },
