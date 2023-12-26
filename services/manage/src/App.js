@@ -31,8 +31,9 @@ const routes = [
         element: <AppServers />
       },
       {
-        path: '/api/:id',
-        loader: async ({ params, request }) => {
+        path: '/api/:id/:tab',
+        element: <AppServer />,
+        loader: async ({ params }) => {
           const activeApi = await getResourceServer(params.id)
           const grants = await getApplicationGrants(params.id)
           const applications = await getApplications({
@@ -42,9 +43,8 @@ const routes = [
             grant_types_include: 'client_credentials',
             token_endpoint_auth_method_not: 'none'
           })
-          return { activeApi, grants, applications }
-        },
-        element: <AppServer />
+          return { activeApi, grants, applications, tab: params.tab }
+        }
       },
       {
         path: '/apps',

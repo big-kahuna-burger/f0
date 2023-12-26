@@ -79,14 +79,17 @@ export default async function managementRouter(fastify, opts) {
   }
 
   async function getAllResourceServers() {
-    const resourceServers = [MANAGEMENT, ...(await api.getResourceServers())]
-    return resourceServers.map(resourceServerMap)
+    const resourceServers = await api.getResourceServers({
+      sort: 'desc'
+    })
+    return resourceServers
+      .map(resourceServerMap)
+      .sort((a, b) => (a.id === 'management' ? -1 : 1))
   }
   async function getGrantsByResourceServerId(request) {
     const { page = 1, size = 20 } = request.query
     const { id } = request.params
-    const rs =
-      id === MANAGEMENT.id ? MANAGEMENT : await api.getResourceServer(id)
+    const rs = await api.getResourceServer(id)
     if (!rs) {
       throw new Error(`resource server not found ${id}`)
     }
@@ -100,9 +103,7 @@ export default async function managementRouter(fastify, opts) {
   }
   async function getResourceServer(request, reply) {
     const { id } = request.params
-    if (id === MANAGEMENT.id) {
-      return resourceServerMap(MANAGEMENT)
-    }
+
     const resourceServer = await api.getResourceServer(id)
     if (!resourceServer) {
       return reply.code(404).send({ error: 'resource server not found' })
@@ -112,9 +113,6 @@ export default async function managementRouter(fastify, opts) {
 
   async function createResourceServer(request, reply) {
     const { name, identifier, signingAlg } = request.body || {}
-    if (identifier === MANAGEMENT.identifier) {
-      return reply.code(409).send({ error: 'erm... NOPE' })
-    }
     try {
       const resourceServer = await api.createResourceServer({
         name,
@@ -150,7 +148,11 @@ export default async function managementRouter(fastify, opts) {
       body: { scopes, identifier },
       params: { id }
     } = request
-    const grantUpdated = await api.updateScopesForIdentifier(id, scopes, identifier)
+    const grantUpdated = await api.updateScopesForIdentifier(
+      id,
+      scopes,
+      identifier
+    )
     return grantUpdated
   }
   async function deleteGrant(request, reply) {
@@ -158,17 +160,22 @@ export default async function managementRouter(fastify, opts) {
     const grantDeleted = await api.deleteGrant(id)
     return grantDeleted
   }
-  async function updateScopes (request, reply) {
+  async function updateScopes(request, reply) {
     const { id } = request.params
     const { add, remove } = request.body
-    const rs = await api.updateResourceServerScopes(id, add.map(a => a.value), remove)
+    const rs = await api.updateResourceServerScopes(id, add, remove)
     return rs
   }
 
-  async function updateApi (request, reply) {
+  async function updateApi(request, reply) {
     const { id } = request.params
-    const { name, ttl, ttl_browser, allow_skip_consent } = request.body
-    const rs = await api.updateResourceServer(id, { name, ttl, ttl_browser, allow_skip_consent })
+    const { name, ttl, ttlBrowser, allowSkipConsent } = request.body
+    const rs = await api.updateResourceServer(id, {
+      name,
+      ttl,
+      ttlBrowser,
+      allowSkipConsent
+    })
     return rs
   }
 }

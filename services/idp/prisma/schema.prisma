@@ -123,11 +123,13 @@ model ResourceServer {
   name             String
   identifier       String         @unique
   signingAlg       RS_SIGNING_ALG @default(RS256)
-  scopes           String[]
+  scopes           Json           @default("{}")
   updatedAt        DateTime       @updatedAt
   ttl              Int            @default(86400)
   ttlBrowser       Int            @default(7200)
   allowSkipConsent Boolean        @default(false)
+  readOnly         Boolean        @default(false)
+  signingSecret    String?
 
   @@map("resource_server")
 }

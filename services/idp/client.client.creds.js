@@ -1,3 +1,4 @@
+import got from 'got'
 import { Issuer } from 'openid-client'
 const { ISSUER = 'http://localhost:9876/oidc' } = process.env
 const issuer = await Issuer.discover(ISSUER)
@@ -11,29 +12,25 @@ const openregClient = await issuer.Client.register({
   response_types: [],
   application_type: 'native',
   client_name: `Dynamic Client Registration at ${Date.now()}`,
-  token_endpoint_auth_method: 'client_secret_basic',
+  token_endpoint_auth_method: 'client_secret_post',
   grant_types: ['client_credentials']
 })
 
 process.stdin.pause();
-query('http://localhost:9876/manage/v1', async () => {
+const resource = 'https://pltf.vlv'
+query(resource, async () => {
   try {
     const tokenSet = await openregClient.grant({
       grant_type: 'client_credentials',
-      scope: 'read:users write:users kobas',
-      resource: 'http://localhost:9876/manage/v1'
+      scope: 'read:users write:users random:thing',
+      resource
     })
-    // const grant = await got.post(grantsCreateUrl, {
-    //   json: {
-    //     identifier: 'http://localhost:9876/manage/v1',
-    //     clientId: openregClient.client_id,
-    //     scope: 'read:users write:users'
-    //   },
-    //   headers: {
-    //     Authorization: `Bearer ${tokenSet.access_token}`
-    //   }
-    // })
-    console.log(tokenSet)
+    const grant = await got.get('http://localhost:3042/echo-user', {
+      headers: {
+        Authorization: `Bearer ${tokenSet.access_token}`
+      }
+    })
+    console.log(grant.body)
   } catch (error) {
     console.log(error)
   }
@@ -41,7 +38,7 @@ query('http://localhost:9876/manage/v1', async () => {
 
 function query(text, callback) {
   process.stdin.resume()
-  process.stdout.write(`Please wait until granted access: ${text}`)
+  process.stdout.write(`Please wait until granted access to: ${text}`)
   process.stdin.once('data', (data) => {
     callback(data.toString().trim())
   })

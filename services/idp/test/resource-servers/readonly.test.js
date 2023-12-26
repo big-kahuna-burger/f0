@@ -3,7 +3,7 @@ import { identifier, scopes } from '../../resource-servers/management.js'
 
 describe('read only resource server', () => {
   test('should match expected values based on issuer', () => {
-    expect(scopes).toEqual([
+    expect(Object.keys(scopes)).toEqual([
       'read:users',
       'write:users',
       'update:users',

@@ -7,8 +7,10 @@ import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
+const isFirstParty = (client) => client.clientId === 'myClientID'
 
 export default {
+  // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
     properties: [CORS_PROP],
     validator(ctx, key, value, metadata) {
@@ -28,6 +30,7 @@ export default {
     console.log('renderError', error)
     defaults.renderError(ctx, out, error)
   },
+  // TODO fully remove this static client
   clients: [
     {
       client_id: 'myClientID',
@@ -40,7 +43,10 @@ export default {
       ],
       response_types: ['code'],
       token_endpoint_auth_method: 'none',
-      post_logout_redirect_uris: [],
+      post_logout_redirect_uris: [
+        'http://localhost:3036/cb',
+        'http://localhost:3036/'
+      ],
       [CORS_PROP]: ['http://localhost:3036', 'http://localhost:9876']
     }
   ],
@@ -120,6 +126,9 @@ export default {
         //                           Default is that the array is provided so that the request will fail.
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
+        if (client.clientId === 'myClientID') {
+          return 'http://localhost:9876/manage/v1'
+        }
         console.log('defaultResource', client.clientId, oneOf)
         return undefined
         // if (oneOf) return oneOf[0]
@@ -132,26 +141,29 @@ export default {
         // @param ctx - koa request context
         // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
         // @param client - client making the request
-        console.log('getResourceServerInfo', resourceIndicator, client)
-        if (resourceIndicator === MANAGEMENT.identifier) {
-          if (client.clientId === 'myClientID') {
-            console.log(
-              'static myClient REQUESTED, allowing everything!',
-              client.clientId
-            )
-            return {
-              scope: MANAGEMENT.scopes.join(' '),
-              audience: MANAGEMENT.identifier,
-              accessTokenTTL: 30 * 60, // 1/2 hours
-              accessTokenFormat: 'jwt',
-              jwt: {
-                sign: { alg: 'ES256' }
-              }
+        const rs = await dbClient.resourceServer.findFirst({
+          where: { identifier: resourceIndicator }
+        })
+        console.log('rs info', rs, resourceIndicator, client)
+        if (client.clientId === 'myClientID') {
+          return {
+            scope: Object.keys(rs.scopes).join(' '),
+            audience: resourceIndicator,
+            accessTokenTTL: rs.ttl,
+            accessTokenFormat: 'jwt',
+            jwt: {
+              sign:
+                rs.signingAlg === 'HS256'
+                  ? {
+                      alg: 'HS256',
+                      key: rs.signingSecret
+                    }
+                  : { alg: 'RS256' }
             }
           }
-          // find grant by client id and a resource indicator identifier/ a audience
         }
         try {
+          console.log('probing client grants...')
           const grant = await dbClient.oidcModel.findFirst({
             where: {
               AND: [
@@ -184,19 +196,25 @@ export default {
             return {
               scope: grant.payload.resources[resourceIndicator],
               audience: resourceIndicator,
-              accessTokenTTL: 30 * 60,
+              accessTokenTTL: rs.ttl,
               accessTokenFormat: 'jwt',
               jwt: {
-                sign: { alg: 'ES256' }
+                sign:
+                  rs.signingAlg === 'HS256'
+                    ? {
+                        alg: 'HS256',
+                        key: rs.signingSecret
+                      }
+                    : { alg: 'RS256' }
               }
             }
           }
         } catch (error) {
           console.log(error)
         }
-        
+
         throw new errors.InvalidTarget(
-         `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
+          `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
         )
       },
       async useGrantedResource(ctx, model) {
@@ -204,7 +222,7 @@ export default {
         // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
         //                RefreshToken, or DeviceCode model instance.
         //                You can use the instanceof operator to determine the type.
-        
+
         return true
       }
     },
@@ -218,7 +236,7 @@ export default {
   pkce: {
     methods: ['S256'],
     required: function pkceRequired(ctx, client) {
-      return client.clientId !== 'myClientID'
+      return true
     }
   }
 }

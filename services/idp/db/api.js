@@ -148,19 +148,16 @@ const updateScopesForIdentifier = async (id, scopes, identifier) => {
   if (!found) {
     throw new Error('grant not found')
   }
-  const resources = scopes.length
-    ? {
-        ...found.payload.resources,
-        [identifier]: scopes.join(' ')
-      }
-    : found.payload.resources
 
   const grant = await prisma.oidcModel.update({
     where: { id },
     data: {
       payload: {
         ...found.payload,
-        resources
+        resources: {
+          ...found.payload.resources,
+          [identifier]: scopes.join(' ')
+        }
       }
     }
   })
@@ -178,12 +175,17 @@ const createResourceServer = async ({
   signingAlg,
   scopes = []
 }) => {
+  let signingSecret
+  if (signingAlg === 'HS256') {
+    signingSecret = nanoid(43)
+  }
   const resourceServer = await prisma.resourceServer.create({
     data: {
       name,
       identifier,
       signingAlg,
-      scopes
+      scopes,
+      signingSecret
     }
   })
   return resourceServer
@@ -196,32 +198,95 @@ const getResourceServer = async (id) => {
   return resourceServer
 }
 
-const getResourceServers = async () => {
-  const resourceServers = await prisma.resourceServer.findMany()
+const getResourceServers = async ({ sort = 'desc' }) => {
+  const resourceServers = await prisma.resourceServer.findMany({
+    orderBy: {
+      updatedAt: sort
+    }
+  })
   return resourceServers
 }
 
 const updateResourceServerScopes = async (id, add, remove) => {
-  const resourceServer = await prisma.resourceServer.findFirst({
-    where: { id }
+  return prisma.$transaction(async (t) => {
+    const resourceServer = await t.resourceServer.findFirst({
+      where: { id }
+    })
+    if (!resourceServer) {
+      throw new Error('resource server not found')
+    }
+    const scopeKeys = Object.keys(resourceServer.scopes)
+    const scopeCopy = { ...resourceServer.scopes }
+    for (const { value, description } of add) {
+      scopeCopy[value] = description
+      scopeKeys.push(value)
+    }
+
+    for (const value of remove) {
+      delete scopeCopy[value]
+      scopeKeys.splice(scopeKeys.indexOf(value), 1)
+    }
+
+    if (remove.length) {
+      console.log('entering removal part for grants')
+      const foundGrants = await t.oidcModel.findMany({
+        where: {
+          type: 13,
+          AND: [
+            {
+              payload: { path: ['accountId'], equals: Prisma.DbNull }
+            },
+            {
+              payload: { path: ['exp'], equals: 0 }
+            },
+            {
+              payload: {
+                path: ['resources', resourceServer.identifier],
+                not: Prisma.DbNull
+              }
+            }
+          ]
+        }
+      })
+      for (const { payload, id } of foundGrants) {
+        const { resources } = payload
+        const nextGrantedScopes = resources[resourceServer.identifier]
+          .split(' ')
+          .filter((s) => scopeCopy[s])
+          .join(' ')
+
+        await t.oidcModel.update({
+          where: { id },
+          data: {
+            payload: {
+              ...payload,
+              resources: {
+                ...resources,
+                [resourceServer.identifier]: nextGrantedScopes
+              }
+            }
+          }
+        })
+        console.log(
+          'updated client grant id',
+          id,
+          { scopeKeys, scopeCopy, 'for client': payload.clientId },
+          { nextGrantedScopes, 'for client': payload.clientId }
+        )
+      }
+    }
+    const updated = await t.resourceServer.update({
+      where: { id },
+      data: { scopes: scopeCopy }
+    })
+    return updated
   })
-  if (!resourceServer) {
-    throw new Error('resource server not found')
-  }
-  const { scopes } = resourceServer
-  const newScopes = scopes.filter((x) => !remove.includes(x)).concat(add)
-  const unique = [...new Set(newScopes)]
-  const updated = await prisma.resourceServer.update({
-    where: { id },
-    data: { scopes: unique }
-  })
-  return updated
 }
 
 const loadGrantsByResourceIdentifier = async ({
   identifier,
   skip = 0,
-  take = 20,
+  take = 100,
   cursor
 } = {}) => {
   if (!identifier) {
@@ -248,8 +313,8 @@ const loadGrantsByResourceIdentifier = async ({
     .map((x) => x.payload)
     .reduce((acc, x) => {
       const { jti, clientId, resources } = x
-      const scope = resources[identifier] || ''
-      const scopes = scope.split(' ')
+      const scope = resources[identifier]
+      const scopes = scope.split(' ').filter(x => Boolean(x.length))
       acc.push({ grantId: jti, clientId, scopes })
       return acc
     }, [])
@@ -257,16 +322,11 @@ const loadGrantsByResourceIdentifier = async ({
 
 async function updateResourceServer(
   id,
-  { name, ttl, ttl_browser, allow_skipping_consent }
+  { name, ttl, ttlBrowser, allowSkipConsent }
 ) {
   const rs = await prisma.resourceServer.update({
     where: { id },
-    data: {
-      name,
-      ttl,
-      ttlBrowser: ttl_browser,
-      allowSkipConsent: allow_skipping_consent
-    }
+    data: { name, ttl, ttlBrowser, allowSkipConsent }
   })
   return rs
 }

@@ -27,7 +27,7 @@ function Shell() {
       <AppShell.Navbar p="md">
         <RoutedNavbar />
       </AppShell.Navbar>
-      <AppShell.Main w="75%">
+      <AppShell.Main w="100%">
         <Outlet />
       </AppShell.Main>
       <AppShell.Aside>
