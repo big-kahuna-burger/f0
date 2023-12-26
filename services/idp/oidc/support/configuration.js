@@ -10,45 +10,7 @@ import ttl from './ttl.js'
 const isFirstParty = (client) => client.clientId === 'myClientID'
 
 export default {
-  async loadExistingGrant(ctx) {
-    console.log('LOAD EXISTING GRANT', ctx.oidc)
-    const grantId =
-      ctx.oidc.result?.consent?.grantId ||
-      ctx.oidc.session.grantIdFor(ctx.oidc.client.clientId)
-
-    if (grantId) {
-      // keep grant expiry aligned with session expiry
-      // to prevent consent prompt being requested when grant expires
-      const grant = await ctx.oidc.provider.Grant.find(grantId)
-      console.log('grant', grant)
-      // this aligns the Grant ttl with that of the current session
-      // if the same Grant is used for multiple sessions, or is set
-      // to never expire, you probably do not want this in your code
-      if (ctx.oidc.account && grant.exp < ctx.oidc.session.exp) {
-        grant.exp = ctx.oidc.session.exp
-        console.log('grant aligned with session expiry')
-        await grant.save()
-      }
-
-      return grant
-    }
-    // if (isFirstParty(ctx.oidc.client)) {
-    //   console.log(ctx.oidc)
-    //   const grant = new ctx.oidc.provider.Grant({
-    //     clientId: ctx.oidc.client.clientId,
-    //     accountId: ctx.oidc.session.accountId
-    //   })
-
-    //   grant.addOIDCScope('openid email profile')
-    //   grant.addOIDCClaims(['first_name'])
-    //   grant.addResourceScope(
-    //     'urn:example:resource-indicator',
-    //     'api:read api:write'
-    //   )
-    //   await grant.save()
-    //   return grant
-    // }
-  },
+  // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
     properties: [CORS_PROP],
     validator(ctx, key, value, metadata) {
