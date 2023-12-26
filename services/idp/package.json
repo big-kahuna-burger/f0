@@ -18,7 +18,9 @@
     "lint": "biome check .",
     "lint:ci": "biome ci .",
     "build": "prisma generate",
-    "postinstall": "prisma generate && prisma migrate deploy"
+    "postinstall": "prisma generate && prisma migrate deploy",
+    "create:account": "node ./scripts/create-account.js",
+    "initialize:management": "node ./resource-servers/initialize-management.js",
   },
   "keywords": [],
   "author": "",
@@ -73,6 +75,7 @@
     "@types/node": "^20.10.4",
     "@vitest/coverage-v8": "^1.0.2",
     "@vitest/ui": "^1.0.4",
+    "enquirer": "^2.4.1",
     "got": "^14.0.0",
     "open": "^9.1.0",
     "prisma": "^5.7.1",
