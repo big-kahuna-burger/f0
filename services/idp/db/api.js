@@ -148,19 +148,16 @@ const updateScopesForIdentifier = async (id, scopes, identifier) => {
   if (!found) {
     throw new Error('grant not found')
   }
-  const resources = scopes.length
-    ? {
-        ...found.payload.resources,
-        [identifier]: scopes.join(' ')
-      }
-    : found.payload.resources
 
   const grant = await prisma.oidcModel.update({
     where: { id },
     data: {
       payload: {
         ...found.payload,
-        resources
+        resources: {
+          ...found.payload.resources,
+          [identifier]: scopes.join(' ')
+        }
       }
     }
   })
@@ -206,26 +203,78 @@ const getResourceServers = async ({ sort = 'desc' }) => {
 }
 
 const updateResourceServerScopes = async (id, add, remove) => {
-  const resourceServer = await prisma.resourceServer.findFirst({
-    where: { id }
-  })
-  if (!resourceServer) {
-    throw new Error('resource server not found')
-  }
-  const scopes = { ...resourceServer.scopes }
-  for (const { value, description } of add) {
-    scopes[value] = description
-  }
+  return prisma.$transaction(async (t) => {
+    const resourceServer = await t.resourceServer.findFirst({
+      where: { id }
+    })
+    if (!resourceServer) {
+      throw new Error('resource server not found')
+    }
+    const scopeKeys = Object.keys(resourceServer.scopes)
+    const scopeCopy = { ...resourceServer.scopes }
+    for (const { value, description } of add) {
+      scopeCopy[value] = description
+      scopeKeys.push(value)
+    }
 
-  for (const value of remove) {
-    delete scopes[value]
-  }
+    for (const value of remove) {
+      delete scopeCopy[value]
+      scopeKeys.splice(scopeKeys.indexOf(value), 1)
+    }
 
-  const updated = await prisma.resourceServer.update({
-    where: { id },
-    data: { scopes }
+    const foundGrants = await t.oidcModel.findMany({
+      where: {
+        type: 13,
+        AND: [
+          {
+            payload: { path: ['accountId'], equals: Prisma.DbNull }
+          },
+          {
+            payload: { path: ['exp'], equals: 0 }
+          },
+          {
+            payload: {
+              path: ['resources', resourceServer.identifier],
+              not: Prisma.DbNull
+            }
+          }
+        ]
+      }
+    })
+    for (const { payload, id } of foundGrants) {
+      const { resources } = payload
+      const nextGrantedScopes = resources[resourceServer.identifier]
+        .split(' ')
+        .filter((s) => !scopeKeys[s])
+        .join(' ')
+
+      await t.oidcModel.update({
+        where: { id },
+        data: {
+          payload: {
+            ...payload,
+            resources: {
+              ...resources,
+              [resourceServer.identifier]: nextGrantedScopes
+            }
+          }
+        }
+      })
+      console.log(
+        'updated client grant id',
+        id,
+        'scopes',
+        resourceServer.scopes,
+        { scopeKeys, scopeCopy },
+        { nextGrantedScopes }
+      )
+    }
+    const updated = await t.resourceServer.update({
+      where: { id },
+      data: { scopes: scopeCopy }
+    })
+    return updated
   })
-  return updated
 }
 
 const loadGrantsByResourceIdentifier = async ({
