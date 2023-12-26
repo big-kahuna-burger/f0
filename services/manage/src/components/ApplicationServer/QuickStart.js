@@ -14,7 +14,8 @@ fastify.register(fjwt, {
   verify: {
     allowedIss,
     allowedAud,
-    algorithms
+    algorithms,
+    checkTyp: 'at+jwt'
   },
   secret: '${secret}'
 })
@@ -49,7 +50,8 @@ fastify.register(fjwt, {
   verify: {
     allowedIss,
     allowedAud,
-    algorithms
+    algorithms,
+    checkTyp: 'at+jwt'
   },
   decode: { complete: true },
   secret: (request, token) => {
