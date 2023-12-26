@@ -1,5 +1,14 @@
 version: '3'
 services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      POSTGRES_PASSWORD: secret123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   jaeger:
     image: jaegertracing/all-in-one:latest
     command: [ '--config-file=/config/config.yaml']
@@ -20,3 +29,6 @@ services:
       - "16686:16686"
       - "14268:14268"
       - "9411:9411"
+
+volumes:
+  postgres_data:

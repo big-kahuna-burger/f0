@@ -18,4 +18,4 @@ export async function upsertManagementApiUpdated() {
   return updateResult
 }
 
-upsertManagementApiUpdated()
+console.log(await upsertManagementApiUpdated())
