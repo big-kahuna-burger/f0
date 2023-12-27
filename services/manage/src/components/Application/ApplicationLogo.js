@@ -11,18 +11,23 @@ import classes from './ApplicationLogo.module.css'
 
 const skeletonLogo = `${window.location.origin}/svg/fastify-seeklogo.com.svg`
 
-export function ArticleCard({ logoUrl, onChange = () => {} } = {}) {
-  const [url, setUrl] = useState(logoUrl)
+export function ArticleCard({ logoUri, onChange = () => {} } = {}) {
+  const [url, setUrl] = useState(logoUri)
   const theme = useMantineTheme()
 
   return (
-    <Card withBorder radius="md" className={classes.card}>
+    <Card withBorder m="sm" radius="md" className={classes.card}>
       <Group justify="center" m="sm">
-        <Card.Section mah={70}>
+        <Card.Section mih={75}>
           {url ? (
             <img
               src={url}
-              style={{ height: 60, maxWidth: 'auto', display: 'inline' }}
+              style={{
+                minHeight: 60,
+                height: 60,
+                maxWidth: 'auto',
+                display: 'inline'
+              }}
               alt="logo-preview"
             />
           ) : (

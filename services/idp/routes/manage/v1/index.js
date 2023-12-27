@@ -5,7 +5,7 @@ import joseVerify from '../../../passive-plugins/jwt-jose.js'
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 import Prisma from '@prisma/client'
 const DEFAULT_CLIENT_INCLUDE =
-  'client_id,client_name,client_secret,application_type,client_uri,logo_uri,grant_types,token_endpoint_auth_method,redirect_uris,post_logout_redirect_uris,initiate_login_uri,urn:f0:type,updatedAt'
+  'client_id,client_name,client_secret,application_type,client_uri,initial_login_uri,logo_uri,grant_types,token_endpoint_auth_method,redirect_uris,post_logout_redirect_uris,initiate_login_uri,urn:f0:type,updatedAt'
 export default async function managementRouter(fastify, opts) {
   const MANAGEMENT = opts.MANAGEMENT_API
   fastify.register(joseVerify, {
