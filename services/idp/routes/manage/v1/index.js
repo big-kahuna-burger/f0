@@ -4,7 +4,8 @@ import { allowedClientFields } from '../../../helpers/validation-constants.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
 import Prisma from '@prisma/client'
-
+const DEFAULT_CLIENT_INCLUDE =
+  'client_id,client_name,application_type,client_uri,logo_uri,grant_types,token_endpoint_auth_method,redirect_uris,post_logout_redirect_uris,initiate_login_uri,urn:f0:type,updatedAt'
 export default async function managementRouter(fastify, opts) {
   const MANAGEMENT = opts.MANAGEMENT_API
   fastify.register(joseVerify, {
@@ -39,20 +40,41 @@ export default async function managementRouter(fastify, opts) {
   fastify.put('/grants/:id', updateGrant)
   fastify.delete('/grants/:id', deleteGrant)
   fastify.get('/apis', getAllResourceServers)
+  fastify.get('/app/:id', getClient)
+  fastify.post('/apps', createClient)
   fastify.get('/apps', getAllClients)
+
+  const clientXMap = (x, fields) =>
+    Object.fromEntries(fields.map((f) => [f, x[f] || x.payload[f]]))
+
+  async function getClient(request, reply) {
+    const { id } = request.params
+    const client = await api.getClient(id)
+    if (!client) {
+      return reply.code(404).send({ error: 'client not found' })
+    }
+
+    return clientXMap(client, DEFAULT_CLIENT_INCLUDE.split(','))
+  }
+
+  async function createClient(request, reply) {
+    const { name, type = '' } = request.body || {}
+    return api.createClient({ name, type: type.toLowerCase() })
+  }
 
   async function getAllClients(request) {
     const {
       page = 1,
       size = 20,
       grant_types_include,
-      include,
+      include = DEFAULT_CLIENT_INCLUDE,
       token_endpoint_auth_method_not
     } = request.query
-    const fields = include ? include.split(',') : []
+    const fields = include?.length ? include.split(',') : []
     if (!fields.every((f) => allowedClientFields.includes(f))) {
       throw new Error('invalid fields found in include query param')
     }
+
     const clients = await api.loadClients({
       page,
       size,
@@ -60,9 +82,8 @@ export default async function managementRouter(fastify, opts) {
       include,
       token_endpoint_auth_method_not
     })
-    const payloads = clients.map((x) =>
-      Object.fromEntries(fields.map((f) => [f, x[f] || x.payload[f]]))
-    )
+
+    const payloads = clients.map((x) => clientXMap(x, fields))
 
     return payloads
   }

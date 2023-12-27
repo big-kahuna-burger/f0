@@ -3,13 +3,16 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import {
+  getApplication,
   getApplicationGrants,
   getApplications,
   getResourceServer,
   getResourceServers
 } from './api'
+import { Application } from './components/Application'
 import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
+import { Applications } from './components/Applications'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -47,8 +50,23 @@ const routes = [
         }
       },
       {
+        path: '/app/:id/:tab',
+        element: <Application />,
+        loader: async ({ params }) => {
+          const activeApp = await getApplication(params.id)
+          return { activeApp, tab: params.tab }
+        }
+      },
+      {
         path: '/apps',
-        element: <></>
+        loader: async ({ params }) => {
+          const apps = await getApplications({
+            page: 0,
+            size: 20
+          })
+          return { apps }
+        },
+        element: <Applications />
       },
       {
         path: '/authn/db',
