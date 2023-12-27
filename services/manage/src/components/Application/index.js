@@ -1,6 +1,7 @@
 import { Badge, Group, Tabs } from '@mantine/core'
 
 import { useLoaderData, useNavigate } from 'react-router-dom'
+import { Settings } from './Settings'
 
 export function Application() {
   const navigate = useNavigate()
@@ -22,7 +23,9 @@ export function Application() {
         <Tabs.Panel value="quick">
           {/* <QuickStart app={activeApp} /> */}
         </Tabs.Panel>
-        <Tabs.Panel value="settings">Settings</Tabs.Panel>
+        <Tabs.Panel value="settings">
+          <Settings app={activeApp} />
+        </Tabs.Panel>
         <Tabs.Panel value="credentials">credentials</Tabs.Panel>
         <Tabs.Panel value="apis">apis</Tabs.Panel>
       </Tabs>

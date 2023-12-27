@@ -65,7 +65,7 @@ export function Applications() {
               direction="column"
               wrap="wrap"
             >
-              <Anchor href={`/app/${item.client_id}/quick`}>
+              <Anchor href={`/app/${item.client_id}/settings`}>
                 <Text size="lg">{item.client_name}</Text>
               </Anchor>
               <Text size="sm" c={'dimmed'}>
@@ -89,11 +89,7 @@ export function Applications() {
 
   return (
     <>
-      <CreateModal
-        onApiCreated={(api) => {
-          navigate(`/app/${api.id}/quick`)
-        }}
-      />
+      <CreateModal />
       <Table.ScrollContainer>
         <Table verticalSpacing="lg">
           <Table.Thead>
@@ -116,7 +112,7 @@ export function Applications() {
   )
 }
 
-function CreateModal(props) {
+function CreateModal() {
   const [opened, { open, close }] = useDisclosure(false)
 
   const [visible, { toggle }] = useDisclosure(false)
