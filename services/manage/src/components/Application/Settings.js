@@ -18,25 +18,25 @@ import { CopyButton } from '../CopyButton'
 import { ArticleCard } from './ApplicationLogo'
 const issuer = process.env.REACT_APP_ISSUER
 
-const isOrigin = (value) => {
+const isValidUrl = (value) => {
   if (typeof value !== 'string') {
     return false
   }
   try {
-    const { origin } = new URL(value)
-    return value === origin
+    new URL(value)
+    return true
   } catch (err) {
     return false
   }
 }
 
-const isOriginArray = (value) => {
+const isValidUrlArray = (value) => {
   if (typeof value !== 'string') {
     return 'Invalid value'
   }
-  const origins = value.split(',')
+  const urls = value.split(',')
 
-  const index = origins.findIndex((origin) => !isOrigin(origin))
+  const index = urls.findIndex((url) => !isValidUrl(url))
   if (index >= 0) return index
   return null
 }
@@ -50,19 +50,19 @@ export const Settings = ({ app: activeApp }) => {
       'urn:f0:type': (value) =>
         ['native', 'spa', 'web', 'm2m'].includes(value) ? null : 'Invalid type',
       initial_login_uri: (value) =>
-        !value ? null : isOrigin(value) ? null : 'Invalid URI',
+        !value ? null : isValidUrl(value) ? null : 'Invalid URI',
       redirect_uris: (value) =>
         !value
           ? null
-          : isOriginArray(value) === null
+          : isValidUrlArray(value) === null
             ? null
-            : `Invalid URI at index ${isOriginArray(value)}`,
+            : `Invalid URI at index ${isValidUrlArray(value)}`,
       post_logout_redirect_uris: (value) =>
         !value
           ? null
-          : isOriginArray(value) === null
+          : isValidUrlArray(value) === null
             ? null
-            : `Invalid URI at index ${isOriginArray(value)}`
+            : `Invalid URI at index ${isValidUrlArray(value)}`
     }
   })
 
