@@ -133,35 +133,37 @@ export const Settings = ({ app: activeApp }) => {
             inputWrapperOrder={['label', 'input', 'description']}
             rightSection={<CopyButton value={activeApp.client_id} />}
           />
-          <Group grow m="sm">
-            <PasswordInput
-              fw={600}
-              radius="xl"
-              label="Client Secret (client_secret)"
-              // disabled
-              defaultValue={activeApp.client_secret}
-              description={'Client Secret for the application.'}
-              inputWrapperOrder={['label', 'input', 'description']}
-              visibilityToggleIcon={({ reveal }) =>
-                reveal ? (
-                  <IconEyeOff
-                    style={{
-                      width: 'var(--psi-icon-size)',
-                      height: 'var(--psi-icon-size)'
-                    }}
-                  />
-                ) : (
-                  <IconEyeCheck
-                    style={{
-                      width: 'var(--psi-icon-size)',
-                      height: 'var(--psi-icon-size)'
-                    }}
-                  />
-                )
-              }
-            />
-            <CopyButton value={activeApp.client_secret} w={75} />
-          </Group>
+          {activeApp.client_secret && (
+            <Group grow m="sm">
+              <PasswordInput
+                fw={600}
+                radius="xl"
+                label="Client Secret (client_secret)"
+                // disabled
+                defaultValue={activeApp.client_secret}
+                description={'Client Secret for the application.'}
+                inputWrapperOrder={['label', 'input', 'description']}
+                visibilityToggleIcon={({ reveal }) =>
+                  reveal ? (
+                    <IconEyeOff
+                      style={{
+                        width: 'var(--psi-icon-size)',
+                        height: 'var(--psi-icon-size)'
+                      }}
+                    />
+                  ) : (
+                    <IconEyeCheck
+                      style={{
+                        width: 'var(--psi-icon-size)',
+                        height: 'var(--psi-icon-size)'
+                      }}
+                    />
+                  )
+                }
+              />
+              <CopyButton value={activeApp.client_secret} w={75} />
+            </Group>
+          )}
         </Box>
       </Group>
       <Divider />
