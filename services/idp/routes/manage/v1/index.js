@@ -104,21 +104,21 @@ export default async function managementRouter(fastify, opts) {
     } = request
 
     const {
-      client_name: clientName,
       [F0_TYPE_PROP]: type,
-      redirect_uris: redirectUris,
-      post_logout_redirect_uris: postLogoutRedirectUris,
+      logo_uri: logoUri,
+      client_name: clientName,
       initiate_login_uri: initiateLoginUri,
-      logo_uri: logoUri
+      redirect_uris: redirectUris,
+      post_logout_redirect_uris: postLogoutRedirectUris
     } = body
 
     return api.updateClient(id, {
-      clientName,
       type,
-      redirectUris,
-      postLogoutRedirectUris,
+      logoUri,
+      clientName,
       initiateLoginUri,
-      logoUri
+      redirectUris: [...new Set(redirectUris)],
+      postLogoutRedirectUris: [...new Set(postLogoutRedirectUris)]
     })
   }
 

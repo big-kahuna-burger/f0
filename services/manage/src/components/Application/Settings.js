@@ -1,12 +1,10 @@
 import {
-  Anchor,
   Box,
   Button,
   Code,
   Dialog,
   Divider,
   Group,
-  LoadingOverlay,
   PasswordInput,
   Select,
   Stack,
@@ -18,6 +16,7 @@ import {
 import { useForm } from '@mantine/form'
 import { useDisclosure } from '@mantine/hooks'
 import { IconEyeCheck, IconEyeOff } from '@tabler/icons-react'
+import { useState } from 'react'
 import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
 import { ArticleCard } from './ApplicationLogo'
@@ -50,7 +49,7 @@ const isValidUrlArray = (value) => {
 export const Settings = ({ app: activeApp }) => {
   const theme = useMantineTheme()
   const [opened, { toggle, close }] = useDisclosure(false)
-  const [overlayVisible, OL] = useDisclosure(false)
+  const [apiResponse, setApiResponse] = useState()
   const form = useForm({
     initialValues: {
       initiate_login_uri: '',
@@ -85,24 +84,17 @@ export const Settings = ({ app: activeApp }) => {
       console.log(form.errors, form.values)
       return
     }
-    OL.toggle()
     updateApplication(activeApp.client_id, form.values).then((res) => {
+      setApiResponse(JSON.stringify(res, null, 2))
       toggle()
-      OL.close()
       setTimeout(() => {
         close()
-      }, 2000)
+      }, 20000)
     })
   }
 
   return (
     <Stack maw={1200} gap={'xs'} fw={600}>
-      <LoadingOverlay
-        mx="auto"
-        visible={overlayVisible}
-        zIndex={1000}
-        overlayProps={{ radius: 'sm', blur: 2 }}
-      />
       <Divider />
       <Group grow align="center" justify="space-around">
         <Text maw={350}>Basic Information</Text>
@@ -262,7 +254,7 @@ export const Settings = ({ app: activeApp }) => {
           Save
         </Button>
       </Group>
-      <Divider />
+      {/* <Divider />
       <Group grow align="center" justify="space-around">
         <Text maw={350}>OpenID Connect Back-Channel Logout</Text>
         <Stack>TBD</Stack>
@@ -302,19 +294,23 @@ export const Settings = ({ app: activeApp }) => {
         <Stack>
           <TextInput label="todo" />
         </Stack>
-      </Group>
+      </Group> */}
       <Dialog
         className="dialog"
         position={{ top: 50, right: 50 }}
         opened={opened}
-        size="lg"
+        size="xl"
         radius="md"
         c={theme.colors.myColor[9]}
-        bg={theme.colors.green[5]}
+        bg={theme.colors.gray[5]}
       >
         <Text size="lg" mb="xs" fw={800}>
-          Saved successfully
+          Saved successfully.
         </Text>
+        <aside>
+          <CopyButton value={apiResponse} />
+          <Code block>{apiResponse}</Code>
+        </aside>
       </Dialog>
     </Stack>
   )
