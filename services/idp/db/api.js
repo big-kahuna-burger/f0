@@ -1,7 +1,18 @@
+import crypto from 'crypto'
+import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
 import { nanoid } from 'nanoid'
+import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
 import { epochTime } from '../oidc/helpers/epoch.js'
 import prisma from './client.js'
+
+const randomFill = promisify(crypto.randomFill)
+
+async function secretFactory() {
+  const bytes = Buffer.allocUnsafe(64)
+  await randomFill(bytes)
+  return bytes.toString('base64url')
+}
 
 const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
   const accounts = await prisma.account.findMany({
@@ -20,6 +31,107 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
     return { ...Profile[0], ...account }
   })
   return flat
+}
+
+const getClient = async (id) => {
+  const client = await prisma.oidcModel.findFirst({
+    where: {
+      id,
+      type: 7
+    }
+  })
+  return client
+}
+
+const updateClient = async (
+  id,
+  {
+    clientName,
+    type,
+    redirectUris = [],
+    postLogoutRedirectUris = [],
+    initiateLoginUri,
+    logoUri
+  }
+) => {
+  const foundClient = await prisma.oidcModel.findFirst({ where: { id } })
+  if (!foundClient) {
+    throw new Error('client not found')
+  }
+  console.log(
+    clientName,
+    type,
+    redirectUris,
+    postLogoutRedirectUris,
+    initiateLoginUri,
+    logoUri
+  )
+  const client = await prisma.oidcModel.update({
+    where: { id },
+    data: {
+      payload: {
+        ...foundClient.payload,
+        client_name: clientName,
+        redirect_uris: redirectUris,
+        post_logout_redirect_uris: postLogoutRedirectUris,
+        initiate_login_uri: initiateLoginUri,
+        logo_uri: logoUri,
+        [F0_TYPE_PROP]: type
+        // [CORS_PROP]: [],
+      }
+    }
+  })
+  return client
+}
+
+const createClient = async ({ name, type }) => {
+  const id = nanoid(21)
+  const payload = {
+    client_id: id,
+    client_name: name,
+    grant_types: [],
+    subject_type: 'public',
+    client_secret: await secretFactory(),
+    redirect_uris: [],
+    response_types: ['code'],
+    application_type: 'native',
+    require_auth_time: false,
+    client_id_issued_at: epochTime(),
+    client_secret_expires_at: 0,
+    dpop_bound_access_tokens: false,
+    post_logout_redirect_uris: [],
+    token_endpoint_auth_method: 'client_secret_post',
+    id_token_signed_response_alg: 'RS256',
+    require_pushed_authorization_requests: false,
+    // [CORS_PROP]: [],
+    [F0_TYPE_PROP]: type
+  }
+  switch (type) {
+    case 'spa':
+      payload.token_endpoint_auth_method = 'none'
+      payload.grant_types = ['authorization_code', 'refresh_token']
+      break
+    case 'native':
+      payload.grant_types = ['authorization_code', 'refresh_token']
+      payload.token_endpoint_auth_method = 'none'
+      break
+    case 'web':
+      payload.grant_types = [
+        'authorization_code',
+        'client_credentials',
+        'refresh_token'
+      ]
+      break
+    case 'm2m':
+      payload.grant_types = ['client_credentials']
+      payload.response_types = []
+      break
+    default:
+      throw new Error('invalid client type')
+  }
+  const data = { id, type: 7, payload }
+  const client = await prisma.oidcModel.create({ data })
+  return client.payload
 }
 
 const loadClients = async ({
@@ -66,7 +178,7 @@ const loadClients = async ({
     take,
     cursor,
     orderBy: {
-      updatedAt: 'asc'
+      updatedAt: 'desc'
     },
     where: {
       type: 7
@@ -314,7 +426,7 @@ const loadGrantsByResourceIdentifier = async ({
     .reduce((acc, x) => {
       const { jti, clientId, resources } = x
       const scope = resources[identifier]
-      const scopes = scope.split(' ').filter(x => Boolean(x.length))
+      const scopes = scope.split(' ').filter((x) => Boolean(x.length))
       acc.push({ grantId: jti, clientId, scopes })
       return acc
     }, [])
@@ -334,6 +446,9 @@ async function updateResourceServer(
 export {
   getAccount,
   loadAccounts,
+  getClient,
+  createClient,
+  updateClient,
   loadClients,
   loadGrantableClients,
   updateAccount,

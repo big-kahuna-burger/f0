@@ -5,7 +5,6 @@ import {
   Badge,
   Button,
   Code,
-  CopyButton,
   Divider,
   Group,
   Paper,
@@ -33,10 +32,8 @@ import {
 } from '@tabler/icons-react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 
-import { useEffect, useState } from 'react'
-import classes from './AppServer.module.css'
-
 import { useColorScheme } from '@mantine/hooks'
+import { useEffect, useState } from 'react'
 import {
   createGrant,
   deleteGrantById,
@@ -44,6 +41,9 @@ import {
   updateGrantById,
   updateResourceServerScopes
 } from '../../api'
+
+import { CopyButton } from '../CopyButton'
+import classes from './AppServer.module.css'
 import QuickStart from './QuickStart'
 
 export function AppServer() {
@@ -63,7 +63,9 @@ export function AppServer() {
         </Tabs.List>
 
         <ApiHeader api={activeApi} />
-        <Tabs.Panel value="quick"><QuickStart api={activeApi}/></Tabs.Panel>
+        <Tabs.Panel value="quick">
+          <QuickStart api={activeApi} />
+        </Tabs.Panel>
         <Tabs.Panel value="settings">
           <Settings api={activeApi} />
         </Tabs.Panel>
@@ -510,29 +512,7 @@ function Settings({ api }) {
             }
             inputWrapperOrder={['label', 'input', 'description']}
             disabled
-            rightSection={
-              <CopyButton value={api.identifier} timeout={2000}>
-                {({ copied, copy }) => (
-                  <Tooltip
-                    label={copied ? 'Copied' : 'Copy'}
-                    withArrow
-                    position="right"
-                  >
-                    <ActionIcon
-                      color={copied ? 'teal' : 'gray'}
-                      variant="subtle"
-                      onClick={copy}
-                    >
-                      {copied ? (
-                        <IconCheck style={{ width: rem(18) }} />
-                      ) : (
-                        <IconCopy style={{ width: rem(18) }} />
-                      )}
-                    </ActionIcon>
-                  </Tooltip>
-                )}
-              </CopyButton>
-            }
+            rightSection={<CopyButton value={api.identifier} />}
           />
         </Stack>
       </Group>
@@ -582,29 +562,7 @@ function Settings({ api }) {
                 description="Secret to be used when signing the access tokens for this API."
                 inputWrapperOrder={['label', 'input', 'description']}
                 disabled
-                rightSection={
-                  <CopyButton value={api.signingSecret} timeout={2000}>
-                    {({ copied, copy }) => (
-                      <Tooltip
-                        label={copied ? 'Copied' : 'Copy'}
-                        withArrow
-                        position="right"
-                      >
-                        <ActionIcon
-                          color={copied ? 'teal' : 'gray'}
-                          variant="subtle"
-                          onClick={copy}
-                        >
-                          {copied ? (
-                            <IconCheck style={{ width: rem(18) }} />
-                          ) : (
-                            <IconCopy style={{ width: rem(18) }} />
-                          )}
-                        </ActionIcon>
-                      </Tooltip>
-                    )}
-                  </CopyButton>
-                }
+                rightSection={<CopyButton value={api.signingSecret} />}
               />
             </Group>
           )}

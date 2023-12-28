@@ -51,7 +51,7 @@ async function makeFastify(config, pretty) {
 
   const oidCallback = provider.callback()
   app.use(pathname, oidCallback)
-  const slower = seconds => (req, res, next) => {
+  const slower = (seconds) => (req, res, next) => {
     return setTimeout(next, seconds * 1000)
   }
   // app.use(slower(0.1))
@@ -100,17 +100,23 @@ async function start(port, pretty) {
       deepLinking: false
     },
     uiHooks: {
-      onRequest: (request, reply, next) => { next() },
-      preHandler: (request, reply, next) => { next() }
+      onRequest: (request, reply, next) => {
+        next()
+      },
+      preHandler: (request, reply, next) => {
+        next()
+      }
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => { return swaggerObject },
+    transformSpecification: (swaggerObject, request, reply) => {
+      return swaggerObject
+    },
     transformSpecificationClone: true
   })
   await app.ready()
   app.swagger()
-  
+
   // console.log(
   //   app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] })
   // )

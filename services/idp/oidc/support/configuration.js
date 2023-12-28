@@ -3,19 +3,26 @@ import { errors } from 'oidc-provider'
 import { defaults } from 'oidc-provider/lib/helpers/defaults.js'
 import dbClient from '../../db/client.js'
 import { MANAGEMENT } from '../../resource-servers/management.js'
-import { CORS_PROP, corsPropValidator } from '../client-based-cors/index.js'
+import {
+  CORS_PROP,
+  F0_TYPE_PROP,
+  corsPropValidator,
+  urnF0TypeValidator
+} from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
 const isFirstParty = (client) => client.clientId === 'myClientID'
-
 export default {
   // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
-    properties: [CORS_PROP],
+    properties: [CORS_PROP, F0_TYPE_PROP],
     validator(ctx, key, value, metadata) {
       if (key === CORS_PROP) {
         return corsPropValidator(value, metadata) // this can be context aware but not async really
+      }
+      if (F0_TYPE_PROP === key) {
+        return urnF0TypeValidator(value, metadata)
       }
       return metadata
     }
@@ -90,7 +97,9 @@ export default {
     clientCredentials: { enabled: true },
     devInteractions: { enabled: false },
     deviceFlow: { enabled: true },
-    registration: { enabled: true }, // deal with open registration
+    registration: {
+      enabled: true
+    }, // deal with open registration
     registrationManagement: { enabled: true }, // deal with open registration
     revocation: { enabled: true },
     claimsParameter: { enabled: true },
@@ -149,7 +158,7 @@ export default {
           return {
             scope: Object.keys(rs.scopes).join(' '),
             audience: resourceIndicator,
-            accessTokenTTL: rs.ttl,
+            accessTokenTTL: rs.ttlBrowser,
             accessTokenFormat: 'jwt',
             jwt: {
               sign:

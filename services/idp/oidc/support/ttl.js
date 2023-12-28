@@ -5,8 +5,9 @@ const DAY = 24 * ONE_HOUR
 const FOURTEEN_DAYS = 14 * DAY
 
 const ttl = {
-  AccessToken: (ctx, token, client) =>
-    token.resourceServer?.accessTokenTTL || ONE_HOUR,
+  AccessToken: (ctx, token, client) => {
+    return token.resourceServer?.accessTokenTTL || ONE_HOUR
+  },
   AuthorizationCode: ONE_MINUTE,
   BackchannelAuthenticationRequest: (ctx, request, client) => {
     if (ctx.oidc?.params.requested_expiry) {

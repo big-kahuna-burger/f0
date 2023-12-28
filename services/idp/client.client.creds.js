@@ -13,10 +13,12 @@ const openregClient = await issuer.Client.register({
   application_type: 'native',
   client_name: `Dynamic Client Registration at ${Date.now()}`,
   token_endpoint_auth_method: 'client_secret_post',
-  grant_types: ['client_credentials']
+  grant_types: ['client_credentials'],
+  initiate_login_uri: 'https://initial.com'
+  // 'urn:f0:type': 'm2m'
 })
 
-process.stdin.pause();
+process.stdin.pause()
 const resource = 'https://pltf.vlv'
 query(resource, async () => {
   try {

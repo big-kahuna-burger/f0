@@ -5,13 +5,16 @@ export {
   getResourceServer,
   getResourceServers,
   createResourceServer,
+  getApplication,
   getApplications,
   getApplicationGrants,
   createGrant,
   updateGrantById,
   deleteGrantById,
   updateResourceServerScopes,
-  updateApi
+  updateApi,
+  createApplication,
+  updateApplication
 }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
@@ -19,6 +22,16 @@ const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function createApplication({ name, type }) {
+  const opts = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({ name, type })
+  }
+  const applicationsCreateResponse = await fetch(applicationsUrl, opts)
+  return applicationsCreateResponse.json()
+}
 
 async function createResourceServer({ name, identifier, signingAlg }) {
   const opts = {
@@ -72,6 +85,62 @@ async function getApplicationGrants(id) {
   return json
 }
 
+async function getApplication(id) {
+  const opts = { headers: getHeaders() }
+  const application = await fetch(`${baseUrl}/app/${id}`, opts)
+  const json = await application.json()
+  return {
+    ...json,
+    redirect_uris: json.redirect_uris.join(','),
+    post_logout_redirect_uris: json.post_logout_redirect_uris.join(',')
+  }
+}
+
+async function updateApplication(
+  id,
+  {
+    client_name,
+    initiate_login_uri,
+    redirect_uris,
+    post_logout_redirect_uris,
+    'urn:f0:type': type,
+    logo_uri
+  }
+) {
+  console.log(
+    client_name,
+    initiate_login_uri,
+    redirect_uris,
+    post_logout_redirect_uris,
+    logo_uri,
+    type
+  )
+  const opts = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({
+      client_name,
+      initiate_login_uri: initiate_login_uri
+        ? initiate_login_uri.trim()
+        : undefined,
+      redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
+        .map((x) => x.trim())
+        .filter((x) => Boolean(x.length)),
+      post_logout_redirect_uris: (post_logout_redirect_uris
+        ? post_logout_redirect_uris.split(',')
+        : []
+      )
+        .map((x) => x.trim())
+        .filter((x) => Boolean(x.length)),
+      'urn:f0:type': type,
+      logo_uri
+    })
+  }
+  const response = await fetch(`${baseUrl}/app/${id}`, opts)
+  const json = await response.json()
+  return json
+}
+
 async function getApplications({
   type,
   page = 0,
@@ -96,7 +165,12 @@ async function getApplications({
     opts
   )
   const applicationsJson = await applicationsResponse.json()
-  return applicationsJson
+  return applicationsJson.map((x) => ({
+    ...x,
+    formattedUpdatedAt: x.updatedAt
+      ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
+      : undefined
+  }))
 }
 
 async function createGrant({ identifier, clientId }) {
@@ -166,7 +240,7 @@ async function getUsers() {
   }))
 }
 
-async function updateApi (id, data) {
+async function updateApi(id, data) {
   const opts = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getHeaders() },

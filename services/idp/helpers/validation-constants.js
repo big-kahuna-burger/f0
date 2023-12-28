@@ -1,3 +1,5 @@
+import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
+
 export const allowedClientFields = [
   'application_type',
   'client_id',
@@ -47,5 +49,8 @@ export const allowedClientFields = [
   'token_endpoint_auth_signing_alg',
   'userinfo_encrypted_response_alg',
   'userinfo_encrypted_response_enc',
-  'web_message_uris'
+  'web_message_uris',
+  F0_TYPE_PROP,
+  CORS_PROP,
+  'updatedAt'
 ]
