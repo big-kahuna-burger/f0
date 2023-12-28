@@ -3,19 +3,25 @@ import {
   Box,
   Button,
   Code,
+  Dialog,
   Divider,
   Group,
+  LoadingOverlay,
   PasswordInput,
   Select,
   Stack,
   Text,
   TextInput,
-  Textarea
+  Textarea,
+  useMantineTheme
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useDisclosure } from '@mantine/hooks'
 import { IconEyeCheck, IconEyeOff } from '@tabler/icons-react'
+import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
 import { ArticleCard } from './ApplicationLogo'
+import classes from './ApplicationLogo.module.css'
 const issuer = process.env.REACT_APP_ISSUER
 
 const isValidUrl = (value) => {
@@ -42,23 +48,31 @@ const isValidUrlArray = (value) => {
 }
 
 export const Settings = ({ app: activeApp }) => {
+  const theme = useMantineTheme()
+  const [opened, { toggle, close }] = useDisclosure(false)
+  const [overlayVisible, OL] = useDisclosure(false)
   const form = useForm({
-    initialValues: { initial_login_uri: '', ...activeApp },
+    initialValues: {
+      initiate_login_uri: '',
+      logo_uri: '',
+      ...activeApp
+    },
     validate: {
       client_name: (value) =>
         value.trim().length > 3 ? null : 'Name is required',
       'urn:f0:type': (value) =>
         ['native', 'spa', 'web', 'm2m'].includes(value) ? null : 'Invalid type',
-      initial_login_uri: (value) =>
+      initiate_login_uri: (value) =>
         !value ? null : isValidUrl(value) ? null : 'Invalid URI',
+      logo_uri: (value) => (isValidUrl(value) ? null : 'Invalid URI'),
       redirect_uris: (value) =>
-        !value
+        !value || value.length === 0
           ? null
           : isValidUrlArray(value) === null
             ? null
             : `Invalid URI at index ${isValidUrlArray(value)}`,
       post_logout_redirect_uris: (value) =>
-        !value
+        !value || value.length === 0
           ? null
           : isValidUrlArray(value) === null
             ? null
@@ -71,11 +85,24 @@ export const Settings = ({ app: activeApp }) => {
       console.log(form.errors, form.values)
       return
     }
-    console.log(form.errors, form.values)
+    OL.toggle()
+    updateApplication(activeApp.client_id, form.values).then((res) => {
+      toggle()
+      OL.close()
+      setTimeout(() => {
+        close()
+      }, 2000)
+    })
   }
 
   return (
     <Stack maw={1200} gap={'xs'} fw={600}>
+      <LoadingOverlay
+        mx="auto"
+        visible={overlayVisible}
+        zIndex={1000}
+        overlayProps={{ radius: 'sm', blur: 2 }}
+      />
       <Divider />
       <Group grow align="center" justify="space-around">
         <Text maw={350}>Basic Information</Text>
@@ -149,7 +176,12 @@ export const Settings = ({ app: activeApp }) => {
       <Group grow align="center" justify="space-around">
         <Text maw={350}>Application Properties</Text>
         <Stack p={'xs'}>
-          <ArticleCard logoUri={activeApp.logo_uri} />
+          <ArticleCard url={form.values.logo_uri} />
+          <TextInput
+            className={classes.input}
+            placeholder="https://my.app/logo-small.png"
+            {...form.getInputProps('logo_uri')}
+          />
           <Select
             m="sm"
             label="Application Type (urn:f0:type)"
@@ -176,8 +208,8 @@ export const Settings = ({ app: activeApp }) => {
           <TextInput
             fw={600}
             ml="sm"
-            label="Initial Login URI (initial_login_uri)"
-            {...form.getInputProps('initial_login_uri')}
+            label="Initial Login URI (initiate_login_uri)"
+            {...form.getInputProps('initiate_login_uri')}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
             placeholder="https://example.com/login/start"
           />
@@ -199,10 +231,9 @@ export const Settings = ({ app: activeApp }) => {
             After the user authenticates we will only call back to any of these
             URLs. You can specify multiple valid URLs by comma-separating them
             (typically to handle different environments like QA or testing).
-            Make sure to specify the protocol (like {<Code>https://</Code>})
-            otherwise the callback may fail in some cases. With the exception of
-            custom URI schemes for native clients, all callbacks should use
-            protocol {<Code>https://</Code>}.
+            Make sure to specify the protocol (like {<Code>https://</Code>}).
+            With the exception of custom URI schemes for native clients, all
+            callbacks should use protocols like http/https.
           </Text>
           <Textarea
             fw={600}
@@ -226,7 +257,11 @@ export const Settings = ({ app: activeApp }) => {
           </Text>
         </Stack>
       </Group>
-      <Button onClick={() => handleSubmit()}>Save</Button>
+      <Group grow align="center" justify="space-around">
+        <Button maw={300} onClick={() => handleSubmit()} justify="center">
+          Save
+        </Button>
+      </Group>
       <Divider />
       <Group grow align="center" justify="space-around">
         <Text maw={350}>OpenID Connect Back-Channel Logout</Text>
@@ -268,6 +303,19 @@ export const Settings = ({ app: activeApp }) => {
           <TextInput label="todo" />
         </Stack>
       </Group>
+      <Dialog
+        className="dialog"
+        position={{ top: 50, right: 50 }}
+        opened={opened}
+        size="lg"
+        radius="md"
+        c={theme.colors.myColor[9]}
+        bg={theme.colors.green[5]}
+      >
+        <Text size="lg" mb="xs" fw={800}>
+          Saved successfully
+        </Text>
+      </Dialog>
     </Stack>
   )
 }

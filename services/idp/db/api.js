@@ -2,6 +2,7 @@ import crypto from 'crypto'
 import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
 import { nanoid } from 'nanoid'
+import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
 import { epochTime } from '../oidc/helpers/epoch.js'
 import prisma from './client.js'
 
@@ -42,6 +43,47 @@ const getClient = async (id) => {
   return client
 }
 
+const updateClient = async (
+  id,
+  {
+    clientName,
+    type,
+    redirectUris = [],
+    postLogoutRedirectUris = [],
+    initiateLoginUri,
+    logoUri
+  }
+) => {
+  const foundClient = await prisma.oidcModel.findFirst({ where: { id } })
+  if (!foundClient) {
+    throw new Error('client not found')
+  }
+  console.log(
+    clientName,
+    type,
+    redirectUris,
+    postLogoutRedirectUris,
+    initiateLoginUri,
+    logoUri
+  )
+  const client = await prisma.oidcModel.update({
+    where: { id },
+    data: {
+      payload: {
+        ...foundClient.payload,
+        client_name: clientName,
+        redirect_uris: redirectUris,
+        post_logout_redirect_uris: postLogoutRedirectUris,
+        initiate_login_uri: initiateLoginUri,
+        logo_uri: logoUri,
+        [F0_TYPE_PROP]: type
+        // [CORS_PROP]: [],
+      }
+    }
+  })
+  return client
+}
+
 const createClient = async ({ name, type }) => {
   const id = nanoid(21)
   const payload = {
@@ -61,8 +103,8 @@ const createClient = async ({ name, type }) => {
     token_endpoint_auth_method: 'client_secret_post',
     id_token_signed_response_alg: 'RS256',
     require_pushed_authorization_requests: false,
-    'urn:f0:ACO': [],
-    'urn:f0:type': type
+    // [CORS_PROP]: [],
+    [F0_TYPE_PROP]: type
   }
   switch (type) {
     case 'spa':
@@ -406,6 +448,7 @@ export {
   loadAccounts,
   getClient,
   createClient,
+  updateClient,
   loadClients,
   loadGrantableClients,
   updateAccount,

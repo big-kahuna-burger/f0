@@ -11,8 +11,7 @@ import classes from './ApplicationLogo.module.css'
 
 const skeletonLogo = `${window.location.origin}/svg/fastify-seeklogo.com.svg`
 
-export function ArticleCard({ logoUri, onChange = () => {} } = {}) {
-  const [url, setUrl] = useState(logoUri)
+export function ArticleCard({ url }) {
   const theme = useMantineTheme()
 
   return (
@@ -39,15 +38,7 @@ export function ArticleCard({ logoUri, onChange = () => {} } = {}) {
           )}
         </Card.Section>
       </Group>
-      <TextInput
-        className={classes.input}
-        placeholder="https://my.app/logo-small.png"
-        value={url}
-        onChange={(event) => {
-          setUrl(event.currentTarget.value)
-          onChange(event.currentTarget.value)
-        }}
-      />
+
       <Text className={classes.title} fw={500}>
         Application Logo
       </Text>

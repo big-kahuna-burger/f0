@@ -78,7 +78,10 @@ export function AppServers() {
                       direction="column"
                       wrap="wrap"
                     >
-                      <NavLink label={item.name} href={`/api/${item.id}/quick`} />
+                      <NavLink
+                        label={item.name}
+                        href={`/api/${item.id}/quick`}
+                      />
                       {item.readonly && (
                         <Badge
                           color={theme.colors.myAltColor[3]}
@@ -185,6 +188,18 @@ function ButtonCreate({ ...props }) {
 }
 const algosSupported = ['RS256', 'HS256']
 
+const isValidUrl = (value) => {
+  if (typeof value !== 'string') {
+    return false
+  }
+  try {
+    new URL(value)
+    return true
+  } catch (err) {
+    return false
+  }
+}
+
 function CreateFormBox(props) {
   const [visible, { toggle }] = useDisclosure(false)
   const form = useForm({
@@ -197,9 +212,7 @@ function CreateFormBox(props) {
       name: (value) =>
         value.length < 2 ? 'Name must have at least 2 letters' : null,
       identifier: (value) =>
-        value.length < 5
-          ? 'Invalid identifier. Use at least 5 characters'
-          : null,
+        isValidUrl(value) ? null : 'Invalid identifier. Use URI format',
       signingAlg: (value) =>
         !algosSupported.includes(value) ? 'Bad algorithm' : null
     }
@@ -227,7 +240,7 @@ function CreateFormBox(props) {
           <TextInput
             mt="md"
             label="Identifier"
-            placeholder="Identifier"
+            placeholder="https://myapi.identifier.dev"
             {...form.getInputProps('identifier')}
           />
           <BasicSelect

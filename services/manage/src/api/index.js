@@ -13,7 +13,8 @@ export {
   deleteGrantById,
   updateResourceServerScopes,
   updateApi,
-  createApplication
+  createApplication,
+  updateApplication
 }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
@@ -88,6 +89,55 @@ async function getApplication(id) {
   const opts = { headers: getHeaders() }
   const application = await fetch(`${baseUrl}/app/${id}`, opts)
   const json = await application.json()
+  return {
+    ...json,
+    redirect_uris: json.redirect_uris.join(','),
+    post_logout_redirect_uris: json.post_logout_redirect_uris.join(',')
+  }
+}
+
+async function updateApplication(
+  id,
+  {
+    client_name,
+    initiate_login_uri,
+    redirect_uris,
+    post_logout_redirect_uris,
+    'urn:f0:type': type,
+    logo_uri
+  }
+) {
+  console.log(
+    client_name,
+    initiate_login_uri,
+    redirect_uris,
+    post_logout_redirect_uris,
+    logo_uri,
+    type
+  )
+  const opts = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({
+      client_name,
+      initiate_login_uri: initiate_login_uri
+        ? initiate_login_uri.trim()
+        : undefined,
+      redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
+        .map((x) => x.trim())
+        .filter((x) => Boolean(x.length)),
+      post_logout_redirect_uris: (post_logout_redirect_uris
+        ? post_logout_redirect_uris.split(',')
+        : []
+      )
+        .map((x) => x.trim())
+        .filter((x) => Boolean(x.length)),
+      'urn:f0:type': type,
+      logo_uri
+    })
+  }
+  const response = await fetch(`${baseUrl}/app/${id}`, opts)
+  const json = await response.json()
   return json
 }
 

@@ -1,11 +1,23 @@
+import Prisma from '@prisma/client'
 import * as api from '../../../db/api.js'
 import { accountMAP, resourceServerMap } from '../../../db/mappers/account.js'
 import { allowedClientFields } from '../../../helpers/validation-constants.js'
 import joseVerify from '../../../passive-plugins/jwt-jose.js'
+import {
+  apiCreateSchema,
+  createClientSchema,
+  createGrantSchema,
+  updateApiSchema,
+  updateClientSchema,
+  updateScopesSchema
+} from '../../../passive-plugins/manage-validators.js'
+
+import { F0_TYPE_PROP } from '../../../oidc/client-based-cors/index.js'
+
 const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
-import Prisma from '@prisma/client'
 const DEFAULT_CLIENT_INCLUDE =
-  'client_id,client_name,client_secret,application_type,client_uri,initial_login_uri,logo_uri,grant_types,token_endpoint_auth_method,redirect_uris,post_logout_redirect_uris,initiate_login_uri,urn:f0:type,updatedAt'
+  'client_id,client_name,client_secret,application_type,client_uri,initiate_login_uri,logo_uri,grant_types,token_endpoint_auth_method,redirect_uris,post_logout_redirect_uris,initiate_login_uri,urn:f0:type,updatedAt'
+
 export default async function managementRouter(fastify, opts) {
   const MANAGEMENT = opts.MANAGEMENT_API
   fastify.register(joseVerify, {
@@ -28,24 +40,47 @@ export default async function managementRouter(fastify, opts) {
   })
 
   // produce some management API audit logs based on user/action taken
-
   fastify.get('/users/:id', getUser)
   fastify.get('/users', getUsers)
-  fastify.post('/apis/create', createResourceServer)
+  fastify.post(
+    '/apis/create',
+    { schema: { body: apiCreateSchema } },
+    createResourceServer
+  )
   fastify.get('/apis/:id', getResourceServer)
-  fastify.put('/api/:id/scopes', updateScopes)
-  fastify.put('/api/:id', updateApi)
+  fastify.put(
+    '/api/:id/scopes',
+    { schema: { body: updateScopesSchema } },
+    updateScopes
+  )
+  fastify.put('/api/:id', { schema: { body: updateApiSchema } }, updateApi)
   fastify.get('/api/:id/grants', getGrantsByResourceServerId)
-  fastify.post('/grants/create', createGrant)
-  fastify.put('/grants/:id', updateGrant)
+  fastify.post(
+    '/grants/create',
+    { schema: { body: createGrantSchema } },
+    createGrant
+  )
+  fastify.put('/grants/:id', updateGrant) // TODO add schema
   fastify.delete('/grants/:id', deleteGrant)
   fastify.get('/apis', getAllResourceServers)
   fastify.get('/app/:id', getClient)
-  fastify.post('/apps', createClient)
+  fastify.put(
+    '/app/:id',
+    { schema: { body: updateClientSchema } },
+    updateClient
+  )
+  fastify.post('/app/:id/secret', rotateSecret) // TODO implement/no schema
+  fastify.post('/apps', { schema: { body: createClientSchema } }, createClient)
   fastify.get('/apps', getAllClients)
 
   const clientXMap = (x, fields) =>
     Object.fromEntries(fields.map((f) => [f, x[f] || x.payload[f]]))
+
+  async function rotateSecret(request, reply) {
+    throw new Error(
+      'not implemented yet. Open issue with https://github.com/big-kahuna-burger/f0/issues/new'
+    )
+  }
 
   async function getClient(request, reply) {
     const { id } = request.params
@@ -62,6 +97,31 @@ export default async function managementRouter(fastify, opts) {
     return api.createClient({ name, type: type.toLowerCase() })
   }
 
+  async function updateClient(request, reply) {
+    const {
+      params: { id, ...params },
+      body = {}
+    } = request
+
+    const {
+      client_name: clientName,
+      [F0_TYPE_PROP]: type,
+      redirect_uris: redirectUris,
+      post_logout_redirect_uris: postLogoutRedirectUris,
+      initiate_login_uri: initiateLoginUri,
+      logo_uri: logoUri
+    } = body
+
+    return api.updateClient(id, {
+      clientName,
+      type,
+      redirectUris,
+      postLogoutRedirectUris,
+      initiateLoginUri,
+      logoUri
+    })
+  }
+
   async function getAllClients(request) {
     const {
       page = 1,
@@ -71,8 +131,9 @@ export default async function managementRouter(fastify, opts) {
       token_endpoint_auth_method_not
     } = request.query
     const fields = include?.length ? include.split(',') : []
+
     if (!fields.every((f) => allowedClientFields.includes(f))) {
-      throw new Error('invalid fields found in include query param')
+      throw new Error('found dissalowed field in include query param')
     }
 
     const clients = await api.loadClients({
@@ -157,7 +218,6 @@ export default async function managementRouter(fastify, opts) {
 
   async function createGrant(request, reply) {
     const { clientId, identifier } = request.body || {}
-    console.log(JSON.stringify({ clientId, identifier }, null, 2))
     const grantCreated = await api.createGrant({
       clientId,
       identifier,
