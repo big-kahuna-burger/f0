@@ -56,6 +56,7 @@ export const setupPrisma = async (prisma) => {
   prisma.oidcModel.findFirst.mockImplementation(oidcModelFindFirst)
   prisma.oidcModel.deleteMany.mockImplementation(oidcModelDeleteMany)
   prisma.oidcModel.update.mockImplementation(oidcModelUpdate)
+  prisma.oidcClient.findUnique.mockImplementation(oidcClientFindUnique)
   prisma.account.findUnique.mockImplementation(accountFindUnique)
   prisma.account.findFirst.mockImplementation(accountFindFirst)
   prisma.identity.create.mockImplementation(identityCreate)
@@ -106,10 +107,11 @@ function configCreate({ data }) {
   return configsDB
 }
 
+function oidcClientFindUnique({ where: { id } }) {
+  return clientMock
+}
+
 function oidcModelFindUnique({ where: { id_type: { id, type } } }) {
-  if (type === 7) {
-    return clientMock
-  }
   if (type === 10) {
     return interactionsDB[id]
   }

@@ -47,6 +47,14 @@ class PrismaAdapter {
   constructor(name) {
     this.name = name
     this.type = types[name]
+    this.modelName = 'default'
+    this.model = prisma.oidcModel
+    switch (name) {
+      case 'Client':
+        this.model = prisma.oidcClient
+        this.modelName = 'oidcClient'
+        break
+    }
   }
 
   async upsert(id, payload, expiresIn) {
@@ -54,28 +62,26 @@ class PrismaAdapter {
       `${this.name}:upsert(id, payload, expiresIn)`,
       async (span) => {
         try {
-          const data = {
+          let dataArg = {
             type: this.type,
-            payload: { ...payload },
+            payload,
             grantId: payload.grantId,
             userCode: payload.userCode,
             uid: payload.uid,
             expiresAt: expiresAt(expiresIn)
           }
-          await prisma.oidcModel.upsert({
-            where: {
-              id_type: {
-                id,
-                type: this.type
-              }
-            },
-            update: {
-              ...data
-            },
-            create: {
-              id,
-              ...data
-            }
+          let whereArg = { id_type: { id, type: this.type } }
+
+          switch (this.modelName) {
+            case 'oidcClient':
+              whereArg = { id }
+              dataArg = { payload }
+              break
+          }
+          await this.model.upsert({
+            where: whereArg,
+            update: { ...dataArg },
+            create: { id, ...dataArg }
           })
         } catch (error) {
           span.recordException(error)
@@ -90,15 +96,15 @@ class PrismaAdapter {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan(`${this.name}:find(id)`, async (span) => {
         try {
-          const doc = await prisma.oidcModel.findUnique({
-            where: {
-              id_type: {
-                id,
-                type: this.type
-              }
-            }
-          })
+          let whereArg = { id_type: { id, type: this.type } }
 
+          switch (this.modelName) {
+            case 'oidcClient':
+              whereArg = { id }
+              break
+          }
+
+          const doc = await this.model.findUnique({ where: whereArg })
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
             return resolve(undefined)
           }
@@ -112,18 +118,14 @@ class PrismaAdapter {
       })
     })
   }
-
+  // Device Code only
   async findByUserCode(userCode) {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan(
         `${this.name}:findByUserCode(userCode)`,
         async (span) => {
           try {
-            const doc = await prisma.oidcModel.findFirst({
-              where: {
-                userCode
-              }
-            })
+            const doc = await this.model.findFirst({ where: { userCode } })
 
             if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
               return resolve(undefined)
@@ -139,16 +141,12 @@ class PrismaAdapter {
       )
     })
   }
-
+  // Session only
   async findByUid(uid) {
     return new Promise((resolve, reject) => {
       tracer.startActiveSpan(`${this.name}:findByUid(uid)`, async (span) => {
         try {
-          const doc = await prisma.oidcModel.findFirst({
-            where: {
-              uid
-            }
-          })
+          const doc = await this.model.findFirst({ where: { uid } })
 
           if (!doc || (doc.expiresAt && doc.expiresAt < new Date())) {
             return resolve(undefined)
@@ -164,20 +162,13 @@ class PrismaAdapter {
     })
   }
 
+  // sl consumables
   async consume(id) {
     await tracer.startActiveSpan(`${this.name}:consume(id)`, async (span) => {
       try {
-        await prisma.oidcModel.update({
-          where: {
-            id_type: {
-              id,
-              type: this.type
-            }
-          },
-          data: {
-            consumedAt: new Date()
-          }
-        })
+        const whereArg = { id_type: { id, type: this.type } }
+        const data = { consumedAt: new Date() }
+        await this.model.update({ where: whereArg, data })
       } catch (error) {
         span.recordException(error)
       } finally {
@@ -189,14 +180,15 @@ class PrismaAdapter {
   async destroy(id) {
     await tracer.startActiveSpan(`${this.name}:destroy(id)`, async (span) => {
       try {
-        await prisma.oidcModel.delete({
-          where: {
-            id_type: {
-              id,
-              type: this.type
-            }
-          }
-        })
+        let whereArg = { id_type: { id, type: this.type } }
+
+        switch (this.modelName) {
+          case 'oidcClient':
+            whereArg = { id }
+            break
+        }
+
+        await this.model.delete({ where: whereArg })
       } catch (error) {
         span.recordException(error)
       } finally {
@@ -210,11 +202,7 @@ class PrismaAdapter {
       `${this.name}:revokeByGrantId(grantId)`,
       async (span) => {
         try {
-          await prisma.oidcModel.deleteMany({
-            where: {
-              grantId
-            }
-          })
+          await this.model.deleteMany({ where: { grantId } })
         } catch (error) {
           span.recordException(error)
         } finally {

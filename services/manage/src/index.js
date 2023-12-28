@@ -12,7 +12,7 @@ import {
   createTheme,
   localStorageColorSchemeManager
 } from '@mantine/core'
-const ISSUER = process.env.REACT_APP_ISSUER || 'http://localhost:3033'
+const ISSUER = process.env.REACT_APP_ISSUER
 const ORIGIN = window.location.origin
 
 const colorSchemeManager = localStorageColorSchemeManager({
@@ -20,28 +20,28 @@ const colorSchemeManager = localStorageColorSchemeManager({
 })
 
 const myColor = [
-  "#f2f0ff",
-  "#e0dff2",
-  "#bfbdde",
-  "#9b98ca",
-  "#7d79ba",
-  "#6a65b0",
-  "#605bac",
-  "#504c97",
-  "#464388",
-  "#3b3979"
+  '#f2f0ff',
+  '#e0dff2',
+  '#bfbdde',
+  '#9b98ca',
+  '#7d79ba',
+  '#6a65b0',
+  '#605bac',
+  '#504c97',
+  '#464388',
+  '#3b3979'
 ]
 const myAltColor = [
-  "#fdfce5",
-  "#f8f6d3",
-  "#f0ecaa",
-  "#e7e17c",
-  "#e0d957",
-  "#dbd33e",
-  "#d9d02f",
-  "#c0b820",
-  "#aaa316",
-  "#938c03"
+  '#fdfce5',
+  '#f8f6d3',
+  '#f0ecaa',
+  '#e7e17c',
+  '#e0d957',
+  '#dbd33e',
+  '#d9d02f',
+  '#c0b820',
+  '#aaa316',
+  '#938c03'
 ]
 
 const theme = createTheme({
@@ -60,7 +60,7 @@ const theme = createTheme({
 })
 
 const authConfig = {
-  clientId: 'myClientID',
+  clientId: process.env.REACT_APP_DASHBOARD_CLIENT_ID,
   authorizationEndpoint: `${ISSUER}/auth`,
   tokenEndpoint: `${ISSUER}/token`,
   redirectUri: `${ORIGIN}/cb`,
@@ -105,14 +105,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'))
 
 root.render(
   // <React.StrictMode>
-    <MantineProvider
-      theme={theme}
-      colorSchemeManager={colorSchemeManager}
-    >
-      <AuthProvider authConfig={authConfig}>
-        <App />
-      </AuthProvider>
-    </MantineProvider>
+  <MantineProvider theme={theme} colorSchemeManager={colorSchemeManager}>
+    <AuthProvider authConfig={authConfig}>
+      <App />
+    </AuthProvider>
+  </MantineProvider>
   // </React.StrictMode>
 )
 
