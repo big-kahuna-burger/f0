@@ -1,5 +1,6 @@
 import {
   Anchor,
+  Avatar,
   Badge,
   Button,
   Flex,
@@ -74,7 +75,13 @@ export function Applications() {
             </Flex>
           </Group>
         </Table.Td>
-        <Table.Td />
+        <Table.Td>
+          {item?.logo_uri ? (
+            <Avatar radius="xs" src={item.logo_uri} size={'lg'} />
+          ) : (
+            'NOT SET'
+          )}
+        </Table.Td>
         <Table.Td>
           <Badge
             color={theme.colors.myAltColor[3]}
@@ -96,7 +103,7 @@ export function Applications() {
             <Table.Tr>
               <Table.Th>Type</Table.Th>
               <Table.Th>Name (Client ID)</Table.Th>
-              <Table.Th>-</Table.Th>
+              <Table.Th>App Logo</Table.Th>
               <Table.Th>Updated</Table.Th>
               <Table.Th>-</Table.Th>
             </Table.Tr>

@@ -1,3 +1,5 @@
+import { F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
+
 export const updateGrantSchema = {
   $id: 'updateGrant',
   type: 'object',
@@ -51,7 +53,7 @@ export const createClientSchema = {
   type: 'object',
   properties: {
     name: { type: 'string', minLength: 3, maxLength: 40 },
-    type: { type: 'string', enum: ['native', 'spa', 'web', 'm2m'] }
+    [F0_TYPE_PROP]: { type: 'string', enum: ['native', 'spa', 'web', 'm2m'] }
   },
   required: ['name', 'type']
 }

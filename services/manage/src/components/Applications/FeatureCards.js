@@ -72,11 +72,14 @@ export function FeaturesCards() {
       console.log('errors', form.errors)
       return
     }
-    createApplication({ name: form.values.name, type: card }).then(
-      ({ client_id }) => {
+    createApplication({ name: form.values.name, type: card })
+      .then(({ client_id }) => {
+        console.log('create', client_id)
         navigate(`/app/${client_id}/quick`)
-      }
-    )
+      })
+      .catch((err) => {
+        console.log('create', err)
+      })
   }
 
   const features = mockdata.map((feature) => (

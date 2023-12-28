@@ -256,7 +256,7 @@ export default async function managementRouter(fastify, opts) {
       name,
       ttl,
       ttlBrowser,
-      allowSkipConsent
+      allowSkipConsent // TODO interpret on oidc-config side
     })
     return rs
   }

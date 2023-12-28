@@ -158,7 +158,7 @@ export default {
           return {
             scope: Object.keys(rs.scopes).join(' '),
             audience: resourceIndicator,
-            accessTokenTTL: rs.ttl,
+            accessTokenTTL: rs.ttlBrowser,
             accessTokenFormat: 'jwt',
             jwt: {
               sign:
