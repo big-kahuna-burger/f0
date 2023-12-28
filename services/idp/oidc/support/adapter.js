@@ -10,7 +10,8 @@ const types = [
   'RefreshToken',
   'DeviceCode',
   'ClientCredentials',
-  'Client',
+  'Client', // inactive type = 7 in oidc model, ideally, make tables for each separate model and make this single OIDC model completely obsolete
+  // this way I can optimize each table separately, use fields that don't have to stretch across all models
   'InitialAccessToken',
   'RegistrationAccessToken',
   'Interaction',
