@@ -115,26 +115,29 @@ async function updateApplication(
     logo_uri,
     type
   )
+
+  const body = {
+    client_name,
+    initiate_login_uri: initiate_login_uri
+      ? initiate_login_uri.trim()
+      : undefined,
+    redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
+      .map((x) => x.trim())
+      .filter((x) => Boolean(x.length)),
+    post_logout_redirect_uris: (post_logout_redirect_uris
+      ? post_logout_redirect_uris.split(',')
+      : []
+    )
+      .map((x) => x.trim())
+      .filter((x) => Boolean(x.length)),
+    'urn:f0:type': type,
+    logo_uri: logo_uri.length ? logo_uri : undefined
+  }
+
   const opts = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
-    body: JSON.stringify({
-      client_name,
-      initiate_login_uri: initiate_login_uri
-        ? initiate_login_uri.trim()
-        : undefined,
-      redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
-        .map((x) => x.trim())
-        .filter((x) => Boolean(x.length)),
-      post_logout_redirect_uris: (post_logout_redirect_uris
-        ? post_logout_redirect_uris.split(',')
-        : []
-      )
-        .map((x) => x.trim())
-        .filter((x) => Boolean(x.length)),
-      'urn:f0:type': type,
-      logo_uri
-    })
+    body: JSON.stringify(body)
   }
   const response = await fetch(`${baseUrl}/app/${id}`, opts)
   const json = await response.json()

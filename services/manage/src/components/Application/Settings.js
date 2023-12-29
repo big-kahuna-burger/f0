@@ -63,7 +63,7 @@ export const Settings = ({ app: activeApp }) => {
         ['native', 'spa', 'web', 'm2m'].includes(value) ? null : 'Invalid type',
       initiate_login_uri: (value) =>
         !value ? null : isValidUrl(value) ? null : 'Invalid URI',
-      logo_uri: (value) => (isValidUrl(value) ? null : 'Invalid URI'),
+      logo_uri: (value) => (!value || isValidUrl(value) ? null : 'Invalid URI'),
       redirect_uris: (value) =>
         !value || value.length === 0
           ? null
