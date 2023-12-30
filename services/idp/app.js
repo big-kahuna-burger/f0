@@ -6,6 +6,7 @@ import Static from '@fastify/static'
 import View from '@fastify/view'
 import desm from 'desm'
 import ejs from 'ejs'
+import CSP from './csp.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
 
@@ -17,22 +18,9 @@ export default async function runme(fastify, opts) {
   })
 
   fastify.register(helmet, {
-    enableCSPNonces: true,
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", 'https://unpkg.com'],
-        formAction: null,
-        styleSrc: ["'self'", 'https:', "'unsafe-inline'"],
-        imgSrc: ["'self'", 'data:'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        scriptSrcAttr: ["'self'", "'unsafe-inline'"],
-        objectSrc: ["'none'"],
-        upgradeInsecureRequests: []
-      }
-    }
+    contentSecurityPolicy: CSP
   })
-  
+
   fastify.register(Static, {
     root: path.join(__dirname, 'public')
   })

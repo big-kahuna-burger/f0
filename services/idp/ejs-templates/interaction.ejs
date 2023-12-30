@@ -50,14 +50,14 @@
 
 </ul>
 <% if(vercel) { %>
-  <script nonce="<%= nonce%>">
-    function vaTrack() {
-      va('event', {
-        name: 'Consent'
-      })
-    }
-  </script>
+<script nonce="<%= nonce %>">
+  function vaTrack() {
+    va('event', {
+      name: 'Consent'
+    })
+  }
+</script>
 <% } %>
 <form autocomplete="off" action="/interaction/<%= uid %>/confirm" method="post">
-  <button autofocus type="submit" class="login login-submit" onclick="vaTrack()">Continue</button>
+  <button autofocus type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
 </form>
