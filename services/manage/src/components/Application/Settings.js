@@ -110,6 +110,7 @@ export const Settings = ({ app: activeApp }) => {
             {...form.getInputProps('client_name')}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
             withAsterisk
+            disabled={activeApp.readonly}
           />
           <TextInput
             fw={600}
@@ -192,6 +193,7 @@ export const Settings = ({ app: activeApp }) => {
               { group: 'Confidential', items: ['m2m'] }
             ]}
             inputWrapperOrder={['label', 'input', 'description', 'errors']}
+            disabled={activeApp.readonly}
           />
         </Stack>
       </Group>
@@ -206,6 +208,7 @@ export const Settings = ({ app: activeApp }) => {
             {...form.getInputProps('initiate_login_uri')}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
             placeholder="https://example.com/login/start"
+            disabled={activeApp.readonly}
           />
           <Text ml="sm" c="dimmed" fw={600} size={'xs'}>
             Sometimes OIDC Provider needs to redirect to your application’s
@@ -220,6 +223,7 @@ export const Settings = ({ app: activeApp }) => {
             {...form.getInputProps('redirect_uris')}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
             placeholder="https://example.com/auth/callback,https://example.dev/auth/cb"
+            disabled={activeApp.readonly}
           />
           <Text ml="sm" c="dimmed" fw={600} size={'xs'}>
             After the user authenticates we will only call back to any of these
@@ -237,6 +241,7 @@ export const Settings = ({ app: activeApp }) => {
             {...form.getInputProps('post_logout_redirect_uris')}
             inputWrapperOrder={['label', 'input', 'error', 'description']}
             placeholder="https://example.com/auth/signed-out,https://example.dev/auth/post-logout"
+            disabled={activeApp.readonly}
           />
           <Text ml="sm" c="dimmed" fw={600} size={'xs'}>
             A set of URLs that are valid to redirect to after logout from OIDC

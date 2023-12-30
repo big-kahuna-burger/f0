@@ -21,10 +21,6 @@ export default async function managementRouter(fastify, opts) {
       throw new Error(`resource server not found ${id}`)
     }
 
-    if (rs.readOnly) {
-      throw new Error(`resource server is read only ${id}`)
-    }
-
     const grants = await api.loadGrantsByResourceIdentifier({
       page,
       size,
@@ -37,6 +33,11 @@ export default async function managementRouter(fastify, opts) {
     const { id } = request.params
     const { add, remove } = request.body
     const rs = await api.updateResourceServerScopes(id, add, remove)
+
+    if (rs.readOnly) {
+      throw new Error('Cannot update scopes on read only resource server')
+    }
+
     return rs
   }
 

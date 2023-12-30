@@ -52,7 +52,8 @@ export const allowedClientFields = [
   'web_message_uris',
   F0_TYPE_PROP,
   CORS_PROP,
-  'updatedAt'
+  'updatedAt',
+  'readonly'
 ]
 
 export const DEFAULT_CLIENT_INCLUDE = [
@@ -69,5 +70,6 @@ export const DEFAULT_CLIENT_INCLUDE = [
   'post_logout_redirect_uris',
   'initiate_login_uri',
   'urn:f0:type',
-  'updatedAt'
+  'updatedAt',
+  'readonly'
 ]
