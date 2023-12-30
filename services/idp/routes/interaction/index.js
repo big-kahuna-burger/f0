@@ -50,7 +50,18 @@ export default async function interactionsRouter(fastify, opts) {
       session,
       lastSubmission = {}
     } = await provider.interactionDetails(request, reply)
+
     const client = await provider.Client.find(params.client_id)
+
+    if (client.logoUri) {
+      await reply.helmet({
+        contentSecurityPolicy: {
+          directives: {
+            imgSrc: ["'self'", 'data:', new URL(client.logoUri).origin]
+          }
+        }
+      })
+    }
 
     switch (prompt.name) {
       case 'login': {

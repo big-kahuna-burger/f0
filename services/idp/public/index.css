@@ -130,12 +130,15 @@ input[type=password] {
   font-size: 12px;
 }
 
+.login-client-image {
+  display: flex;
+  justify-content: center;
+}
 .login-client-image img {
+  height: 90px;
+  width: auto;
   margin-bottom: 20px;
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  width: 20%;
+  display: inline;
 }
 
 .login-card input[type=checkbox] {
