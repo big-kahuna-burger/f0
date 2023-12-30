@@ -53,9 +53,22 @@ Install deps: it will run client generation and db migrations as well
 npm i
 ```
 
+#### initialize 
+
+Makes those default/readonly objects for bootstrapping:
+- `Management API` ResourceServer
+- `Dashboard` OidcClient
+- Default `Admin Connection`
+- Enables `Dashboard` OidcClient with a `Admin Connection`
 ```sh
-node run create-account
-node run initialize-management
+npm run init
+```
+
+After initialization, output will give a client id that needs to be added to env vars
+
+Script that needs user interaction and let's you create account. (TODO, ask for claims other than email/password)
+```sh
+npm run create-account
 ```
 
 ```sh

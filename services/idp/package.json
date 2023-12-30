@@ -20,7 +20,7 @@
     "build": "prisma generate",
     "postinstall": "prisma generate && prisma migrate deploy",
     "create:account": "node ./scripts/create-account.js",
-    "initialize:management": "node ./resource-servers/initialize-management.js"
+    "init": "node ./scripts/init.js"
   },
   "keywords": [],
   "author": "",
