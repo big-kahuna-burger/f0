@@ -4,7 +4,7 @@ import {
   updateScopesSchema
 } from '../../../../passive-plugins/manage-validators.js'
 
-export default async function managementRouter(fastify, opts) {
+export default async function (fastify, opts) {
   fastify.put(
     '/:id/scopes',
     { schema: { body: updateScopesSchema } },

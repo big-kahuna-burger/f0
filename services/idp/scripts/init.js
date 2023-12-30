@@ -1,3 +1,4 @@
+import chalk from 'chalk'
 import { nanoid } from 'nanoid'
 import instance from 'oidc-provider/lib/helpers/weak_cache.js' // uhhh... this is not good
 import prisma from '../db/client.js'
@@ -5,31 +6,23 @@ import '../env.js'
 import { CORS_PROP } from '../oidc/client-based-cors/index.js'
 import { default as configureProvider } from '../oidc/configure.js'
 import { epochTime } from '../oidc/helpers/epoch.js'
+import { upsertManagementApi } from '../resource-servers/initialize-management.js'
 
-async function main() {
-  const { provider } = await configureProvider()
-  const dashboard = await findDashboardClient()
-  let client_id
-  if (!dashboard) {
-    console.log('Creating Dashboard Client')
-    client_id = await createClient(provider)
-  } else {
-    console.log('Dashboard Client already exists. Skipping.')
-    client_id = dashboard.id
-  }
-  const clientId = dashboard?.payload?.client_id
-  console.log(
-    `ACTION NEEDED: Add a DASHBOARD_CLIENT_ID=${clientId} to .env file on services/idp side`
-  )
-}
+const { provider } = await configureProvider()
+await upsertManagementApi()
+const dashboard =
+  (await findDashboardClient()) || (await createClient(provider))
+const clientId = dashboard?.payload?.client_id
 
-main()
-  .catch(console.error)
-  .finally(() => process.exit(0))
-// 1. Create a "this" "Connection" (connection model) for Tenant Members
-// 2. Create a "this" "Client" (oidc model type 7) for Management Dashboard
-// 3. Create a "this" ResourceServer (resource server model) Management API for interacting with the Management Dashboard and with CLIs
-// 4. Create a Account in Connection (1.) for bootstraping the Management Dashboard
+console.log(
+  `Remember to add a ${chalk.cyan(
+    `DASHBOARD_CLIENT_ID=${clientId}`
+  )} to .env file on services/idp side`
+)
+
+const connection = await setupConnection()
+await enableConnection(clientId, connection.id)
+
 async function createClient(
   provider,
   { managementHost = 'http://localhost:3036' } = {}
@@ -48,16 +41,38 @@ async function createClient(
     [CORS_PROP]: [managementHost]
   }
 
-  const client = await instance(provider).clientAdd(metadata, { store: true })
-  // now load record using prisma model directly and toggle the readonly flag
+  await instance(provider).clientAdd(metadata, { store: true })
+
   await prisma.oidcClient.update({
     where: { id: metadata.client_id },
     data: { readonly: true }
   })
 
-  return metadata.client_id
+  return metadata
 }
 
 async function findDashboardClient() {
   return prisma.oidcClient.findFirst({ where: { readonly: true } })
+}
+
+async function setupConnection() {
+  const name = 'Tenant Members (Readonly)'
+  const connection = await prisma.connection.findFirst({ where: { name } })
+  if (connection) {
+    return connection
+  }
+  return prisma.connection.create({
+    data: { name, type: 'DB', readonly: true }
+  })
+}
+
+async function enableConnection(clientId, connectionId) {
+  return prisma.clientConnection.upsert({
+    where: {
+      clientId_connectionId_readonly: { clientId, connectionId, readonly: true }
+    },
+    create: { clientId, connectionId, readonly: true },
+    update: {},
+    include: { connection: true, client: true }
+  })
 }

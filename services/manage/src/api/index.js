@@ -1,20 +1,21 @@
 import { formatDistanceToNow, parseJSON } from 'date-fns'
 import qs from 'qs'
 export {
-  getUsers,
+  createResourceServer,
+  createGrant,
+  createApplication,
+  deleteGrantById,
+  getApplication,
+  getApplicationGrants,
+  getApplications,
+  getConnections,
   getResourceServer,
   getResourceServers,
-  createResourceServer,
-  getApplication,
-  getApplications,
-  getApplicationGrants,
-  createGrant,
-  updateGrantById,
-  deleteGrantById,
-  updateResourceServerScopes,
+  getUsers,
   updateApi,
-  createApplication,
-  updateApplication
+  updateApplication,
+  updateGrantById,
+  updateResourceServerScopes
 }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
@@ -22,6 +23,22 @@ const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function getConnections({ page = 0, size = 20 } = {}) {
+  const opts = { headers: getHeaders() }
+  const q = { page, size, type: 'db' }
+  const connectionsUrl = `${baseUrl}/connections?${qs.stringify(q)}`
+
+  const connectionsResponse = await fetch(connectionsUrl, opts)
+  const connectionsJson = await connectionsResponse.json()
+
+  return connectionsJson.map((x) => ({
+    ...x,
+    formattedUpdatedAt: x.updatedAt
+      ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
+      : undefined
+  }))
+}
 
 async function createApplication({ name, type }) {
   const opts = {

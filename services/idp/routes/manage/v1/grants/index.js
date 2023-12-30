@@ -1,6 +1,6 @@
 import * as api from '../../../../db/api.js'
 
-export default async function managementRouter(fastify, opts) {
+export default async function (fastify, opts) {
   fastify.put('/:id', updateGrant) // TODO add schema
   fastify.delete('/:id', deleteGrant)
   fastify.post('/', createGrant) // TODO add schema

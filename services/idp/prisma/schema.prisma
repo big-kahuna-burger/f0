@@ -10,6 +10,7 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "tracing"]
 }
 
+// Dynamic Configuration
 model Config {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   jwks       Json[]
@@ -36,11 +37,12 @@ model OidcModel {
 }
 
 model OidcClient {
-  id         String    @id
-  payload    Json
-  readonly   Boolean   @default(false)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id               String             @id
+  payload          Json
+  readonly         Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  ClientConnection ClientConnection[]
 
   @@map("oidc_client")
 }
@@ -147,9 +149,36 @@ model ResourceServer {
   @@map("resource_server")
 }
 
+model Connection {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  updatedAt        DateTime           @updatedAt
+  type             CONNECTION_TYPE    @default(DB)
+  ClientConnection ClientConnection[]
+  readonly         Boolean            @default(false)
+
+  @@map("connection")
+}
+
+model ClientConnection {
+  clientId     String
+  connectionId String
+  client       OidcClient @relation(fields: [clientId], references: [id])
+  connection   Connection @relation(fields: [connectionId], references: [id])
+  createdAt    DateTime   @default(now())
+  readonly     Boolean    @default(false)
+
+  @@id([clientId, connectionId, readonly])
+  @@map("client_connection")
+}
+
 enum RS_SIGNING_ALG {
   RS256
   HS256
+}
+
+enum CONNECTION_TYPE {
+  DB
 }
 
 enum IDENTITY {

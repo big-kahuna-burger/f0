@@ -176,6 +176,7 @@ export const Settings = ({ app: activeApp }) => {
             className={classes.input}
             placeholder="https://my.app/logo-small.png"
             {...form.getInputProps('logo_uri')}
+            disabled={activeApp.readonly}
           />
           <Select
             m="sm"

@@ -279,9 +279,7 @@ function AppsAccordion({ applications, grants = [], api }) {
                 <Text>Name: {item.client_name}</Text>
                 <Group>
                   <Text>client_id: </Text>
-                  <Badge size="md" variant="outline">
-                    {item.client_id}
-                  </Badge>
+                  <Code>{item.client_id}</Code>
                 </Group>
               </Stack>
               <Switch
@@ -314,7 +312,10 @@ function GrantEdit({ item, api }) {
   return (
     <Paper c={theme.colors.myAltColor[7]} variant="light">
       <Stack>
-        <TextInput label="Grant ID" disabled={true} value={item.grantId} />
+        <Group>
+          <Text>Grant ID</Text>
+          <Code>{item.grantId}</Code>
+        </Group>
         <ActiveOptionsFilter api={api} item={item} />
       </Stack>
     </Paper>

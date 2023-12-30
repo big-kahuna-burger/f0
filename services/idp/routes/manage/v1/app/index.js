@@ -3,7 +3,7 @@ import { clientXMap } from '../../../../db/mappers/client.js'
 import { F0_TYPE_PROP } from '../../../../oidc/client-based-cors/index.js'
 import { updateClientSchema } from '../../../../passive-plugins/manage-validators.js'
 
-export default async function managementRouter(fastify, opts) {
+export default async function (fastify, opts) {
   fastify.get('/:id', getClient)
   fastify.put('/:id', { schema: { body: updateClientSchema } }, updateClient)
   fastify.post('/:id/secret', rotateSecret)

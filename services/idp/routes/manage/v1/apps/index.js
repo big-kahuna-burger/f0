@@ -5,7 +5,21 @@ import { createClientSchema } from '../../../../passive-plugins/manage-validator
 
 import { clientXMap } from '../../../../db/mappers/client.js'
 
-export default async function managementRouter(fastify, opts) {
+const responseFields = [
+  'client_id',
+  'client_name',
+  'application_type',
+  'grant_types',
+  'logo_uri',
+  'token_endpoint_auth_method',
+  'redirect_uris',
+  'post_logout_redirect_uris',
+  'urn:f0:type',
+  'updatedAt',
+  'readonly'
+]
+
+export default async function (fastify, opts) {
   fastify.post('/', { schema: { body: createClientSchema } }, createClient)
   fastify.get('/', getAllClients)
 
@@ -38,7 +52,7 @@ export default async function managementRouter(fastify, opts) {
       token_endpoint_auth_method_not
     })
 
-    const payloads = clients.map((x) => clientXMap(x, fields))
+    const payloads = clients.map((x) => clientXMap(x, responseFields))
 
     return payloads
   }

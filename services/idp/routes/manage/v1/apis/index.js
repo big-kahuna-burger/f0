@@ -3,7 +3,7 @@ import * as api from '../../../../db/api.js'
 import { resourceServerMap } from '../../../../db/mappers/account.js'
 import { apiCreateSchema } from '../../../../passive-plugins/manage-validators.js'
 
-export default async function apisRouter(fastify, opts) {
+export default async function (fastify, opts) {
   fastify.post(
     '/create',
     { schema: { body: apiCreateSchema } },

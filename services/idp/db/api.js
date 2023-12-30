@@ -34,7 +34,16 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
 }
 
 const getClient = async (id) => {
-  const client = await prisma.oidcClient.findFirst({ where: { id } })
+  const client = await prisma.oidcClient.findFirst({
+    where: { id },
+    include: {
+      ClientConnection: {
+        include: {
+          connection: true
+        }
+      }
+    }
+  })
   return client
 }
 
@@ -419,6 +428,34 @@ async function updateResourceServer(
   return rs
 }
 
+async function getConnections({ skip = 0, take = 100, cursor } = {}) {
+  const connections = await prisma.connection.findMany({
+    skip,
+    take,
+    cursor,
+    orderBy: {
+      updatedAt: 'desc'
+    }
+  })
+  return connections
+}
+
+async function getConnection(id) {
+  const connection = await prisma.connection.findFirst({
+    where: { id },
+    include: {
+      ClientConnection: {
+        include: {
+          Client: true
+        }
+      }
+    }
+  })
+
+  console.log(connection)
+  return connection
+}
+
 export {
   getAccount,
   loadAccounts,
@@ -435,7 +472,9 @@ export {
   createGrant,
   deleteGrant,
   updateResourceServerScopes,
-  updateResourceServer
+  updateResourceServer,
+  getConnections,
+  getConnection
 }
 
 // console.log(await loadAccounts())

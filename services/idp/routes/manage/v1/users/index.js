@@ -1,7 +1,7 @@
 import * as api from '../../../../db/api.js'
 import { accountMAP } from '../../../../db/mappers/account.js'
 
-export default async function managementRouter(fastify, opts) {
+export default async function usersRouter(fastify, opts) {
   fastify.get('/:id', getUser)
   fastify.get('/', getUsers)
 

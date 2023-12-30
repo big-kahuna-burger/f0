@@ -1,13 +1,15 @@
 import prisma from '../db/client.js'
 import { MANAGEMENT } from '../resource-servers/management.js'
 
-export async function upsertManagementApiUpdated() {
+export async function upsertManagementApi() {
   const rs = await prisma.resourceServer.findUnique({
     where: { id: 'management' }
   })
 
   if (!rs) {
-    const created = await prisma.resourceServer.create({ data: { ...MANAGEMENT } })
+    const created = await prisma.resourceServer.create({
+      data: { ...MANAGEMENT }
+    })
     return created
   }
 
@@ -17,5 +19,3 @@ export async function upsertManagementApiUpdated() {
   })
   return updateResult
 }
-
-console.log(await upsertManagementApiUpdated())
