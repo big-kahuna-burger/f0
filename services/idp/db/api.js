@@ -53,14 +53,11 @@ const updateClient = async (
   if (!foundClient) {
     throw new Error('client not found')
   }
-  console.log(
-    clientName,
-    type,
-    redirectUris,
-    postLogoutRedirectUris,
-    initiateLoginUri,
-    logoUri
-  )
+
+  if (foundClient.readonly) {
+    throw new Error(`OIDC client is read only ${id}`)
+  }
+
   const client = await prisma.oidcClient.update({
     where: { id },
     data: {
@@ -124,6 +121,7 @@ const createClient = async ({ name, type }) => {
     default:
       throw new Error('invalid client type')
   }
+
   const data = { id, payload, readonly: false }
   const client = await prisma.oidcClient.create({ data })
   return client.payload
