@@ -54,3 +54,20 @@ export const allowedClientFields = [
   CORS_PROP,
   'updatedAt'
 ]
+
+export const DEFAULT_CLIENT_INCLUDE = [
+  'client_id',
+  'client_name',
+  'client_secret',
+  'application_type',
+  'client_uri',
+  'initiate_login_uri',
+  'logo_uri',
+  'grant_types',
+  'token_endpoint_auth_method',
+  'redirect_uris',
+  'post_logout_redirect_uris',
+  'initiate_login_uri',
+  'urn:f0:type',
+  'updatedAt'
+]

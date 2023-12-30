@@ -182,7 +182,7 @@ async function createGrant({ identifier, clientId }) {
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
     body: JSON.stringify({ identifier, clientId })
   }
-  const response = await fetch(`${baseUrl}/grants/create`, opts)
+  const response = await fetch(`${baseUrl}/grants`, opts)
   const json = await response.json()
   return json
 }
