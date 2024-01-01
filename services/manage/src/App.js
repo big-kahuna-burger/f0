@@ -76,7 +76,8 @@ const routes = [
         loader: async ({ params }) => {
           const connections = await getConnections({
             page: 0,
-            size: 20
+            size: 20,
+            type: 'db'
           })
           return { connections }
         }

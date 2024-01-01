@@ -4,8 +4,11 @@ export default async function (fastify, opts) {
   fastify.get('/', getConnections)
   fastify.get('/:id', getConnection)
 
-  async function getConnections() {
-    const connections = await api.getConnections()
+  async function getConnections(request, reply) {
+    const {
+      query: { type }
+    } = request
+    const connections = await api.getConnections({ type })
     return connections
   }
 

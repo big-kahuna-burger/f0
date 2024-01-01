@@ -24,9 +24,9 @@ const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
 
-async function getConnections({ page = 0, size = 20 } = {}) {
+async function getConnections({ page = 0, size = 20, type = 'db' } = {}) {
   const opts = { headers: getHeaders() }
-  const q = { page, size, type: 'db' }
+  const q = { page, size, type }
   const connectionsUrl = `${baseUrl}/connections?${qs.stringify(q)}`
 
   const connectionsResponse = await fetch(connectionsUrl, opts)

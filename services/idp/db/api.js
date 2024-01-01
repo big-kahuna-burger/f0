@@ -428,13 +428,16 @@ async function updateResourceServer(
   return rs
 }
 
-async function getConnections({ skip = 0, take = 100, cursor } = {}) {
+async function getConnections({ skip = 0, take = 100, cursor, type } = {}) {
   const connections = await prisma.connection.findMany({
     skip,
     take,
     cursor,
     orderBy: {
       updatedAt: 'desc'
+    },
+    where: {
+      type: type.toUpperCase()
     }
   })
   return connections
