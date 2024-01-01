@@ -1,20 +1,21 @@
 import { formatDistanceToNow, parseJSON } from 'date-fns'
 import qs from 'qs'
 export {
-  getUsers,
+  createResourceServer,
+  createGrant,
+  createApplication,
+  deleteGrantById,
+  getApplication,
+  getApplicationGrants,
+  getApplications,
+  getConnections,
   getResourceServer,
   getResourceServers,
-  createResourceServer,
-  getApplication,
-  getApplications,
-  getApplicationGrants,
-  createGrant,
-  updateGrantById,
-  deleteGrantById,
-  updateResourceServerScopes,
+  getUsers,
   updateApi,
-  createApplication,
-  updateApplication
+  updateApplication,
+  updateGrantById,
+  updateResourceServerScopes
 }
 const baseUrl = 'http://localhost:9876/manage/v1'
 
@@ -22,6 +23,22 @@ const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function getConnections({ page = 0, size = 20, type = 'db' } = {}) {
+  const opts = { headers: getHeaders() }
+  const q = { page, size, type }
+  const connectionsUrl = `${baseUrl}/connections?${qs.stringify(q)}`
+
+  const connectionsResponse = await fetch(connectionsUrl, opts)
+  const connectionsJson = await connectionsResponse.json()
+
+  return connectionsJson.map((x) => ({
+    ...x,
+    formattedUpdatedAt: x.updatedAt
+      ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
+      : undefined
+  }))
+}
 
 async function createApplication({ name, type }) {
   const opts = {
@@ -115,26 +132,29 @@ async function updateApplication(
     logo_uri,
     type
   )
+
+  const body = {
+    client_name,
+    initiate_login_uri: initiate_login_uri
+      ? initiate_login_uri.trim()
+      : undefined,
+    redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
+      .map((x) => x.trim())
+      .filter((x) => Boolean(x.length)),
+    post_logout_redirect_uris: (post_logout_redirect_uris
+      ? post_logout_redirect_uris.split(',')
+      : []
+    )
+      .map((x) => x.trim())
+      .filter((x) => Boolean(x.length)),
+    'urn:f0:type': type,
+    logo_uri: logo_uri.length ? logo_uri : undefined
+  }
+
   const opts = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
-    body: JSON.stringify({
-      client_name,
-      initiate_login_uri: initiate_login_uri
-        ? initiate_login_uri.trim()
-        : undefined,
-      redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
-        .map((x) => x.trim())
-        .filter((x) => Boolean(x.length)),
-      post_logout_redirect_uris: (post_logout_redirect_uris
-        ? post_logout_redirect_uris.split(',')
-        : []
-      )
-        .map((x) => x.trim())
-        .filter((x) => Boolean(x.length)),
-      'urn:f0:type': type,
-      logo_uri
-    })
+    body: JSON.stringify(body)
   }
   const response = await fetch(`${baseUrl}/app/${id}`, opts)
   const json = await response.json()
@@ -179,7 +199,7 @@ async function createGrant({ identifier, clientId }) {
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
     body: JSON.stringify({ identifier, clientId })
   }
-  const response = await fetch(`${baseUrl}/grants/create`, opts)
+  const response = await fetch(`${baseUrl}/grants`, opts)
   const json = await response.json()
   return json
 }

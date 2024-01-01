@@ -22,7 +22,7 @@ const identifier = `${protocol}//${combined}/manage/v1`
 
 const MANAGEMENT = {
   id: 'management',
-  name: 'Management API',
+  name: 'Management API (Readonly)',
   scopes,
   identifier,
   readOnly: true,

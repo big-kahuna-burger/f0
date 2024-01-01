@@ -4,6 +4,8 @@ import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import { errors } from 'oidc-provider'
 
+import CSP from '../../csp.js'
+
 import debug from './debug-render.js'
 
 const { errorCodes } = Fastify
@@ -50,11 +52,26 @@ export default async function interactionsRouter(fastify, opts) {
       session,
       lastSubmission = {}
     } = await provider.interactionDetails(request, reply)
+
     const client = await provider.Client.find(params.client_id)
+
+    if (prompt.name === 'consent' && client.logoUri) {
+      const CSPAdjusted = { ...CSP }
+      CSPAdjusted.directives.imgSrc = [
+        ...CSP.directives.imgSrc,
+        new URL(client.logoUri).origin
+      ]
+
+      await reply.helmet({
+        contentSecurityPolicy: CSPAdjusted
+      })
+    }
+    const nonce = reply.raw.scriptNonce
 
     switch (prompt.name) {
       case 'login': {
         return reply.view('login.ejs', {
+          nonce,
           client,
           uid,
           details: prompt.details,
@@ -65,12 +82,12 @@ export default async function interactionsRouter(fastify, opts) {
             params: debug(params),
             prompt: debug(prompt)
           },
-          nonce: reply.cspNonce.script,
           error: lastSubmission.user_error_desc
         })
       }
       case 'consent': {
         return reply.view('interaction.ejs', {
+          nonce,
           client,
           uid,
           details: prompt.details,
@@ -80,8 +97,7 @@ export default async function interactionsRouter(fastify, opts) {
           dbg: {
             params: debug(params),
             prompt: debug(prompt)
-          },
-          nonce: reply.cspNonce.script
+          }
         })
       }
       default:

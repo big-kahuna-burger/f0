@@ -10,6 +10,7 @@ generator client {
   previewFeatures = ["postgresqlExtensions", "tracing"]
 }
 
+// Dynamic Configuration
 model Config {
   id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   jwks       Json[]
@@ -18,6 +19,7 @@ model Config {
   updatedAt  DateTime @default(now()) @updatedAt // think of auditing this single record for changes. Maybe new entry and order by updatedAt desc?
 }
 
+// ADAPTER
 model OidcModel {
   id         String    @id
   type       Int
@@ -33,6 +35,19 @@ model OidcModel {
   @@unique([id, type])
   @@map("oidc_model")
 }
+
+model OidcClient {
+  id               String             @id
+  payload          Json
+  readonly         Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  ClientConnection ClientConnection[]
+
+  @@map("oidc_client")
+}
+
+// END ADAPTER
 
 model Account {
   id        String     @id
@@ -134,9 +149,36 @@ model ResourceServer {
   @@map("resource_server")
 }
 
+model Connection {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  updatedAt        DateTime           @updatedAt
+  type             CONNECTION_TYPE    @default(DB)
+  ClientConnection ClientConnection[]
+  readonly         Boolean            @default(false)
+
+  @@map("connection")
+}
+
+model ClientConnection {
+  clientId     String
+  connectionId String
+  client       OidcClient @relation(fields: [clientId], references: [id])
+  connection   Connection @relation(fields: [connectionId], references: [id])
+  createdAt    DateTime   @default(now())
+  readonly     Boolean    @default(false)
+
+  @@id([clientId, connectionId, readonly])
+  @@map("client_connection")
+}
+
 enum RS_SIGNING_ALG {
   RS256
   HS256
+}
+
+enum CONNECTION_TYPE {
+  DB
 }
 
 enum IDENTITY {

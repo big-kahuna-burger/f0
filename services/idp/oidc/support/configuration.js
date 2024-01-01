@@ -12,7 +12,8 @@ import {
 import ttl from './ttl.js'
 // TODO dynamic features state loading
 // TODO dynamic resource server loading
-const isFirstParty = (client) => client.clientId === 'myClientID'
+const { DASHBOARD_CLIENT_ID } = process.env
+
 export default {
   // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
@@ -37,26 +38,7 @@ export default {
     console.log('renderError', error)
     defaults.renderError(ctx, out, error)
   },
-  // TODO fully remove this static client
-  clients: [
-    {
-      client_id: 'myClientID',
-      client_secret: 'myClientSecret',
-      client_name: 'My Client',
-      grant_types: ['authorization_code', 'refresh_token'],
-      redirect_uris: [
-        'http://localhost:3036/cb',
-        'http://localhost:9876/documentation/static/oauth2-redirect.html'
-      ],
-      response_types: ['code'],
-      token_endpoint_auth_method: 'none',
-      post_logout_redirect_uris: [
-        'http://localhost:3036/cb',
-        'http://localhost:3036/'
-      ],
-      [CORS_PROP]: ['http://localhost:3036', 'http://localhost:9876']
-    }
-  ],
+  clients: [],
   interactions: {
     url: (ctx, { uid }) => `/interaction/${uid}`
   },
@@ -135,16 +117,10 @@ export default {
         //                           Default is that the array is provided so that the request will fail.
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
-        if (client.clientId === 'myClientID') {
+        if (client.clientId === DASHBOARD_CLIENT_ID) {
           return 'http://localhost:9876/manage/v1'
         }
-        console.log('defaultResource', client.clientId, oneOf)
         return undefined
-        // if (oneOf) return oneOf[0]
-        // return 'http://localhost:9876/manage/v1'
-        // // return client.clientId === 'myClientID'
-        // //   ? 'http://localhost:9876/manage/v1'
-        // //   : null
       },
       async getResourceServerInfo(ctx, resourceIndicator, client) {
         // @param ctx - koa request context
@@ -153,8 +129,7 @@ export default {
         const rs = await dbClient.resourceServer.findFirst({
           where: { identifier: resourceIndicator }
         })
-        console.log('rs info', rs, resourceIndicator, client)
-        if (client.clientId === 'myClientID') {
+        if (client.clientId === DASHBOARD_CLIENT_ID) {
           return {
             scope: Object.keys(rs.scopes).join(' '),
             audience: resourceIndicator,

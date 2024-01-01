@@ -22,7 +22,7 @@ POSTGRES_PRISMA_URL='postgres://postgres:secret123@localhost:5432/idp'
 POSTGRES_URL_NON_POOLING='postgres://postgres:secret123@localhost:5432/idp'
 GRANTS_DEBUG=1
 DEBUG=oidc:events:*
-
+DASHBOARD_CLIENT_ID=
 EOT
 ```
 
@@ -33,6 +33,8 @@ cat <<EOT > services/manage/.env
 # React App Environment Variables
 PORT=3036
 REACT_APP_ISSUER=http://localhost:9876/oidc
+# Later
+DASHBOARD_CLIENT_ID=
 EOT
 ```
 
@@ -51,9 +53,22 @@ Install deps: it will run client generation and db migrations as well
 npm i
 ```
 
+#### initialize 
+
+Makes those default/readonly objects for bootstrapping:
+- `Management API` ResourceServer
+- `Dashboard` OidcClient
+- Default `Admin Connection`
+- Enables `Dashboard` OidcClient with a `Admin Connection`
 ```sh
-node run create-account
-node run initialize-management
+npm run init
+```
+
+After initialization, output will give a client id that needs to be added to env vars
+
+Script that needs user interaction and let's you create account. (TODO, ask for claims other than email/password)
+```sh
+npm run create-account
 ```
 
 ```sh

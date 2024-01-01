@@ -118,6 +118,7 @@ async function start(port, pretty) {
   app.swagger()
 
   // console.log(
+  //   app.printPlugins(),
   //   app.printRoutes({ includeHooks: true, includeMeta: ['errorHandler'] })
   // )
   const listenOpts = { port, listenTextResolver }

@@ -6,6 +6,7 @@ import {
   getApplication,
   getApplicationGrants,
   getApplications,
+  getConnections,
   getResourceServer,
   getResourceServers
 } from './api'
@@ -13,6 +14,7 @@ import { Application } from './components/Application'
 import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
 import { Applications } from './components/Applications'
+import { Connections } from './components/Connections'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -42,7 +44,7 @@ const routes = [
           const applications = await getApplications({
             page: 0,
             size: 20,
-            include: ['client_id', 'client_name'],
+            include: ['client_id', 'client_name', 'logo_uri'],
             grant_types_include: 'client_credentials',
             token_endpoint_auth_method_not: 'none'
           })
@@ -70,7 +72,15 @@ const routes = [
       },
       {
         path: '/authn/db',
-        element: <></>
+        element: <Connections />,
+        loader: async ({ params }) => {
+          const connections = await getConnections({
+            page: 0,
+            size: 20,
+            type: 'db'
+          })
+          return { connections }
+        }
       },
       {
         path: '/authn/social',

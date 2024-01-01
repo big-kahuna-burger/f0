@@ -34,10 +34,14 @@ const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
 }
 
 const getClient = async (id) => {
-  const client = await prisma.oidcModel.findFirst({
-    where: {
-      id,
-      type: 7
+  const client = await prisma.oidcClient.findFirst({
+    where: { id },
+    include: {
+      ClientConnection: {
+        include: {
+          connection: true
+        }
+      }
     }
   })
   return client
@@ -54,19 +58,16 @@ const updateClient = async (
     logoUri
   }
 ) => {
-  const foundClient = await prisma.oidcModel.findFirst({ where: { id } })
+  const foundClient = await prisma.oidcClient.findFirst({ where: { id } })
   if (!foundClient) {
     throw new Error('client not found')
   }
-  console.log(
-    clientName,
-    type,
-    redirectUris,
-    postLogoutRedirectUris,
-    initiateLoginUri,
-    logoUri
-  )
-  const client = await prisma.oidcModel.update({
+
+  if (foundClient.readonly) {
+    throw new Error(`OIDC client is read only ${id}`)
+  }
+
+  const client = await prisma.oidcClient.update({
     where: { id },
     data: {
       payload: {
@@ -129,8 +130,9 @@ const createClient = async ({ name, type }) => {
     default:
       throw new Error('invalid client type')
   }
-  const data = { id, type: 7, payload }
-  const client = await prisma.oidcModel.create({ data })
+
+  const data = { id, payload, readonly: false }
+  const client = await prisma.oidcClient.create({ data })
   return client.payload
 }
 
@@ -159,46 +161,29 @@ const loadClients = async ({
     })
   }
   if (whereAND.length) {
-    const clients = await prisma.oidcModel.findMany({
+    const clients = await prisma.oidcClient.findMany({
       skip,
       take,
       cursor,
       orderBy: {
         updatedAt: 'desc'
       },
-      where: {
-        type: 7,
-        AND: whereAND
-      }
+      where: { AND: whereAND }
     })
     return clients
   }
-  const clients = await prisma.oidcModel.findMany({
+  const clients = await prisma.oidcClient.findMany({
     skip,
     take,
     cursor,
-    orderBy: {
-      updatedAt: 'desc'
-    },
-    where: {
-      type: 7
-    }
-  })
-  return clients
-}
-
-const loadGrantableClients = async ({ skip = 0, take = 100, cursor } = {}) => {
-  const clients = await prisma.oidcModel.findMany({
-    skip,
-    take,
-    cursor,
-    orderBy: {
-      updatedAt: 'asc'
-    },
-    where: {
-      type: 7,
-      payload: { path: ['grant_types'], array_contains: 'client_credentials' }
-    }
+    orderBy: [
+      {
+        readonly: 'desc'
+      },
+      {
+        updatedAt: 'desc'
+      }
+    ]
   })
   return clients
 }
@@ -443,6 +428,37 @@ async function updateResourceServer(
   return rs
 }
 
+async function getConnections({ skip = 0, take = 100, cursor, type } = {}) {
+  const connections = await prisma.connection.findMany({
+    skip,
+    take,
+    cursor,
+    orderBy: {
+      updatedAt: 'desc'
+    },
+    where: {
+      type: type.toUpperCase()
+    }
+  })
+  return connections
+}
+
+async function getConnection(id) {
+  const connection = await prisma.connection.findFirst({
+    where: { id },
+    include: {
+      ClientConnection: {
+        include: {
+          Client: true
+        }
+      }
+    }
+  })
+
+  console.log(connection)
+  return connection
+}
+
 export {
   getAccount,
   loadAccounts,
@@ -450,7 +466,6 @@ export {
   createClient,
   updateClient,
   loadClients,
-  loadGrantableClients,
   updateAccount,
   createResourceServer,
   getResourceServers,
@@ -460,7 +475,9 @@ export {
   createGrant,
   deleteGrant,
   updateResourceServerScopes,
-  updateResourceServer
+  updateResourceServer,
+  getConnections,
+  getConnection
 }
 
 // console.log(await loadAccounts())

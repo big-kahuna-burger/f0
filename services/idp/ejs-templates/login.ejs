@@ -17,13 +17,8 @@
   - or -
 </div>
 <% } %>
-<script nonce="<%= nonce %>">
-  function vaTrack() {
-    va('event', {
-      name: 'Consent'
-    })
-  }
-</script>
+
+
 
 <form id="authnform" autocomplete="off" action="/interaction/<%= uid %>/login" method="post">
   <input required type="text" name="login" placeholder="Enter any login" <% if (!params.login_hint) {
@@ -33,5 +28,11 @@
   <% if (error) { %>
   <p id="error" class="red"><%= error %></p>
   <% } %>
-  <button type="submit" class="login login-submit" onclick="vaTrack()">Sign-in</button>
+  <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Sign-in</button>
 </form>
+
+<% if(vercel) { %>
+  <script nonce="<%= nonce %>">
+    function vaTrack() { va('event', { name: 'Login' }) }
+  </script>
+  <% } %>
