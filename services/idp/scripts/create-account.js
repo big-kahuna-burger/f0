@@ -1,7 +1,20 @@
 import { default as enquirer } from 'enquirer'
+import { getConnections } from '../db/api.js'
 import Account from '../oidc/support/account.js'
+const { Select, prompt } = enquirer
 
-const response = await enquirer.prompt([
+const dbConnections = await getConnections({ type: 'db' })
+
+const selekt = new Select({
+  name: 'connection',
+  message: 'Select a DB connection:',
+  choices: dbConnections.map((x) => x.name)
+})
+
+const selected = await selekt.run()
+const selectedId = dbConnections.find((x) => x.name === selected).id
+
+const response = await prompt([
   {
     type: 'input',
     name: 'email',
@@ -16,6 +29,7 @@ const response = await enquirer.prompt([
 
 const acc = await Account.createFromClaims({
   ...response,
+  connectionId: selectedId,
   address: {
     country: '000',
     formatted: '000',

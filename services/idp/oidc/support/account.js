@@ -1,12 +1,8 @@
-import { inspect } from 'util'
-import { customAlphabet, nanoid } from 'nanoid'
+import { customAlphabet } from 'nanoid'
 import prisma from '../../db/client.js'
 
 import { compareHash, generateHash } from './password-tsc.js'
 const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 26)
-// TODO implement persistence, by adding a DB client and fix a claims fn
-// TODO implement find by federated
-// TODO implement member check password fn
 
 class Account {
   constructor(id, profile) {
@@ -71,6 +67,7 @@ class Account {
           include: {
             Identity: {
               include: {
+                Connection: true,
                 PasswordHash: true
               }
             }
@@ -124,7 +121,8 @@ class Account {
       profile,
       website,
       zoneinfo,
-      password
+      password,
+      connectionId
     } = claims
 
     const ProfileData = {
@@ -173,8 +171,8 @@ class Account {
         Identity: {
           create: [
             {
-              source: 'DB',
               provider: 'f0',
+              connectionId,
               PasswordHash: {
                 create: [{ hash: await generateHash(password) }]
               }
@@ -212,32 +210,3 @@ export const errors = {
 }
 
 export default Account
-
-// Account.createFromClaims({
-//   address: {
-//     country: '000',
-//     formatted: '000',
-//     locality: '000',
-//     postal_code: '000',
-//     region: '000',
-//     street_address: '000'
-//   },
-//   birthdate: new Date(1988, 10, 16),
-//   email: 'arandjel@idp.dev',
-//   email_verified: false,
-//   family_name: 'Doe',
-//   gender: 'male',
-//   given_name: 'John',
-//   locale: 'en-US',
-//   middle_name: 'Middle',
-//   name: 'John Doe',
-//   nickname: 'Johny',
-//   phone_number: '+49 000 000000',
-//   phone_number_verified: false,
-//   picture: 'http://lorempixel.com/400/200/',
-//   preferred_username: 'johnny',
-//   profile: 'https://johnswebsite.com',
-//   website: 'http://example.com',
-//   zoneinfo: 'Europe/Berlin',
-//   password: 'icme'
-// })

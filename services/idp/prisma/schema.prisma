@@ -116,8 +116,9 @@ model Identity {
   provider     String
   updatedAt    DateTime       @updatedAt
   Account      Account        @relation(fields: [sub], references: [id])
-  source       IDENTITY       @default(DB)
   PasswordHash PasswordHash[]
+  connectionId String
+  Connection   Connection     @relation(fields: [connectionId], references: [id])
 
   @@index([sub])
   @@map("identity")
@@ -156,6 +157,7 @@ model Connection {
   type             CONNECTION_TYPE    @default(DB)
   ClientConnection ClientConnection[]
   readonly         Boolean            @default(false)
+  Identities       Identity[]
 
   @@map("connection")
 }
@@ -179,11 +181,6 @@ enum RS_SIGNING_ALG {
 
 enum CONNECTION_TYPE {
   DB
-}
-
-enum IDENTITY {
-  DB
-  EXT
 }
 
 enum AMR {
