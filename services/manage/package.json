@@ -23,7 +23,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "echo \"skipped\" || exit 0 || react-scripts build",
+    "build": "react-scripts build",
     "eject": "react-scripts eject",
     "lint:fix": "biome check --apply .",
     "lint": "biome check .",
