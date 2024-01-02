@@ -186,19 +186,8 @@ function ButtonCreate({ ...props }) {
     </Button>
   )
 }
-const algosSupported = ['RS256', 'HS256']
 
-const isValidUrl = (value) => {
-  if (typeof value !== 'string') {
-    return false
-  }
-  try {
-    new URL(value)
-    return true
-  } catch (err) {
-    return false
-  }
-}
+const algosSupported = ['RS256', 'HS256']
 
 function CreateFormBox(props) {
   const [visible, { toggle }] = useDisclosure(false)
@@ -212,7 +201,7 @@ function CreateFormBox(props) {
       name: (value) =>
         value.length < 2 ? 'Name must have at least 2 letters' : null,
       identifier: (value) =>
-        isValidUrl(value) ? null : 'Invalid identifier. Use URI format',
+        URL.canParse(value) ? null : 'Invalid identifier. Use URI format',
       signingAlg: (value) =>
         !algosSupported.includes(value) ? 'Bad algorithm' : null
     }

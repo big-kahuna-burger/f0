@@ -15,16 +15,12 @@ import {
   Tabs,
   Text,
   TextInput,
-  Tooltip,
-  rem,
   useMantineTheme
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 
 import {
-  IconCheck,
   IconCheckbox,
-  IconCopy,
   IconDeviceDesktop,
   IconForbid,
   IconInfoCircle,
