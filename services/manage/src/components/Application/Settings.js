@@ -23,25 +23,13 @@ import { ArticleCard } from './ApplicationLogo'
 import classes from './ApplicationLogo.module.css'
 const issuer = process.env.REACT_APP_ISSUER
 
-const isValidUrl = (value) => {
-  if (typeof value !== 'string') {
-    return false
-  }
-  try {
-    new URL(value)
-    return true
-  } catch (err) {
-    return false
-  }
-}
-
 const isValidUrlArray = (value) => {
   if (typeof value !== 'string') {
     return 'Invalid value'
   }
   const urls = value.split(',')
 
-  const index = urls.findIndex((url) => !isValidUrl(url))
+  const index = urls.findIndex((url) => !URL.canParse(url))
   if (index >= 0) return index
   return null
 }
@@ -62,8 +50,9 @@ export const Settings = ({ app: activeApp }) => {
       'urn:f0:type': (value) =>
         ['native', 'spa', 'web', 'm2m'].includes(value) ? null : 'Invalid type',
       initiate_login_uri: (value) =>
-        !value ? null : isValidUrl(value) ? null : 'Invalid URI',
-      logo_uri: (value) => (!value || isValidUrl(value) ? null : 'Invalid URI'),
+        !value ? null : URL.canParse(value) ? null : 'Invalid URI',
+      logo_uri: (value) =>
+        !value || URL.canParse(value) ? null : 'Invalid URI',
       redirect_uris: (value) =>
         !value || value.length === 0
           ? null
