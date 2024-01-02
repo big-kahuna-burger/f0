@@ -17,7 +17,13 @@ const clientId = dashboard?.payload?.client_id
 console.log(
   `Remember to add a ${chalk.cyan(
     `DASHBOARD_CLIENT_ID=${clientId}`
-  )} to .env file on services/idp side`
+  )} to .env file in services/idp`
+)
+
+console.log(
+  `Remember to add a ${chalk.cyan(
+    `REACT_APP_DASHBOARD_CLIENT_ID=${clientId}`
+  )} to .env file in services/manage`
 )
 
 const connection = await setupConnection()
@@ -43,12 +49,10 @@ async function createClient(
 
   await instance(provider).clientAdd(metadata, { store: true })
 
-  await prisma.oidcClient.update({
+  return prisma.oidcClient.update({
     where: { id: metadata.client_id },
     data: { readonly: true }
   })
-
-  return metadata
 }
 
 async function findDashboardClient() {

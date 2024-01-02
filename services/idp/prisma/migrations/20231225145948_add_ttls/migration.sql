@@ -1,3 +1,0 @@
--- AlterTable
-ALTER TABLE "resource_server" ADD COLUMN     "ttl" INTEGER NOT NULL DEFAULT 86000,
-ADD COLUMN     "ttlBrowser" INTEGER NOT NULL DEFAULT 7200;
