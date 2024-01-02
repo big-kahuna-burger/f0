@@ -17,7 +17,8 @@ export {
   updateGrantById,
   updateResourceServerScopes
 }
-const baseUrl = 'http://localhost:9876/manage/v1'
+
+const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
