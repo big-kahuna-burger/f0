@@ -1,5 +1,6 @@
 import { AppShell, Burger, Group } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Outlet } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'
@@ -15,11 +16,16 @@ function Shell() {
       header={{ height: 60 }}
       footer={{ height: 60 }}
       navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
-      aside={{ width: '15%', breakpoint: 'sm', collapsed: { desktop: false, mobile: true } }}
+      aside={{
+        width: '15%',
+        breakpoint: 'sm',
+        collapsed: { desktop: false, mobile: true }
+      }}
       padding="md"
     >
       <AppShell.Header>
-        <Group width="100%" px="md" align='center' justify='space-between'>
+        <SpeedInsights />
+        <Group width="100%" px="md" align="center" justify="space-between">
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <ToggleScheme />
         </Group>
@@ -37,7 +43,7 @@ function Shell() {
           </SelectedUserContext.Consumer>
         )}
       </AppShell.Aside>
-      <AppShell.Footer/>
+      <AppShell.Footer />
     </AppShell>
   )
 }
