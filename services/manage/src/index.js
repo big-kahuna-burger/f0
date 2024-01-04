@@ -13,6 +13,7 @@ import {
   localStorageColorSchemeManager
 } from '@mantine/core'
 const ISSUER = process.env.REACT_APP_ISSUER
+const issUrl = new URL(ISSUER)
 const ORIGIN = window.location.origin
 
 const colorSchemeManager = localStorageColorSchemeManager({
@@ -91,7 +92,7 @@ const authConfig = {
   logoutEndpoint: `${ISSUER}/session/end`,
   //logoutRedirect: `${ORIGIN}/logged-out`,
   extraTokenParameters: {
-    resource: 'http://localhost:9876/manage/v1'
+    resource: `${issUrl.origin}/manage/v1`
   },
   postLogin: () => {
     window.location.href = `${ORIGIN}/`
