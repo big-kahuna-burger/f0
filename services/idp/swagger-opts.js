@@ -1046,7 +1046,9 @@ export const swaggerOpts = {
         UpdateApi: {
           ...updateApiSchema
         },
-        UpdateScopes: {},
+        UpdateScopes: {
+          ...updateScopesSchema
+        },
         CreateGrant: {
           ...createGrantSchema
         },

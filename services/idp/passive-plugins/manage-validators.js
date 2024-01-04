@@ -27,7 +27,7 @@ export const createGrantSchema = {
 }
 
 export const updateClientSchema = {
-  //$id: 'updateClient',
+  $id: 'updateClient',
   type: 'object',
   properties: {
     client_name: { type: 'string', minLength: 3, maxLength: 40 },
@@ -75,7 +75,7 @@ export const queryApisSchema = {
 }
 
 export const createClientSchema = {
-  // $id: 'createClient',
+  $id: 'createClient',
   type: 'object',
   properties: {
     name: { type: 'string', minLength: 3, maxLength: 40 },
@@ -98,31 +98,27 @@ export const apiCreateSchema = {
 export const updateScopesSchema = {
   $id: 'updateScopesSchema',
   type: 'object',
-  definitions: {
-    addScopeElement: {
-      $id: 'addScopeElement',
-      type: 'object',
-      properties: {
-        value: {
-          type: 'string',
-          minLength: 3,
-          maxLength: 16
-        },
-        description: {
-          type: 'string',
-          minLength: 3,
-          maxLength: 40
-        }
-      },
-      required: ['value', 'description']
-    }
-  },
   properties: {
     add: {
       type: 'array',
       minItems: 0,
       maxItems: 64,
-      items: { $ref: 'addScopeElement' }
+      items: {
+        type: 'object',
+        properties: {
+          value: {
+            type: 'string',
+            minLength: 3,
+            maxLength: 16
+          },
+          description: {
+            type: 'string',
+            minLength: 3,
+            maxLength: 40
+          }
+        },
+        required: ['value', 'description']
+      }
     },
     remove: {
       type: 'array',
