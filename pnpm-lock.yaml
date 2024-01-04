@@ -105,6 +105,9 @@ importers:
       '@prisma/instrumentation':
         specifier: ^5.7.0
         version: 5.7.0
+      '@scalar/fastify-api-reference':
+        specifier: ^1.12.7
+        version: 1.12.7(fastify-html@0.2.0)(fastify-plugin@4.5.1)(fastify@4.24.3)
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -3655,6 +3658,19 @@ packages:
 
   /@rushstack/eslint-patch@1.6.1:
     resolution: {integrity: sha512-UY+FGM/2jjMkzQLn8pxcHGMaVLh9aEitG3zY2CiY7XHdLiz3bZOwa6oDxNqEMv7zZkV+cj5DOdz0cQ1BP5Hjgw==}
+    dev: false
+
+  /@scalar/fastify-api-reference@1.12.7(fastify-html@0.2.0)(fastify-plugin@4.5.1)(fastify@4.24.3):
+    resolution: {integrity: sha512-zz2WBr74/Sng8QK3QgaDG5KrXXk0iTwdytzYwzbbDJnR5bjGXaXD2q51w6mgkUAN8DSjMxlbbZqU/4Jr763d0g==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      fastify: ^4.0.0
+      fastify-html: ^0.2.0
+      fastify-plugin: ^4.0.0
+    dependencies:
+      fastify: 4.24.3
+      fastify-html: 0.2.0
+      fastify-plugin: 4.5.1
     dev: false
 
   /@sinclair/typebox@0.24.51:
@@ -7849,6 +7865,13 @@ packages:
     resolution: {integrity: sha512-UWQAEpDolmcaGFzAl4tu1ueTQYz4Ymt7+OeOkg/RMoULtMAzLA3o6JLZx9yp3Wq134e9P7zXm93bRjXCNWF9tw==}
     engines: {node: '>=14.18.0'}
     dependencies:
+      fastify-plugin: 4.5.1
+    dev: false
+
+  /fastify-html@0.2.0:
+    resolution: {integrity: sha512-P2zwpFnAUcxfzHbkcGtuKRwv2Y2lPGXfySRScnZHax0JfR8WL2YIzPW/xUdU+oexOQAsR29aQyeBmmSbwXRkRg==}
+    dependencies:
+      common-tags: 1.8.2
       fastify-plugin: 4.5.1
     dev: false
 
