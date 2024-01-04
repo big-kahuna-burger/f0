@@ -44,7 +44,7 @@ async function createApplication({ name, type }) {
   const opts = {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
-    body: JSON.stringify({ name, 'urn:f0:type': type })
+    body: JSON.stringify({ name, 'urn:f0:type': type.toLowerCase() })
   }
   const applicationsCreateResponse = await fetch(applicationsUrl, opts)
   return applicationsCreateResponse.json()
