@@ -7,12 +7,33 @@ import View from '@fastify/view'
 import desm from 'desm'
 import ejs from 'ejs'
 import CSP from './csp.js'
+import joseVerify from './passive-plugins/jwt-jose.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
 
 const __dirname = desm(import.meta.url)
 
 export default async function runme(fastify, opts) {
+  const ACCEPTED_ALGORITHMS = ['ES256', 'RS256']
+  const MANAGEMENT = opts.MANAGEMENT_API
+  fastify.register(joseVerify, {
+    secret: opts.localKeySet,
+    options: {
+      issuer: process.env.ISSUER,
+      algorithms: ACCEPTED_ALGORITHMS,
+      audience: MANAGEMENT.identifier
+    }
+  })
+
+  fastify.decorate('authenticate', async (request, reply) => {
+    try {
+      await request.jwtVerify()
+    } catch (error) {
+      fastify.log.error(error)
+      reply.code(401).send({ error: 'Unauthorized' })
+    }
+  })
+
   await fastify.register(Cors, {
     origin: '*'
   })

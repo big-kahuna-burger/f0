@@ -20,8 +20,13 @@ const responseFields = [
 ]
 
 export default async function (fastify, opts) {
-  fastify.post('/', { schema: { body: createClientSchema } }, createClient)
-  fastify.get('/', getAllClients)
+  const fAuth = { onRequest: fastify.authenticate }
+  fastify.post(
+    '/',
+    { onRequest: fastify.authenticate, schema: { body: createClientSchema } },
+    createClient
+  )
+  fastify.get('/', fAuth, getAllClients)
 
   async function createClient(request, reply) {
     const { name, type = '' } = request.body || {}

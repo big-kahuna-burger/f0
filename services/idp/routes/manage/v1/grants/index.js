@@ -1,9 +1,10 @@
 import * as api from '../../../../db/api.js'
 
 export default async function (fastify, opts) {
-  fastify.put('/:id', updateGrant) // TODO add schema
-  fastify.delete('/:id', deleteGrant)
-  fastify.post('/', createGrant) // TODO add schema
+  const fAuth = { onRequest: fastify.authenticate }
+  fastify.put('/:id', fAuth, updateGrant) // TODO add schema
+  fastify.delete('/:id', fAuth, deleteGrant)
+  fastify.post('/', fAuth, createGrant) // TODO add schema
 
   async function updateGrant(request, reply) {
     const {

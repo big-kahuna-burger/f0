@@ -3,7 +3,6 @@ import './env.js'
 
 import middie from '@fastify/middie'
 import FastifySwagger from '@fastify/swagger'
-import FastifySwaggerUI from '@fastify/swagger-ui'
 import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
@@ -12,7 +11,7 @@ import { MANAGEMENT } from './resource-servers/management.js'
 import { swaggerOpts } from './swagger-opts.js'
 const { ISSUER, FASTIFY_CLOSE_GRACE_DELAY = 500 } = process.env
 const { port } = new URL(ISSUER)
-
+import Scalar from '@scalar/fastify-api-reference'
 export default makeFastify
 
 async function makeFastify(config, pretty) {
@@ -93,29 +92,10 @@ async function makeFastify(config, pretty) {
 async function start(port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.register(FastifySwagger, swaggerOpts)
-  await app.register(FastifySwaggerUI, {
-    routePrefix: '/documentation',
-    uiConfig: {
-      docExpansion: 'full',
-      deepLinking: false
-    },
-    uiHooks: {
-      onRequest: (request, reply, next) => {
-        next()
-      },
-      preHandler: (request, reply, next) => {
-        next()
-      }
-    },
-    staticCSP: true,
-    transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject
-    },
-    transformSpecificationClone: true
+  await app.register(Scalar, {
+    routePrefix: '/reference'
   })
   await app.ready()
-  app.swagger()
 
   // console.log(
   //   app.printPlugins(),
