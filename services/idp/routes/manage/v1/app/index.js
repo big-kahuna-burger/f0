@@ -4,14 +4,13 @@ import { F0_TYPE_PROP } from '../../../../oidc/client-based-cors/index.js'
 import { updateClientSchema } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
-  const fAuth = { onRequest: fastify.authenticate }
-  fastify.get('/:id', fAuth, getClient)
+  fastify.get('/:id', { onRequest: fastify.authenticate }, getClient)
   fastify.put(
     '/:id',
-    { onRequest: fAuth.onRequest, schema: { body: updateClientSchema } },
+    { onRequest: fastify.authenticate, schema: { body: updateClientSchema } },
     updateClient
   )
-  fastify.post('/:id/secret', fAuth, rotateSecret)
+  fastify.post('/:id/secret', { onRequest: fastify.authenticate }, rotateSecret)
 
   async function rotateSecret(request, reply) {
     throw new Error(

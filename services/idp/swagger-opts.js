@@ -2,8 +2,13 @@ const ISSUER = process.env.ISSUER
 const url = new URL(ISSUER)
 import { F0_TYPE_PROP } from './oidc/client-based-cors/index.js'
 import {
+  apiCreateSchema,
   createClientSchema,
-  updateClientSchema
+  createGrantSchema,
+  updateApiSchema,
+  updateClientSchema,
+  updateGrantSchema,
+  updateScopesSchema
 } from './passive-plugins/manage-validators.js'
 export const swaggerOpts = {
   openapi: {
@@ -88,6 +93,345 @@ export const swaggerOpts = {
                       }
                     ]
                   }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          tags: ['APIs'],
+          summary: 'Create an API',
+          operationId: 'createApi',
+          requestBody: {
+            description: 'API object that needs to be created',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/CreateApi',
+                  example: {
+                    name: 'My API',
+                    identifier: 'https://myapi.com',
+                    signingAlg: 'RS256'
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/API'
+                  },
+                  example: {
+                    id: '77d65217-c6d6-47c6-82e6-b79d47c05110',
+                    name: 'My API',
+                    identifier: 'https://myapi.com',
+                    signingAlg: 'RS256',
+                    scopes: [],
+                    updatedAt: '2024-01-04T21:53:02.506Z',
+                    ttl: 86400,
+                    ttlBrowser: 7200,
+                    allowSkipConsent: false,
+                    readOnly: false,
+                    signingSecret: null
+                  }
+                }
+              }
+            },
+            409: {
+              description: 'Conflict',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error:
+                      'resource indicator "https://myapi.com" is already registered with oidc server'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/{id}': {
+        get: {
+          tags: ['APIs'],
+          summary: 'Get an API',
+          operationId: 'getApi',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of API to return',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/API'
+                  },
+                  example: {
+                    id: '77d65217-c6d6-47c6-82e6-b79d47c05110',
+                    name: 'My API',
+                    identifier: 'https://myapi.com',
+                    signingAlg: 'RS256',
+                    scopes: [],
+                    updatedAt: '2024-01-04T21:53:02.506Z',
+                    ttl: 86400,
+                    ttlBrowser: 7200,
+                    allowSkipConsent: false,
+                    readOnly: false,
+                    signingSecret: null
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: { error: 'resource server not found' }
+                }
+              }
+            }
+          }
+        },
+        put: {
+          tags: ['APIs'],
+          summary: 'Update an API',
+          operationId: 'updateApi',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of API to update',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          requestBody: {
+            description: 'API object that needs to be updated',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/UpdateApi',
+                  example: {
+                    name: 'My API',
+                    ttl: 86400,
+                    ttlBrowser: 7200,
+                    allowSkipConsent: false
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/API'
+                  },
+                  example: {
+                    id: '77d65217-c6d6-47c6-82e6-b79d47c05110',
+                    name: 'My API',
+                    identifier: 'https://myapi.com',
+                    signingAlg: 'RS256',
+                    scopes: [],
+                    updatedAt: '2024-01-04T21:53:02.506Z',
+                    ttl: 86400,
+                    ttlBrowser: 7200,
+                    allowSkipConsent: false,
+                    readOnly: false,
+                    signingSecret: null
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: { error: 'resource server not found' }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/{id}/scopes': {
+        put: {
+          tags: ['APIs'],
+          summary: 'Update scopes of an API',
+          operationId: 'updateApiScopes',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of API to update',
+              required: true
+            }
+          ],
+          requestBody: {
+            description: 'Scopes object that needs to be updated',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/UpdateScopes',
+                  example: {
+                    add: [
+                      {
+                        value: 'read:users',
+                        description: 'Read Application Users'
+                      }
+                    ],
+                    remove: ['read:apis']
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/API'
+                  },
+                  example: {
+                    id: '77d65217-c6d6-47c6-82e6-b79d47c05110',
+                    name: 'My API',
+                    identifier: 'https://myapi.com',
+                    signingAlg: 'RS256',
+                    scopes: {
+                      'read:users': 'Read Application Users'
+                    },
+                    updatedAt: '2024-01-04T21:53:02.506Z',
+                    ttl: 86400,
+                    ttlBrowser: 7200,
+                    allowSkipConsent: false,
+                    readOnly: false,
+                    signingSecret: null
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: { error: 'resource server not found' }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/{id}/grants': {
+        get: {
+          tags: ['APIs', 'Grants'],
+          summary: 'List all grants of an API',
+          operationId: 'listApiGrants',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of API to return',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            },
+            {
+              name: 'page',
+              in: 'query',
+              description: 'page',
+              required: false
+            },
+            {
+              name: 'size',
+              in: 'query',
+              description: 'size',
+              required: false
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/Grant'
+                    },
+                    example: [
+                      {
+                        grantId:
+                          'RI-i-D1lR8VmJS6hhVzwqnHShgP2RqnBzf_dPiuR61hM8R',
+                        clientId: 'w_OwN9Hn0QWnQT8tb2g7E',
+                        scopes: [
+                          'read:apis',
+                          'read:users',
+                          'write:apis',
+                          'delete:apis',
+                          'update:apis',
+                          'write:users',
+                          'delete:users',
+                          'update:users',
+                          'read:client_grants',
+                          'write:client_grants',
+                          'delete:client_grants',
+                          'update:client_grants'
+                        ]
+                      },
+                      {
+                        grantId:
+                          'RI-V3-kkwZVvoolM_MuePzNj5-8hd0q9okQHaUrM16OG46',
+                        clientId: 'DH9Y23c4esT35HH-g0WsE',
+                        scopes: []
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: { error: 'resource server not found' }
                 }
               }
             }
@@ -343,6 +687,146 @@ export const swaggerOpts = {
             }
           }
         }
+      },
+      '/grants': {
+        post: {
+          tags: ['Grants'],
+          summary: 'Create a grant',
+          operationId: 'createGrant',
+          requestBody: {
+            description: 'Grant object that needs to be created',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/CreateGrant',
+                  example: {
+                    clientId: 'MEf-JMGzA5hMpX6dzsJvfg',
+                    identifier: 'https://myapi.com',
+                    scope: 'read:apis read:users'
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Grant'
+                  },
+                  example: {
+                    grantId: 'RI-i-D1lR8VmJS6hhVzwqnHShgP2RqnBzf_dPiuR61hM8R',
+                    clientId: 'w_OwN9Hn0QWnQT8tb2g7E',
+                    scopes: ['read:apis', 'read:users']
+                  }
+                }
+              }
+            },
+            409: {
+              description: 'Conflict',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error: 'client grant already exists'
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/grants/{id}': {
+        put: {
+          tags: ['Grants'],
+          summary: 'Update a grant',
+          operationId: 'updateGrant',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of grant to update',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          requestBody: {
+            description: 'Grant object that needs to be updated',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/UpdateGrant',
+                  example: {
+                    identifier: 'http://localhost:9876/manage/v1',
+                    scopes: ['read:apis', 'read:users']
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Grant'
+                  },
+                  example: {
+                    grantId: 'RI-i-D1lR8VmJS6hhVzwqnHShgP2RqnBzf_dPiuR61hM8R',
+                    clientId: 'w_OwN9Hn0QWnQT8tb2g7E',
+                    scopes: ['read:apis', 'read:users']
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: { error: 'client grant not found' }
+                }
+              }
+            },
+            409: {
+              description: 'Conflict',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error: 'client grant already exists'
+                  }
+                }
+              }
+            },
+            422: {
+              description: 'Unprocessable Entity',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error: 'invalid identifier'
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     },
     security: ['oAuth2'],
@@ -517,6 +1001,23 @@ export const swaggerOpts = {
             }
           }
         },
+        Grant: {
+          type: 'object',
+          properties: {
+            grantId: {
+              type: 'string'
+            },
+            clientId: {
+              type: 'string'
+            },
+            scopes: {
+              type: 'array',
+              items: {
+                type: 'string'
+              }
+            }
+          }
+        },
         Error: {
           type: 'object',
           properties: {
@@ -538,6 +1039,19 @@ export const swaggerOpts = {
         },
         UpdateApplication: {
           ...updateClientSchema
+        },
+        CreateApi: {
+          ...apiCreateSchema
+        },
+        UpdateApi: {
+          ...updateApiSchema
+        },
+        UpdateScopes: {},
+        CreateGrant: {
+          ...createGrantSchema
+        },
+        UpdateGrant: {
+          ...updateGrantSchema
         }
       },
       responses: {

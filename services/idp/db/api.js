@@ -196,7 +196,6 @@ const getAccount = async (id) => {
 }
 
 const createGrant = async ({ clientId, scope, identifier }) => {
-  console.log({ clientId, scope, identifier })
   const count = await prisma.oidcModel.count({
     where: {
       type: 13,
@@ -242,6 +241,15 @@ const updateScopesForIdentifier = async (id, scopes, identifier) => {
   if (!found) {
     throw new Error('grant not found')
   }
+  const rs = await prisma.resourceServer.findFirst({
+    where: { identifier }
+  })
+
+  if (!rs) {
+    throw new Error('resource server not found')
+  }
+  const possible = Object.keys(rs.scopes)
+  const valid = scopes.filter((x) => possible.includes(x))
 
   const grant = await prisma.oidcModel.update({
     where: { id },
@@ -250,7 +258,7 @@ const updateScopesForIdentifier = async (id, scopes, identifier) => {
         ...found.payload,
         resources: {
           ...found.payload.resources,
-          [identifier]: scopes.join(' ')
+          [identifier]: valid.join(' ')
         }
       }
     }

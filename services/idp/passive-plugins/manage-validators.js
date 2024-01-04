@@ -20,7 +20,8 @@ export const createGrantSchema = {
   type: 'object',
   properties: {
     clientId: { type: 'string', minLength: 3, maxLength: 64 },
-    identifier: { type: 'string', format: 'uri', minLength: 3, maxLength: 64 }
+    identifier: { type: 'string', format: 'uri', minLength: 3, maxLength: 64 },
+    scope: { type: 'string', minLength: 1, maxLength: 256 }
   },
   required: ['clientId', 'identifier']
 }

@@ -9,7 +9,7 @@ import {
 export default async function (fastify, opts) {
   const fAuth = { onRequest: fastify.authenticate }
   fastify.post(
-    '/create',
+    '/',
     { onRequest: fAuth.onRequest, schema: { body: apiCreateSchema } },
     createResourceServer
   )

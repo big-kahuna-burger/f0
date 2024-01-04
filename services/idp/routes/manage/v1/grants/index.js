@@ -1,10 +1,21 @@
 import * as api from '../../../../db/api.js'
+import {
+  createGrantSchema,
+  updateGrantSchema
+} from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
-  const fAuth = { onRequest: fastify.authenticate }
-  fastify.put('/:id', fAuth, updateGrant) // TODO add schema
-  fastify.delete('/:id', fAuth, deleteGrant)
-  fastify.post('/', fAuth, createGrant) // TODO add schema
+  fastify.put(
+    '/:id',
+    { onRequest: fastify.authenticate, schema: { body: updateGrantSchema } },
+    updateGrant
+  )
+  fastify.delete('/:id', { onRequest: fastify.authenticate }, deleteGrant)
+  fastify.post(
+    '/',
+    { onRequest: fastify.authenticate, schema: { body: createGrantSchema } },
+    createGrant
+  )
 
   async function updateGrant(request, reply) {
     const {
@@ -26,11 +37,11 @@ export default async function (fastify, opts) {
   }
 
   async function createGrant(request, reply) {
-    const { clientId, identifier } = request.body || {}
+    const { clientId, identifier, scope = '' } = request.body || {}
     const grantCreated = await api.createGrant({
       clientId,
       identifier,
-      scope: ''
+      scope
     })
     return grantCreated
   }

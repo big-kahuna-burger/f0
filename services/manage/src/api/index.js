@@ -22,7 +22,6 @@ const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
-const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
 
 async function getConnections({ page = 1, size = 20, type = 'db' } = {}) {
@@ -57,7 +56,7 @@ async function createResourceServer({ name, identifier, signingAlg }) {
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
     body: JSON.stringify({ name, identifier, signingAlg })
   }
-  const resourceServersCreateResponse = await fetch(apiCreateUrl, opts)
+  const resourceServersCreateResponse = await fetch(resourceServersUrl, opts)
   return resourceServersCreateResponse.json()
 }
 
