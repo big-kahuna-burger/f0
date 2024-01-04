@@ -1,8 +1,9 @@
 import * as api from '../../../../db/api.js'
 
 export default async function (fastify, opts) {
-  fastify.get('/', getConnections)
-  fastify.get('/:id', getConnection)
+  const fAuth = { onRequest: fastify.authenticate }
+  fastify.get('/', fAuth, getConnections)
+  fastify.get('/:id', fAuth, getConnection)
 
   async function getConnections(request, reply) {
     const {

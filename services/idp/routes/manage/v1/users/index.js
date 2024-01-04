@@ -2,8 +2,9 @@ import * as api from '../../../../db/api.js'
 import { accountMAP } from '../../../../db/mappers/account.js'
 
 export default async function usersRouter(fastify, opts) {
-  fastify.get('/:id', getUser)
-  fastify.get('/', getUsers)
+  const fAuth = { onRequest: fastify.authenticate }
+  fastify.get('/:id', fAuth, getUser)
+  fastify.get('/', fAuth, getUsers)
 
   async function getUser(request) {
     const account = await api.getAccount(request.params.id)

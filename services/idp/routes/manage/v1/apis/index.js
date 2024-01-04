@@ -4,13 +4,14 @@ import { resourceServerMap } from '../../../../db/mappers/account.js'
 import { apiCreateSchema } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const fAuth = { onRequest: fastify.authenticate }
   fastify.post(
     '/create',
-    { schema: { body: apiCreateSchema } },
+    { onRequest: fAuth.onRequest, schema: { body: apiCreateSchema } },
     createResourceServer
   )
-  fastify.get('/:id', getResourceServer)
-  fastify.get('/', getAllResourceServers)
+  fastify.get('/:id', fAuth, getResourceServer)
+  fastify.get('/', fAuth, getAllResourceServers)
 
   async function getAllResourceServers() {
     const resourceServers = await api.getResourceServers({

@@ -5,13 +5,18 @@ import {
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const fAuth = { onRequest: fastify.authenticate }
   fastify.put(
     '/:id/scopes',
-    { schema: { body: updateScopesSchema } },
+    { onRequest: fAuth.onRequest, schema: { body: updateScopesSchema } },
     updateScopes
   )
-  fastify.put('/:id', { schema: { body: updateApiSchema } }, updateApi)
-  fastify.get('/:id/grants', getGrantsByResourceServerId)
+  fastify.put(
+    '/:id',
+    { onRequest: fAuth.onRequest, schema: { body: updateApiSchema } },
+    updateApi
+  )
+  fastify.get('/:id/grants', fAuth, getGrantsByResourceServerId)
 
   async function getGrantsByResourceServerId(request) {
     const { page = 1, size = 20 } = request.query

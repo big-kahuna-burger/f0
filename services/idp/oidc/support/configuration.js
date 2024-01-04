@@ -220,7 +220,7 @@ export default {
   pkce: {
     methods: ['S256'],
     required: function pkceRequired(ctx, client) {
-      return true
+      return client.clientId !== DASHBOARD_CLIENT_ID
     }
   }
 }
