@@ -64,6 +64,15 @@ export const queryClientSchema = {
   }
 }
 
+export const queryApisSchema = {
+  $id: 'queryApis',
+  type: 'object',
+  properties: {
+    page: { type: 'number', minimum: 1 },
+    size: { type: 'number', minimum: 1, maximum: 1000 }
+  }
+}
+
 export const createClientSchema = {
   // $id: 'createClient',
   type: 'object',

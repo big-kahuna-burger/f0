@@ -17,6 +17,83 @@ export const swaggerOpts = {
       }
     ],
     paths: {
+      '/apis': {
+        get: {
+          tags: ['APIs'],
+          summary: 'List all APIs',
+          operationId: 'listApis',
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              description: 'page',
+              required: false
+            },
+            {
+              name: 'size',
+              in: 'query',
+              description: 'size',
+              required: false
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      $ref: '#/components/schemas/API'
+                    },
+                    example: [
+                      {
+                        id: 'management',
+                        name: 'Management API (Readonly).  ',
+                        identifier: 'http://localhost:9876/manage/v1',
+                        signingAlg: 'RS256',
+                        scopes: {
+                          'read:apis': 'Read APIs',
+                          'read:users': 'Read Application Users',
+                          'write:apis': 'Create APIs',
+                          'delete:apis': 'Delete APIs',
+                          'update:apis': 'Update APIs',
+                          'write:users': 'Create Application Users',
+                          'delete:users': 'Delete Application Users',
+                          'update:users': 'Update Application Users',
+                          'read:client_grants': 'Read Client Grants',
+                          'write:client_grants': 'Create Client Grants',
+                          'delete:client_grants': 'Delete Client Grants',
+                          'update:client_grants': 'Update Client Grants'
+                        },
+                        updatedAt: '2024-01-04T13:45:24.852Z',
+                        ttl: 86400,
+                        ttlBrowser: 7200,
+                        allowSkipConsent: true,
+                        readOnly: true,
+                        signingSecret: null
+                      },
+                      {
+                        id: 'fc648da1-7d0e-416f-91ee-766d4fc3c742',
+                        name: 'adsadsa',
+                        identifier: 'https://abc.hogo',
+                        signingAlg: 'RS256',
+                        scopes: [],
+                        updatedAt: '2024-01-02T14:54:19.307Z',
+                        ttl: 86400,
+                        ttlBrowser: 7200,
+                        allowSkipConsent: false,
+                        readOnly: false,
+                        signingSecret: null
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/apps': {
         get: {
           tags: ['Applications'],
@@ -271,6 +348,45 @@ export const swaggerOpts = {
     security: ['oAuth2'],
     components: {
       schemas: {
+        API: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string'
+            },
+            name: {
+              type: 'string'
+            },
+            identifier: {
+              type: 'string'
+            },
+            signingAlg: {
+              type: 'string'
+            },
+            scopes: {
+              type: 'object'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            },
+            ttl: {
+              type: 'number'
+            },
+            ttlBrowser: {
+              type: 'number'
+            },
+            allowSkipConsent: {
+              type: 'boolean'
+            },
+            readOnly: {
+              type: 'boolean'
+            },
+            signingSecret: {
+              type: 'string'
+            }
+          }
+        },
         Application: {
           type: 'object',
           properties: {

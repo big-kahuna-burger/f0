@@ -7,6 +7,7 @@ import {
   Code,
   Divider,
   Group,
+  Pagination,
   Paper,
   Space,
   Stack,
@@ -240,15 +241,33 @@ const AddAPermissionForm = ({ api }) => {
   )
 }
 
-function GrantsPanel({ api, grants = [], applications }) {
+function GrantsPanel() {
+  const { activeApi, totalApps, page, size = 5 } = useLoaderData()
+  const navigate = useNavigate()
+  const realTotal = Math.ceil(totalApps / size)
   return (
     <Stack maw={1200}>
-      <AppsAccordion applications={applications} grants={grants} api={api} />
+      <AppsAccordion />
+      <Pagination
+        total={realTotal}
+        value={page}
+        onChange={(page) => {
+          navigate(`/api/${activeApi.id}/grants?page=${page}&size=${size}`)
+        }}
+      />
     </Stack>
   )
 }
 
-function AppsAccordion({ applications, grants = [], api }) {
+function AppsAccordion() {
+  const {
+    activeApi: api,
+    page,
+    size = 5,
+    applications,
+    grants
+  } = useLoaderData()
+  const navigateTo = `/api/${api.id}/grants?page=${page}&size=${size}`
   const deviceIcon = <IconDeviceDesktop stroke={1} />
   const navigate = useNavigate()
   const items = applications.map((item) => {
@@ -258,12 +277,12 @@ function AppsAccordion({ applications, grants = [], api }) {
         clientId: item.client_id,
         identifier: api.identifier
       }).then(() => {
-        navigate(`/api/${api.id}/grants`)
+        navigate(navigateTo)
       })
     }
     const handleWithDelete = () => {
       deleteGrantById(grantFound.grantId).then(() => {
-        navigate(`/api/${api.id}/grants`)
+        navigate(navigateTo)
       })
     }
     return (
@@ -321,6 +340,7 @@ function GrantEdit({ item, api }) {
 const eqSet = (xs, ys) => xs.size === ys.size && [...xs].every((x) => ys.has(x))
 
 export function ActiveOptionsFilter({ api, item }) {
+  const { page } = useLoaderData()
   const navigate = useNavigate()
   const theme = useMantineTheme()
   const scheme = useColorScheme(localStorage.getItem('mng-color-scheme'))
@@ -339,7 +359,7 @@ export function ActiveOptionsFilter({ api, item }) {
 
   const handleSaveGrant = () => {
     updateGrantById(item.grantId, given, api.identifier).then(() => {
-      navigate(`/api/${api.id}/grants`)
+      navigate(`/api/${api.id}/grants?page=${page}`)
     })
   }
 

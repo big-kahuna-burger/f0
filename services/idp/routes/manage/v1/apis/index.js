@@ -1,7 +1,10 @@
 import Prisma from '@prisma/client'
 import * as api from '../../../../db/api.js'
 import { resourceServerMap } from '../../../../db/mappers/account.js'
-import { apiCreateSchema } from '../../../../passive-plugins/manage-validators.js'
+import {
+  apiCreateSchema,
+  queryApisSchema
+} from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
   const fAuth = { onRequest: fastify.authenticate }
@@ -11,15 +14,23 @@ export default async function (fastify, opts) {
     createResourceServer
   )
   fastify.get('/:id', fAuth, getResourceServer)
-  fastify.get('/', fAuth, getAllResourceServers)
+  fastify.get(
+    '/',
+    {
+      schema: { query: queryApisSchema }
+    },
+    getAllResourceServers
+  )
 
-  async function getAllResourceServers() {
-    const resourceServers = await api.getResourceServers({
+  async function getAllResourceServers(request, reply) {
+    const { page, size } = request.query
+    const { resourceServers, total } = await api.getResourceServers({
+      page,
+      size,
       sort: 'desc'
     })
+    reply.header('x-total-count', total)
     return resourceServers
-      .map(resourceServerMap)
-      .sort((a, b) => (a.id === 'management' ? -1 : 1))
   }
 
   async function getResourceServer(request, reply) {

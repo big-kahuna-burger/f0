@@ -38,17 +38,31 @@ const routes = [
       {
         path: '/api/:id/:tab',
         element: <AppServer />,
-        loader: async ({ params }) => {
+        loader: async ({ params, request }) => {
           const activeApi = await getResourceServer(params.id)
           const grants = await getApplicationGrants(params.id)
-          const applications = await getApplications({
-            page: 1,
-            size: 20,
+          const searchParams = new URL(request.url).searchParams
+          const page = searchParams.get('page')
+            ? parseInt(searchParams.get('page'))
+            : 1
+          const size = searchParams.get('size')
+            ? parseInt(searchParams.get('size'))
+            : 5
+          const { apps, total } = await getApplications({
+            page,
+            size,
             include: ['client_id', 'client_name', 'logo_uri'],
             grant_types_include: 'client_credentials',
             token_endpoint_auth_method_not: 'none'
           })
-          return { activeApi, grants, applications, tab: params.tab }
+          return {
+            activeApi,
+            grants,
+            page,
+            applications: apps,
+            totalApps: total,
+            tab: params.tab
+          }
         }
       },
       {

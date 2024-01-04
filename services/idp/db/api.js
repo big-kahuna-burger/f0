@@ -159,27 +159,29 @@ const loadClients = async ({
       }
     })
   }
+  const skip = (page - 1) * size
+  const orderBy = [{ readonly: 'desc' }, { updatedAt: 'desc' }]
+
   if (whereAND.length) {
-    const clients = await prisma.oidcClient.findMany({
-      skip,
-      take,
-      cursor,
-      orderBy: {
-        updatedAt: 'desc'
-      },
+    const total = await prisma.oidcClient.count({
+      orderBy,
       where: { AND: whereAND }
     })
-    return clients
+    const clients = await prisma.oidcClient.findMany({
+      skip,
+      take: size,
+      orderBy,
+      where: { AND: whereAND }
+    })
+    return { clients, total }
   }
-  const orderBy = [{ readonly: 'desc' }, { updatedAt: 'desc' }]
-  const total = await prisma.oidcClient.count({ orderBy })
 
-  const skip = (page - 1) * size
   const clients = await prisma.oidcClient.findMany({
     skip,
     take: size,
     orderBy
   })
+  const total = await prisma.oidcClient.count({ orderBy })
   return { clients, total }
 }
 
@@ -290,13 +292,18 @@ const getResourceServer = async (id) => {
   return resourceServer
 }
 
-const getResourceServers = async ({ sort = 'desc' }) => {
+const getResourceServers = async ({ sort = 'desc', page = 1, size = 20 }) => {
+  const take = size
+  const skip = (page - 1) * take
+  const orderBy = [{ readOnly: sort }, { updatedAt: sort }]
+
+  const total = await prisma.resourceServer.count()
   const resourceServers = await prisma.resourceServer.findMany({
-    orderBy: {
-      updatedAt: sort
-    }
+    skip,
+    take,
+    orderBy
   })
-  return resourceServers
+  return { resourceServers, total }
 }
 
 const updateResourceServerScopes = async (id, add, remove) => {
