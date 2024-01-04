@@ -7,6 +7,8 @@ import {
   Group,
   LoadingOverlay,
   Modal,
+  Pagination,
+  Stack,
   Table,
   Text,
   ThemeIcon,
@@ -15,7 +17,7 @@ import {
   useMantineTheme
 } from '@mantine/core'
 
-import { useDisclosure } from '@mantine/hooks'
+import { useDisclosure, usePagination } from '@mantine/hooks'
 import {
   IconBrandReact,
   IconDeviceMobile,
@@ -31,11 +33,12 @@ import classes from './Applications.module.css'
 import { FeaturesCards } from './FeatureCards'
 
 export function Applications() {
-  const { apps } = useLoaderData()
+  const { apps, total, page = 1, size = 20 } = useLoaderData()
   const colorScheme = useMantineColorScheme()
   const theme = useMantineTheme()
-  const navigate = useNavigate()
+  const realTotal = Math.floor(total / size) + 1
 
+  const navigate = useNavigate()
   const AppRow = ({ item }) => {
     const AppIcon =
       {
@@ -97,24 +100,41 @@ export function Applications() {
   return (
     <>
       <CreateModal />
-      <Table.ScrollContainer>
-        <Table verticalSpacing="lg">
-          <Table.Thead>
-            <Table.Tr>
-              <Table.Th>Type</Table.Th>
-              <Table.Th>Name (Client ID)</Table.Th>
-              <Table.Th>App Logo</Table.Th>
-              <Table.Th>Updated</Table.Th>
-              <Table.Th>-</Table.Th>
-            </Table.Tr>
-          </Table.Thead>
-          <Table.Tbody>
-            {apps.map((item, i) => (
-              <AppRow item={item} key={item.client_id} />
-            ))}
-          </Table.Tbody>
-        </Table>
-      </Table.ScrollContainer>
+      <Flex
+        grow={1}
+        mih={50}
+        gap="md"
+        justify="flex-start"
+        direction="column"
+        wrap="wrap"
+      >
+        <Table.ScrollContainer>
+          <Table verticalSpacing="lg">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Type</Table.Th>
+                <Table.Th>Name (Client ID)</Table.Th>
+                <Table.Th>App Logo</Table.Th>
+                <Table.Th>Updated</Table.Th>
+                <Table.Th>-</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>
+              {apps.map((item, i) => (
+                <AppRow item={item} key={item.client_id} />
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+        <Group justify="center" align="flex-end">
+          <Pagination
+            total={realTotal}
+            onChange={(page) => {
+              navigate(`/apps?page=${page}&size=${size}`)
+            }}
+          />
+        </Group>
+      </Flex>
     </>
   )
 }

@@ -139,9 +139,8 @@ const createClient = async ({ name, type }) => {
 const loadClients = async ({
   token_endpoint_auth_method_not,
   grant_types_include,
-  skip = 0,
-  take = 100,
-  cursor
+  page = 1,
+  size = 20
 } = {}) => {
   const whereAND = []
   if (grant_types_include) {
@@ -172,20 +171,16 @@ const loadClients = async ({
     })
     return clients
   }
+  const orderBy = [{ readonly: 'desc' }, { updatedAt: 'desc' }]
+  const total = await prisma.oidcClient.count({ orderBy })
+
+  const skip = (page - 1) * size
   const clients = await prisma.oidcClient.findMany({
     skip,
-    take,
-    cursor,
-    orderBy: [
-      {
-        readonly: 'desc'
-      },
-      {
-        updatedAt: 'desc'
-      }
-    ]
+    take: size,
+    orderBy
   })
-  return clients
+  return { clients, total }
 }
 
 const updateAccount = async (id, data) => {
@@ -428,7 +423,12 @@ async function updateResourceServer(
   return rs
 }
 
-async function getConnections({ skip = 0, take = 100, cursor, type } = {}) {
+async function getConnections({
+  skip = 0,
+  take = 100,
+  cursor,
+  type = 'db'
+} = {}) {
   const connections = await prisma.connection.findMany({
     skip,
     take,

@@ -42,7 +42,7 @@ const routes = [
           const activeApi = await getResourceServer(params.id)
           const grants = await getApplicationGrants(params.id)
           const applications = await getApplications({
-            page: 0,
+            page: 1,
             size: 20,
             include: ['client_id', 'client_name', 'logo_uri'],
             grant_types_include: 'client_credentials',
@@ -61,12 +61,16 @@ const routes = [
       },
       {
         path: '/apps',
-        loader: async ({ params }) => {
-          const apps = await getApplications({
-            page: 0,
-            size: 20
-          })
-          return { apps }
+        loader: async ({ params, request }) => {
+          const searchParams = new URL(request.url).searchParams
+          const page = searchParams.get('page')
+            ? parseInt(searchParams.get('page'))
+            : 1
+          const size = searchParams.get('size')
+            ? parseInt(searchParams.get('size'))
+            : 8
+          const { apps, total } = await getApplications({ page, size })
+          return { apps, total, page, size }
         },
         element: <Applications />
       },

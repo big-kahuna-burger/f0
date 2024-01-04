@@ -25,7 +25,7 @@ const resourceServersUrl = `${baseUrl}/apis`
 const apiCreateUrl = `${baseUrl}/apis/create`
 const applicationsUrl = `${baseUrl}/apps`
 
-async function getConnections({ page = 0, size = 20, type = 'db' } = {}) {
+async function getConnections({ page = 1, size = 20, type = 'db' } = {}) {
   const opts = { headers: getHeaders() }
   const q = { page, size, type }
   const connectionsUrl = `${baseUrl}/connections?${qs.stringify(q)}`
@@ -164,7 +164,7 @@ async function updateApplication(
 
 async function getApplications({
   type,
-  page = 0,
+  page = 1,
   size = 20,
   include,
   grant_types_include,
@@ -175,7 +175,7 @@ async function getApplications({
     `${applicationsUrl}?${qs.stringify(
       {
         type,
-        page,
+        page: Math.max(1, page),
         size,
         include,
         grant_types_include,
@@ -185,13 +185,18 @@ async function getApplications({
     )}`,
     opts
   )
+
+  const total = applicationsResponse.headers.get('x-total-count')
   const applicationsJson = await applicationsResponse.json()
-  return applicationsJson.map((x) => ({
-    ...x,
-    formattedUpdatedAt: x.updatedAt
-      ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
-      : undefined
-  }))
+  return {
+    apps: applicationsJson.map((x) => ({
+      ...x,
+      formattedUpdatedAt: x.updatedAt
+        ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
+        : undefined
+    })),
+    total
+  }
 }
 
 async function createGrant({ identifier, clientId }) {

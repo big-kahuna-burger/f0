@@ -7,7 +7,7 @@ import { SelectedUserContext } from './SelectedUser.context'
 import RoutedNavbar from './components/NavBar/RoutedNavbar'
 import ToggleScheme from './components/SchemeSwitcher'
 import { UserCardImage } from './components/UserCardImage'
-
+const notLocalhost = !window.location.hostname.includes('localhost')
 function Shell() {
   const location = useLocation()
   const [opened, { toggle }] = useDisclosure()
@@ -24,7 +24,7 @@ function Shell() {
       padding="md"
     >
       <AppShell.Header>
-        <SpeedInsights />
+        {notLocalhost && <SpeedInsights />}
         <Group width="100%" px="md" align="center" justify="space-between">
           <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
           <ToggleScheme />

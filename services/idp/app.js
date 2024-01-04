@@ -35,7 +35,8 @@ export default async function runme(fastify, opts) {
   })
 
   await fastify.register(Cors, {
-    origin: '*'
+    exposedHeaders: ['x-total-count'],
+    origin: '*' // TODO, client based cors on oidc routes, on manage allow this
   })
 
   fastify.register(helmet, {

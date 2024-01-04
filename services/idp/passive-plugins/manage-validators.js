@@ -26,7 +26,7 @@ export const createGrantSchema = {
 }
 
 export const updateClientSchema = {
-  $id: 'updateClient',
+  //$id: 'updateClient',
   type: 'object',
   properties: {
     client_name: { type: 'string', minLength: 3, maxLength: 40 },
@@ -48,14 +48,30 @@ export const updateClientSchema = {
   }
 }
 
+export const queryClientSchema = {
+  $id: 'queryClient',
+  type: 'object',
+  properties: {
+    page: { type: 'number', minimum: 1 },
+    size: { type: 'number', minimum: 1, maximum: 1000 },
+    grant_types_include: { type: 'string', minLength: 0, maxLength: 256 },
+    include: { type: 'string', minLength: 0, maxLength: 256 },
+    token_endpoint_auth_method_not: {
+      type: 'string',
+      minLength: 0,
+      maxLength: 256
+    }
+  }
+}
+
 export const createClientSchema = {
-  $id: 'createClient',
+  // $id: 'createClient',
   type: 'object',
   properties: {
     name: { type: 'string', minLength: 3, maxLength: 40 },
     [F0_TYPE_PROP]: { type: 'string', enum: ['native', 'spa', 'web', 'm2m'] }
   },
-  required: ['name', 'type']
+  required: ['name', F0_TYPE_PROP]
 }
 
 export const apiCreateSchema = {
