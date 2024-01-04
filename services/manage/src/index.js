@@ -86,11 +86,9 @@ const authConfig = {
     'delete:client_grants'
   ].join(' '),
   onRefreshTokenExpire: (event) =>
-    window.confirm(
-      'Session expired. Refresh page to continue using the site?'
-    ) && event.login(),
+    window.confirm('Session expired. Refresh?') && event.login(),
   logoutEndpoint: `${ISSUER}/session/end`,
-  //logoutRedirect: `${ORIGIN}/logged-out`,
+  // logoutRedirect: `${ORIGIN}/logged-out`,
   extraTokenParameters: {
     resource: `${issUrl.origin}/manage/v1`
   },
@@ -101,8 +99,6 @@ const authConfig = {
   decodeToken: false,
   clearURL: true
 }
-
-console.log(authConfig)
 
 const root = ReactDOM.createRoot(document.getElementById('root'))
 
