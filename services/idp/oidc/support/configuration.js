@@ -118,7 +118,7 @@ export default {
         //                           This argument is only provided when called during
         //                           Authorization Code / Refresh Token / Device Code exchanges.
         if (client.clientId === DASHBOARD_CLIENT_ID) {
-          return 'http://localhost:9876/manage/v1'
+          return MANAGEMENT.identifier
         }
         return undefined
       },
