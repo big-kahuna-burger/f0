@@ -1,5 +1,4 @@
 import Prisma from '@prisma/client'
-import * as api from '../../../../db/api.js'
 import { resourceServerMap } from '../../../../db/mappers/account.js'
 import {
   apiCreateSchema,
@@ -7,6 +6,7 @@ import {
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.post(
     '/',
     { onRequest: fastify.authenticate, schema: { body: apiCreateSchema } },

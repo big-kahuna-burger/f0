@@ -3,15 +3,19 @@ import './env.js'
 
 import middie from '@fastify/middie'
 import FastifySwagger from '@fastify/swagger'
+import Scalar from '@scalar/fastify-api-reference'
 import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
+
+import * as dbClientForManage from './db/api.js'
 import { configureOidc } from './oidc/index.js'
 import { MANAGEMENT } from './resource-servers/management.js'
 import { swaggerOpts } from './swagger-opts.js'
+
 const { ISSUER, FASTIFY_CLOSE_GRACE_DELAY = 500 } = process.env
 const { port } = new URL(ISSUER)
-import Scalar from '@scalar/fastify-api-reference'
+
 export default makeFastify
 
 async function makeFastify(config, pretty) {
@@ -62,7 +66,8 @@ async function makeFastify(config, pretty) {
     Account,
     AccountErrors,
     localKeySet,
-    MANAGEMENT_API: MANAGEMENT
+    MANAGEMENT_API: MANAGEMENT,
+    dbClientForManage
   })
 
   // delay is the number of milliseconds for the graceful close to finish

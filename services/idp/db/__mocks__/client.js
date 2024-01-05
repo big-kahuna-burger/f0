@@ -7,7 +7,7 @@ beforeEach(() => {
 
 const prisma = mockDeep({
   fallbackMockImplementation: (...args) => {
-    console.error('fallback mock called with', args[0])
+    console.error('fallback mock called with', args)
     throw new Error('please add mock implementation')
   }
 })

@@ -3,6 +3,7 @@ import { fileURLToPath } from 'url'
 import { readFile } from 'fs/promises'
 import { nanoid } from 'nanoid'
 import Account from '../oidc/support/account.js'
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const testKeys = JSON.parse(
@@ -24,6 +25,7 @@ const accessTokensDB = {}
 const profilesDB = {}
 const identDb = {}
 const passwordHashDb = {}
+const resourceServersDB = {}
 
 const clientMock = {
   id: 'goodclient',
@@ -63,12 +65,18 @@ export const setupPrisma = async (prisma) => {
   prisma.account.create.mockImplementation(accountCreate)
   prisma.profile.findFirst.mockImplementation(profileFindFirst)
   prisma.profile.create.mockImplementation(profileCreate)
+  prisma.resourceServer.findMany.mockImplementation(resourceServersFindMany)
+  prisma.resourceServer.count.mockImplementation(() => Object.values(resourceServersDB).length)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function resourceServersFindMany() {
+  return Object.values(resourceServersDB)
+}
 
 function getCurrentKeys() {
   return configsDB.jwks

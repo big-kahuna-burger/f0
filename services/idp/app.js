@@ -8,7 +8,6 @@ import desm from 'desm'
 import ejs from 'ejs'
 import CSP from './csp.js'
 import joseVerify from './passive-plugins/jwt-jose.js'
-import { grantType } from './passive-plugins/manage-validators.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
 

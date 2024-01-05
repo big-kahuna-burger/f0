@@ -26,7 +26,7 @@ async function configure(iss, adapterArg) {
   }
 
   const provider = new Provider(iss || ISSUER, { adapter, ...configuration })
-  
+
   subscribe(provider)
   if (secureContextRequired) {
     provider.use(koaPino())
@@ -36,5 +36,11 @@ async function configure(iss, adapterArg) {
 
   configureKoaOtel(provider)
 
-  return { provider, localKeySet, configuration, Account, AccountErrors: errors }
+  return {
+    provider,
+    localKeySet,
+    configuration,
+    Account,
+    AccountErrors: errors
+  }
 }
