@@ -1,5 +1,16 @@
 import { F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
 
+export const grantType = {
+  $id: 'grantType',
+  type: 'string',
+  enum: [
+    'authorization_code',
+    'implicit',
+    'refresh_token',
+    'client_credentials',
+    'urn:ietf:params:oauth:grant-type:device_code'
+  ]
+}
 export const updateGrantSchema = {
   $id: 'updateGrant',
   type: 'object',
@@ -48,9 +59,7 @@ export const updateClientSchema = {
     logo_uri: { type: 'string', format: 'uri', maxLength: 256 },
     grant_types: {
       type: 'array',
-      items: {
-        $ref: 'grantType'
-      },
+      items: grantType,
       minItems: 0,
       maxItems: 16
     }
@@ -157,16 +166,4 @@ export const updateApiSchema = {
     ttlBrowser: { type: 'number', minimum: 1, maximum: 365.25 * 86400 },
     allowSkipConsent: { type: 'boolean' }
   }
-}
-
-export const grantType = {
-  $id: 'grantType',
-  type: 'string',
-  enum: [
-    'authorization_code',
-    'implicit',
-    'refresh_token',
-    'client_credentials',
-    'urn:ietf:params:oauth:grant-type:device_code'
-  ]
 }

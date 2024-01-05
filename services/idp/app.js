@@ -64,7 +64,7 @@ export default async function runme(fastify, opts) {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)
   })
-  fastify.addSchema(grantType)
+
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
     options: Object.assign({}, { maxDepth: 3 }, opts)

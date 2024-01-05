@@ -6,7 +6,6 @@ import {
   createClientSchema,
   createGrantSchema,
   updateApiSchema,
-  updateClientConnectionSchema,
   updateClientSchema,
   updateGrantSchema,
   updateScopesSchema
