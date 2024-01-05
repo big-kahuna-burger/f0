@@ -300,6 +300,68 @@ const getResourceServer = async (id) => {
   return resourceServer
 }
 
+const deleteClient = async (id) => {
+  const client = await prisma.oidcClient.findFirst({ where: { id } })
+  if (!client) {
+    return true
+  }
+  if (client.readonly) {
+    throw new Error('Cannot delete read only client')
+  }
+  const deleteResult = await prisma.oidcClient.delete({ where: { id } })
+  return deleteResult
+}
+
+const deleteResourceServer = async (id) => {
+  return prisma.$transaction(async (t) => {
+    const rs = await t.resourceServer.findFirst({
+      where: { id }
+    })
+    if (!rs) {
+      return true
+    }
+    const { identifier } = rs
+    // look for client grants and remove it
+    const grants = await t.oidcModel.findMany({
+      where: {
+        type: 13,
+        AND: [
+          {
+            payload: { path: ['accountId'], equals: Prisma.DbNull }
+          },
+          {
+            payload: { path: ['exp'], equals: 0 }
+          },
+          {
+            payload: {
+              path: ['resources', identifier],
+              not: Prisma.DbNull
+            }
+          }
+        ]
+      }
+    })
+    const updatedGrants = await Promise.all(
+      grants.map(({ id, payload }) => {
+        const { resources } = payload
+        delete resources[identifier]
+        return t.oidcModel.update({
+          where: { id },
+          data: {
+            payload: {
+              ...payload,
+              resources
+            }
+          }
+        })
+      })
+    )
+
+    const deleteResult = await t.resourceServer.delete({ where: { id } })
+    return { deleteResult, updatedGrants }
+  })
+}
+
 const getResourceServers = async ({ sort = 'desc', page = 1, size = 20 }) => {
   const take = size
   const skip = (page - 1) * take
@@ -461,17 +523,38 @@ async function getConnections({
 async function getConnection(id) {
   const connection = await prisma.connection.findFirst({
     where: { id },
-    include: {
-      ClientConnection: {
-        include: {
-          Client: true
-        }
+    include: { ClientConnection: true }
+  })
+
+  return connection
+}
+
+async function deleteConnection(id) {
+  const deleteResult = await prisma.connection.delete({ where: { id } })
+  return deleteResult
+}
+
+async function addConnectionToClient(clientId, connectionId) {
+  return prisma.clientConnection.create({
+    data: {
+      clientId,
+      connectionId,
+      readonly: false
+    }
+  })
+}
+
+async function removeConnectionFromClient(clientId, connectionId) {
+  const deleteResult = await prisma.clientConnection.delete({
+    where: {
+      clientId_connectionId_readonly: {
+        clientId,
+        connectionId,
+        readonly: false
       }
     }
   })
-
-  console.log(connection)
-  return connection
+  return deleteResult
 }
 
 export {
@@ -492,7 +575,12 @@ export {
   updateResourceServerScopes,
   updateResourceServer,
   getConnections,
-  getConnection
+  getConnection,
+  deleteConnection,
+  deleteResourceServer,
+  deleteClient,
+  addConnectionToClient,
+  removeConnectionFromClient
 }
 
 // console.log(await loadAccounts())

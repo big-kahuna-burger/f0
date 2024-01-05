@@ -1,7 +1,10 @@
 import * as api from '../../../../db/api.js'
 import { clientXMap } from '../../../../db/mappers/client.js'
 import { F0_TYPE_PROP } from '../../../../oidc/client-based-cors/index.js'
-import { updateClientSchema } from '../../../../passive-plugins/manage-validators.js'
+import {
+  updateClientConnectionSchema,
+  updateClientSchema
+} from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
   fastify.get('/:id', { onRequest: fastify.authenticate }, getClient)
@@ -11,6 +14,43 @@ export default async function (fastify, opts) {
     updateClient
   )
   fastify.post('/:id/secret', { onRequest: fastify.authenticate }, rotateSecret)
+  fastify.delete('/:id', { onRequest: fastify.authenticate }, deleteClient)
+  fastify.put(
+    '/:id/connection/:connectionId/:action',
+    {
+      onRequest: fastify.authenticate,
+      schema: { params: updateClientConnectionSchema }
+    },
+    updateApplicationConnection
+  )
+
+  async function updateApplicationConnection(request, reply) {
+    const { id, connectionId, action } = request.params
+    const client = await api.getClient(id)
+    if (!client) {
+      return reply.code(404).send({ error: 'client not found' })
+    }
+
+    const connection = await api.getConnection(connectionId)
+    if (!connection) {
+      return reply.code(404).send({ error: 'connection not found' })
+    }
+
+    if (action === 'enable') {
+      return api.addConnectionToClient(id, connectionId)
+    }
+
+    if (action === 'disable') {
+      return api.removeConnectionFromClient(id, connectionId)
+    }
+
+    throw new Error(`unknown action ${action}`)
+  }
+
+  async function deleteClient(request, reply) {
+    const { id } = request.params
+    return api.deleteClient(id)
+  }
 
   async function rotateSecret(request, reply) {
     throw new Error(

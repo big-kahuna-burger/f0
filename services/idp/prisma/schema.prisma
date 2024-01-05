@@ -16,7 +16,7 @@ model Config {
   jwks       Json[]
   cookieKeys String[]
   grantDebug Boolean? @default(false)
-  updatedAt  DateTime @default(now()) @updatedAt // think of auditing this single record for changes. Maybe new entry and order by updatedAt desc?
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 // ADAPTER
@@ -30,7 +30,7 @@ model OidcModel {
   expiresAt  DateTime?
   consumedAt DateTime?
   createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  updatedAt  DateTime  @updatedAt @default(now())
 
   @@unique([id, type])
   @@map("oidc_model")
@@ -41,7 +41,7 @@ model OidcClient {
   payload          Json
   readonly         Boolean            @default(false)
   createdAt        DateTime           @default(now())
-  updatedAt        DateTime           @updatedAt
+  updatedAt        DateTime           @updatedAt @default(now())
   ClientConnection ClientConnection[]
 
   @@map("oidc_client")
@@ -51,7 +51,7 @@ model OidcClient {
 
 model Account {
   id        String     @id
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @updatedAt @default(now())
   Login     Login[]
   Identity  Identity[]
   Profile   Profile[]
@@ -77,10 +77,10 @@ model Profile {
   picture             String?
   preferredUsername   String?
   profile             String?
-  updatedAt           DateTime  @updatedAt
+  updatedAt           DateTime  @updatedAt @default(now())
   website             String?
   zoneinfo            String?
-  Address             Address?  @relation(fields: [addressId], references: [id])
+  Address             Address?  @relation(fields: [addressId], references: [id], onDelete: SetNull)
   addressId           String?   @db.Uuid
 
   @@map("profile")
@@ -94,7 +94,7 @@ model Address {
   region        String?
   postalCode    String?
   country       String?
-  updatedAt     DateTime  @updatedAt
+  updatedAt     DateTime  @updatedAt @default(now())
   Profile       Profile[]
 
   @@map("address")
@@ -104,7 +104,7 @@ model Login {
   id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   loginTs DateTime? @default(now()) @db.Timestamptz
   sub     String
-  Account Account?  @relation(fields: [sub], references: [id])
+  Account Account?  @relation(fields: [sub], references: [id], onDelete: Cascade)
   method  AMR       @default(PWD)
 
   @@map("login")
@@ -114,11 +114,11 @@ model Identity {
   id           String         @id @default(dbgenerated("gen_random_uuid()"))
   sub          String
   provider     String
-  updatedAt    DateTime       @updatedAt
-  Account      Account        @relation(fields: [sub], references: [id])
+  updatedAt    DateTime       @updatedAt @default(now())
+  Account      Account        @relation(fields: [sub], references: [id], onDelete: Cascade)
   PasswordHash PasswordHash[]
   connectionId String
-  Connection   Connection     @relation(fields: [connectionId], references: [id])
+  Connection   Connection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
 
   @@index([sub])
   @@map("identity")
@@ -128,8 +128,8 @@ model PasswordHash {
   id         String   @id @default(dbgenerated("gen_random_uuid()"))
   identityId String
   hash       String
-  updatedAt  DateTime @updatedAt
-  Identity   Identity @relation(fields: [identityId], references: [id])
+  updatedAt  DateTime @updatedAt @default(now())
+  Identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
 
   @@map("password_hash")
 }
@@ -140,7 +140,7 @@ model ResourceServer {
   identifier       String         @unique
   signingAlg       RS_SIGNING_ALG @default(RS256)
   scopes           Json           @default("{}")
-  updatedAt        DateTime       @updatedAt
+  updatedAt        DateTime       @updatedAt @default(now())
   ttl              Int            @default(86400)
   ttlBrowser       Int            @default(7200)
   allowSkipConsent Boolean        @default(false)
@@ -153,9 +153,9 @@ model ResourceServer {
 model Connection {
   id               String             @id @default(dbgenerated("gen_random_uuid()"))
   name             String
-  updatedAt        DateTime           @updatedAt
+  updatedAt        DateTime           @updatedAt @default(now())
   type             CONNECTION_TYPE    @default(DB)
-  ClientConnection ClientConnection[]
+  ClientConnection ClientConnection[] 
   readonly         Boolean            @default(false)
   Identities       Identity[]
 
@@ -165,8 +165,8 @@ model Connection {
 model ClientConnection {
   clientId     String
   connectionId String
-  client       OidcClient @relation(fields: [clientId], references: [id])
-  connection   Connection @relation(fields: [connectionId], references: [id])
+  client       OidcClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())
   readonly     Boolean    @default(false)
 

@@ -6,6 +6,7 @@ import {
   createClientSchema,
   createGrantSchema,
   updateApiSchema,
+  updateClientConnectionSchema,
   updateClientSchema,
   updateGrantSchema,
   updateScopesSchema
@@ -278,6 +279,30 @@ export const swaggerOpts = {
                   example: { error: 'resource server not found' }
                 }
               }
+            }
+          }
+        },
+        delete: {
+          tags: ['APIs'],
+          summary: 'Delete an API',
+          operationId: 'deleteApi',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of API to delete',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            204: {
+              description: 'Successful response'
+            },
+            403: {
+              description: 'Forbidden'
             }
           }
         }
@@ -642,6 +667,69 @@ export const swaggerOpts = {
               }
             }
           }
+        },
+        delete: {
+          tags: ['Applications'],
+          summary: 'Delete an application',
+          operationId: 'deleteApplication',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of application to delete',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            204: {
+              description: 'Successful response'
+            },
+            403: {
+              description: 'Forbidden'
+            }
+          }
+        }
+      },
+      '/app/{id}/connection/{connectionId}/{action}': {
+        put: {
+          tags: ['Applications'],
+          summary: 'Update Connection Status for application',
+          operationId: 'updateApplicationConnection',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of application to update',
+              required: true
+            },
+            {
+              name: 'connectionId',
+              in: 'path',
+              description: 'ID of connection to update',
+              required: true
+            },
+            {
+              name: 'action',
+              in: 'path',
+              description: 'Action to perform',
+              required: true,
+              schema: {
+                type: 'string',
+                enum: ['enable', 'disable']
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response'
+            },
+            403: {
+              description: 'Forbidden'
+            }
+          }
         }
       },
       '/connections': {
@@ -684,6 +772,70 @@ export const swaggerOpts = {
                   }
                 }
               }
+            }
+          }
+        }
+      },
+      '/connections/{id}': {
+        get: {
+          tags: ['Connections'],
+          summary: 'Get a connection',
+          operationId: 'getConnection',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of connection to return',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Connection'
+                  },
+                  example: {
+                    id: 'a039971e-af01-4395-9f50-6e172314addf',
+                    name: 'Tenant Members DB',
+                    updatedAt: '2021-07-01T00:00:00.000Z',
+                    type: 'DB',
+                    readonly: true
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not found'
+            }
+          }
+        },
+        delete: {
+          tags: ['Connections'],
+          summary: 'Delete a connection',
+          operationId: 'deleteConnection',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of connection to delete',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            204: {
+              description: 'Successful response'
+            },
+            403: {
+              description: 'Forbidden'
             }
           }
         }
@@ -824,6 +976,157 @@ export const swaggerOpts = {
                   }
                 }
               }
+            }
+          }
+        },
+        delete: {
+          tags: ['Grants'],
+          summary: 'Delete a grant',
+          operationId: 'deleteGrant',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of grant to delete',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            204: {
+              description: 'Successful response'
+            },
+            403: {
+              description: 'Forbidden'
+            }
+          }
+        }
+      },
+      '/users': {
+        get: {
+          tags: ['Users'],
+          summary: 'List all users',
+          operationId: 'listUsers',
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              description: 'page',
+              required: false
+            },
+            {
+              name: 'size',
+              in: 'query',
+              description: 'size',
+              required: false
+            },
+            {
+              name: 'search',
+              in: 'query',
+              description: 'search',
+              required: false
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'array',
+                    items: {
+                      type: 'object'
+                    },
+                    example: [
+                      {
+                        id: 'f0.483o6403317cgh0put1i25oykf',
+                        email: 'arandjel@idp.dev',
+                        birthdate: '2024-01-02T00:00:00.000Z',
+                        email_verified: false,
+                        family_name: 'Doe',
+                        gender: 'male',
+                        given_name: 'John',
+                        locale: 'en-US',
+                        middle_name: 'Middle',
+                        name: 'John Doe',
+                        nickname: 'Johny',
+                        phone_number: '+49 000 000000',
+                        phone_number_verified: false,
+                        picture: 'http://lorempixel.com/400/200/',
+                        preferred_username: 'johnny',
+                        profile: 'https://johnswebsite.com',
+                        updated_at: '2024-01-02T18:57:03.677Z',
+                        website: 'http://example.com',
+                        zoneinfo: 'Europe/Berlin',
+                        address_id: '55b469e9-c866-4f7f-b748-d87387ee61d7'
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden'
+            }
+          }
+        }
+      },
+      '/users/{id}': {
+        get: {
+          tags: ['Users'],
+          summary: 'Get a user',
+          operationId: 'getUser',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of user to return',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    example: {
+                      id: 'f0.483o6403317cgh0put1i25oykf',
+                      email: 'arandjel@idp.dev',
+                      birthdate: '2024-01-02T00:00:00.000Z',
+                      email_verified: false,
+                      family_name: 'Doe',
+                      gender: 'male',
+                      given_name: 'John',
+                      locale: 'en-US',
+                      middle_name: 'Middle',
+                      name: 'John Doe',
+                      nickname: 'Johny',
+                      phone_number: '+49 000 000000',
+                      phone_number_verified: false,
+                      picture: 'http://lorempixel.com/400/200/',
+                      preferred_username: 'johnny',
+                      profile: 'https://johnswebsite.com',
+                      updated_at: '2024-01-02T18:57:03.677Z',
+                      website: 'http://example.com',
+                      zoneinfo: 'Europe/Berlin',
+                      address_id: '55b469e9-c866-4f7f-b748-d87387ee61d7'
+                    }
+                  }
+                }
+              }
+            },
+            403: {
+              description: 'Forbidden'
+            },
+            404: {
+              description: 'Not found'
             }
           }
         }

@@ -5,18 +5,40 @@ import {
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
-  const fAuth = { onRequest: fastify.authenticate }
   fastify.put(
     '/:id/scopes',
-    { onRequest: fAuth.onRequest, schema: { body: updateScopesSchema } },
+    { onRequest: fastify.authenticate, schema: { body: updateScopesSchema } },
     updateScopes
   )
   fastify.put(
     '/:id',
-    { onRequest: fAuth.onRequest, schema: { body: updateApiSchema } },
+    { onRequest: fastify.authenticate, schema: { body: updateApiSchema } },
     updateApi
   )
-  fastify.get('/:id/grants', fAuth, getGrantsByResourceServerId)
+  fastify.get(
+    '/:id/grants',
+    { onRequest: fastify.authenticate },
+    getGrantsByResourceServerId
+  )
+  fastify.delete(
+    '/:id',
+    { onRequest: fastify.authenticate },
+    deleteResourceServer
+  )
+
+  async function deleteResourceServer(request, reply) {
+    const { id } = request.params
+    const rs = await api.getResourceServer(id)
+    if (!rs) {
+      throw new Error(`resource server not found ${id}`)
+    }
+
+    if (rs.readOnly) {
+      throw new Error('Cannot delete read only resource server')
+    }
+
+    return api.deleteResourceServer(id)
+  }
 
   async function getGrantsByResourceServerId(request) {
     const { page = 1, size = 20 } = request.query

@@ -49,6 +49,16 @@ export const updateClientSchema = {
   }
 }
 
+export const updateClientConnectionSchema = {
+  $id: 'updateClientConnection',
+  type: 'object',
+  properties: {
+    id: { type: 'string' },
+    connectionId: { type: 'string', format: 'uuid' },
+    action: { type: 'string', enum: ['enable', 'disable'] }
+  }
+}
+
 export const queryClientSchema = {
   $id: 'queryClient',
   type: 'object',
