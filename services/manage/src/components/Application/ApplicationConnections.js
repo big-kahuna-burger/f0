@@ -7,21 +7,25 @@ import {
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { useColorScheme } from '@mantine/hooks'
 import { IconDatabase } from '@tabler/icons-react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { enableDisableConnection } from '../../api'
 
 const ApplicationConnections = () => {
-  const colorScheme = useColorScheme()
+  const theme = useMantineTheme()
   const { activeApp, connections = [] } = useLoaderData()
   const rows = connections.map((x) => {
+    const enabled = activeApp.connections.some((c) => c.id === x.id)
     return (
       <Table.Tr key={x.id}>
         <Table.Td>
           <Group>
-            <ThemeIcon variant={colorScheme.colorScheme} size={38}>
+            <ThemeIcon
+              variant={enabled ? 'filled' : 'outline'}
+              size={38}
+              c={theme.colors[enabled ? 'myAltColor' : 'myColor'][5]}
+            >
               <IconDatabase style={{ width: rem(20), height: rem(20) }} />
             </ThemeIcon>
             <Anchor href={`/authn/db/${x.id}`}>{x.name}</Anchor>
@@ -31,7 +35,7 @@ const ApplicationConnections = () => {
           <EnabledCell
             connectionId={x.id}
             clientId={activeApp.client_id}
-            enabled={activeApp.connections.some((c) => c.id === x.id)}
+            enabled={enabled}
           />
         </Table.Td>
       </Table.Tr>
@@ -55,7 +59,10 @@ const ApplicationConnections = () => {
 const EnabledCell = ({ connectionId, clientId, enabled }) => {
   const navigate = useNavigate()
   const { activeApp } = useLoaderData()
-  const readonly = activeApp.connections.find((c) => c.id === x.id)?.readonly
+  const readonly = activeApp.connections.find(
+    (c) => c.id === connectionId
+  )?.readonly
+
   const handleEnableDisable = (e) => {
     enableDisableConnection(clientId, connectionId, !e).then(() => {
       navigate(`/app/${clientId}/connections`)

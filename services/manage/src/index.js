@@ -21,28 +21,28 @@ const colorSchemeManager = localStorageColorSchemeManager({
 })
 
 const myColor = [
-  '#f2f0ff',
-  '#e0dff2',
-  '#bfbdde',
-  '#9b98ca',
-  '#7d79ba',
-  '#6a65b0',
-  '#605bac',
-  '#504c97',
-  '#464388',
-  '#3b3979'
+  '#e7fcf4',
+  '#daf2e8',
+  '#b9e1d2',
+  '#94d0b9',
+  '#75c2a3',
+  '#60b996',
+  '#54b48f',
+  '#439e7c',
+  '#368d6d',
+  '#257b5b'
 ]
 const myAltColor = [
-  '#fdfce5',
-  '#f8f6d3',
-  '#f0ecaa',
-  '#e7e17c',
-  '#e0d957',
-  '#dbd33e',
-  '#d9d02f',
-  '#c0b820',
-  '#aaa316',
-  '#938c03'
+  '#fbf1fb',
+  '#ede3eb',
+  '#d5c6d4',
+  '#bda6bb',
+  '#a88ca6',
+  '#9c7b99',
+  '#967193',
+  '#836080',
+  '#755473',
+  '#684766'
 ]
 
 const theme = createTheme({

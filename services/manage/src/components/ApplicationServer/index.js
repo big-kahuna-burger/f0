@@ -2,7 +2,6 @@ import {
   Accordion,
   ActionIcon,
   Alert,
-  Badge,
   Button,
   Code,
   Divider,
@@ -33,6 +32,7 @@ import { useColorScheme } from '@mantine/hooks'
 import { useEffect, useState } from 'react'
 import {
   createGrant,
+  deleteApi,
   deleteGrantById,
   updateApi,
   updateGrantById,
@@ -452,9 +452,7 @@ function ApiHeader({ api }) {
           </Badge>
         )
       })} */}
-      <Badge size="md" color="blue">
-        {api.identifier}
-      </Badge>
+      <Code>{api.identifier}</Code>
     </Group>
   )
 }
@@ -499,6 +497,12 @@ function Settings({ api }) {
     })
   }
 
+  const handleDelete = () => {
+    deleteApi(api.id).then(() => {
+      navigate('/apis')
+    })
+  }
+  const icon = <IconForbid />
   return (
     <Stack maw={1200}>
       <Divider />
@@ -607,12 +611,25 @@ function Settings({ api }) {
           />
         </Stack>
       </Group>
+      <Divider />
       <Group justify="center">
         <Button size="md" disabled={!dirty} onClick={handleSave}>
           Save
         </Button>
       </Group>
       <Divider />
+      {!api.readOnly && (
+        <Alert variant="light" color="red" title="Danger Zone" icon={icon}>
+          <Button
+            size="sm"
+            onClick={handleDelete}
+            type={'button'}
+            color={'red'}
+          >
+            Delete
+          </Button>
+        </Alert>
+      )}
     </Stack>
   )
 }

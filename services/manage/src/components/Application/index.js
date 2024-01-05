@@ -1,4 +1,4 @@
-import { Badge, Group, Tabs } from '@mantine/core'
+import { Code, Group, Tabs } from '@mantine/core'
 
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { ApplicationConnections } from './ApplicationConnections'
@@ -43,9 +43,7 @@ function AppHeader({ app }) {
       <h3>Name: {app.client_name}</h3>
       <Group justify="space-around">
         <h4>{'Client ID'}</h4>
-        <Badge size="md" color="blue">
-          {app.client_id}
-        </Badge>
+        <Code>{app.client_id}</Code>
       </Group>
     </Group>
   )

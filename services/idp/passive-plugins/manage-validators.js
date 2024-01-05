@@ -6,8 +6,8 @@ export const updateGrantSchema = {
   properties: {
     scopes: {
       type: 'array',
-      items: { type: 'string', minLength: 3, maxLength: 16 },
-      minItems: 1,
+      items: { type: 'string', minLength: 3, maxLength: 40 },
+      minItems: 0,
       maxItems: 128
     },
     identifier: { type: 'string', format: 'uri', minLength: 3, maxLength: 64 }
@@ -119,7 +119,7 @@ export const updateScopesSchema = {
           value: {
             type: 'string',
             minLength: 3,
-            maxLength: 16
+            maxLength: 40
           },
           description: {
             type: 'string',

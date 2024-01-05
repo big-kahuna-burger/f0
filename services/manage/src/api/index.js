@@ -16,7 +16,8 @@ export {
   updateApplication,
   updateGrantById,
   updateResourceServerScopes,
-  enableDisableConnection
+  enableDisableConnection,
+  deleteApi
 }
 
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -24,6 +25,16 @@ const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function deleteApi(id) {
+  const opts = {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() }
+  }
+  const response = await fetch(`${baseUrl}/api/${id}`, opts)
+  const json = await response.json()
+  return json
+}
 
 async function enableDisableConnection(clientId, connectionId, enabled) {
   const opts = {

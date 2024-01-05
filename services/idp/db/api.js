@@ -14,10 +14,11 @@ async function secretFactory() {
   return bytes.toString('base64url')
 }
 
-async function flattenAccount(acc) {
+function flattenAccount(acc) {
   const { Profile, ...account } = acc
-  const { addressId, ...profile } = Profile[0] || {}
-  return { ...profile, ...account }
+  const { Address, addressId, ...p } = Profile[0]
+
+  return { ...account, ...p, ...Address }
 }
 
 const loadAccounts = async ({ skip = 0, take = 20 } = {}) => {
@@ -27,6 +28,11 @@ const loadAccounts = async ({ skip = 0, take = 20 } = {}) => {
         include: {
           Address: true
         }
+      },
+      Identity: {
+        include: {
+          Connection: true
+        }
       }
     },
     skip,
@@ -35,7 +41,7 @@ const loadAccounts = async ({ skip = 0, take = 20 } = {}) => {
       updatedAt: 'asc'
     }
   })
-  const flat = accounts.map(flattenAccount)
+  const flat = accounts.map((acc) => flattenAccount(acc))
   return flat
 }
 
