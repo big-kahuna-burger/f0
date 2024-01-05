@@ -15,7 +15,8 @@ export {
   updateApi,
   updateApplication,
   updateGrantById,
-  updateResourceServerScopes
+  updateResourceServerScopes,
+  enableDisableConnection
 }
 
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -23,6 +24,20 @@ const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function enableDisableConnection(clientId, connectionId, enabled) {
+  const opts = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({ enabled })
+  }
+  const url = `${baseUrl}/app/${clientId}/connection/${connectionId}/${
+    enabled ? 'disable' : 'enable'
+  }`
+  const response = await fetch(url, opts)
+  const json = await response.json()
+  return json
+}
 
 async function getConnections({ page = 1, size = 20, type = 'db' } = {}) {
   const opts = { headers: getHeaders() }

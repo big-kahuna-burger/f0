@@ -1,8 +1,8 @@
 import { Badge, Group, Tabs } from '@mantine/core'
 
 import { useLoaderData, useNavigate } from 'react-router-dom'
+import { ApplicationConnections } from './ApplicationConnections'
 import { Settings } from './Settings'
-
 export function Application() {
   const navigate = useNavigate()
   const { activeApp, tab } = useLoaderData()
@@ -17,6 +17,7 @@ export function Application() {
           <Tabs.Tab value="settings">Settings</Tabs.Tab>
           <Tabs.Tab value="credentials">Credentials</Tabs.Tab>
           <Tabs.Tab value="apis">APIs</Tabs.Tab>
+          <Tabs.Tab value="connections">Connections</Tabs.Tab>
         </Tabs.List>
 
         <AppHeader app={activeApp} />
@@ -28,6 +29,9 @@ export function Application() {
         </Tabs.Panel>
         <Tabs.Panel value="credentials">credentials</Tabs.Panel>
         <Tabs.Panel value="apis">apis</Tabs.Panel>
+        <Tabs.Panel value="connections">
+          <ApplicationConnections />
+        </Tabs.Panel>
       </Tabs>
     </Group>
   )

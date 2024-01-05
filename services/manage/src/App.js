@@ -70,6 +70,14 @@ const routes = [
         element: <Application />,
         loader: async ({ params }) => {
           const activeApp = await getApplication(params.id)
+          if (params.tab === 'connections') {
+            const connections = await getConnections({
+              page: 0,
+              size: 20,
+              type: 'db'
+            })
+            return { activeApp, tab: params.tab, connections }
+          }
           return { activeApp, tab: params.tab }
         }
       },
