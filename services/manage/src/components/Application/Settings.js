@@ -39,7 +39,6 @@ const isValidUrlArray = (value) => {
 
 export const Settings = ({ app: activeApp }) => {
   const navigate = useNavigate()
-  const theme = useMantineTheme()
   const { metadata } = useLoaderData()
   const supportedGrantTypes = metadata?.grant_types_supported || []
   const [selectedGrantTypes, setSelectedGrantTypes] = useState(
@@ -47,8 +46,6 @@ export const Settings = ({ app: activeApp }) => {
   )
   const [grantTypesDirty, setGrantTypesDirty] = useState(false)
 
-  const [opened, { toggle, close }] = useDisclosure(false)
-  const [apiResponse, setApiResponse] = useState()
   const form = useForm({
     initialValues: {
       initiate_login_uri: '',
@@ -86,11 +83,7 @@ export const Settings = ({ app: activeApp }) => {
       return
     }
     updateApplication(activeApp.client_id, form.values).then((res) => {
-      setApiResponse(JSON.stringify(res, null, 2))
-      toggle()
-      setTimeout(() => {
-        close()
-      }, 5000)
+      navigate(`/app/${activeApp.client_id}/settings`)
     })
   }
   const handleGrantTypeToggle = (grantType) => {
@@ -353,23 +346,6 @@ export const Settings = ({ app: activeApp }) => {
           <TextInput label="todo" />
         </Stack>
       </Group> */}
-      <Dialog
-        className="dialog"
-        position={{ top: 50, right: 50 }}
-        opened={opened}
-        size="xl"
-        radius="md"
-        c={theme.colors.myColor[9]}
-        bg={theme.colors.gray[5]}
-      >
-        <Text size="lg" mb="xs" fw={800}>
-          Saved successfully.
-        </Text>
-        <aside>
-          <CopyButton value={apiResponse} />
-          <Code block>{apiResponse}</Code>
-        </aside>
-      </Dialog>
     </Stack>
   )
 }
