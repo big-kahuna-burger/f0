@@ -1060,7 +1060,16 @@ export const swaggerOpts = {
                         updated_at: '2024-01-02T18:57:03.677Z',
                         website: 'http://example.com',
                         zoneinfo: 'Europe/Berlin',
-                        address_id: '55b469e9-c866-4f7f-b748-d87387ee61d7'
+                        address: {
+                          id: '55b469e9-c866-4f7f-b748-d87387ee61d7',
+                          formatted: '000',
+                          streetAddress: '000',
+                          locality: '000',
+                          region: '000',
+                          postalCode: '000',
+                          country: '000',
+                          updatedAt: '2024-01-02T18:57:03.697Z'
+                        }
                       }
                     ]
                   }
@@ -1095,7 +1104,7 @@ export const swaggerOpts = {
               content: {
                 'application/json': {
                   schema: {
-                    type: 'object',
+                    ref: '#/components/schemas/User',
                     example: {
                       id: 'f0.483o6403317cgh0put1i25oykf',
                       email: 'arandjel@idp.dev',
@@ -1116,7 +1125,16 @@ export const swaggerOpts = {
                       updated_at: '2024-01-02T18:57:03.677Z',
                       website: 'http://example.com',
                       zoneinfo: 'Europe/Berlin',
-                      address_id: '55b469e9-c866-4f7f-b748-d87387ee61d7'
+                      address: {
+                        id: '55b469e9-c866-4f7f-b748-d87387ee61d7',
+                        formatted: '000',
+                        streetAddress: '000',
+                        locality: '000',
+                        region: '000',
+                        postalCode: '000',
+                        country: '000',
+                        updatedAt: '2024-01-02T18:57:03.697Z'
+                      }
                     }
                   }
                 }
@@ -1132,7 +1150,7 @@ export const swaggerOpts = {
         }
       }
     },
-    security: ['oAuth2'],
+    security: ['jwt'],
     components: {
       schemas: {
         API: {
@@ -1321,6 +1339,104 @@ export const swaggerOpts = {
             }
           }
         },
+        User: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string'
+            },
+            email: {
+              type: 'string',
+              format: 'email'
+            },
+            birthdate: {
+              type: 'string',
+              format: 'date-time'
+            },
+            email_verified: {
+              type: 'boolean'
+            },
+            family_name: {
+              type: 'string'
+            },
+            gender: {
+              type: 'string'
+            },
+            given_name: {
+              type: 'string'
+            },
+            locale: {
+              type: 'string'
+            },
+            middle_name: {
+              type: 'string'
+            },
+            name: {
+              type: 'string'
+            },
+            nickname: {
+              type: 'string'
+            },
+            phone_number: {
+              type: 'string'
+            },
+            phone_number_verified: {
+              type: 'boolean'
+            },
+            picture: {
+              type: 'string'
+            },
+            preferred_username: {
+              type: 'string'
+            },
+            profile: {
+              type: 'string'
+            },
+            updated_at: {
+              type: 'string',
+              format: 'date-time'
+            },
+            website: {
+              type: 'string'
+            },
+            zoneinfo: {
+              type: 'string'
+            },
+            address: {
+              $ref: '#/components/schemas/Address'
+            }
+          }
+        },
+        Address: {
+          type: 'object',
+          properties: {
+            id: {
+              type: 'string'
+            },
+            formatted: {
+              type: 'string'
+            },
+            streetAddress: {
+              type: 'string'
+            },
+            locality: {
+              type: 'string'
+            },
+            region: {
+              type: 'string'
+            },
+            postalCode: {
+              type: 'string'
+            },
+            country: {
+              type: 'string'
+            },
+            updatedAt: {
+              type: 'string',
+              format: 'date-time'
+            }
+          }
+        },
         Error: {
           type: 'object',
           properties: {
@@ -1378,21 +1494,9 @@ export const swaggerOpts = {
         }
       },
       securitySchemes: {
-        oAuth2: {
-          type: 'oauth2',
-          flows: {
-            authorizationCode: {
-              // clientId: process.env.DASHBOARD_CLIENT_ID,
-              authorizationUrl: `${ISSUER}/auth`,
-              tokenUrl: `${ISSUER}/token`,
-              scopes: {
-                openid: 'openid',
-                profile: 'profile',
-                email: 'email',
-                offline_access: 'offline_access'
-              }
-            }
-          }
+        jwt: {
+          type: 'http',
+          scheme: 'bearer'
         }
       }
     }

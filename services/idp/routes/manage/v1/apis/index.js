@@ -7,16 +7,16 @@ import {
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
-  const fAuth = { onRequest: fastify.authenticate }
   fastify.post(
     '/',
-    { onRequest: fAuth.onRequest, schema: { body: apiCreateSchema } },
+    { onRequest: fastify.authenticate, schema: { body: apiCreateSchema } },
     createResourceServer
   )
-  fastify.get('/:id', fAuth, getResourceServer)
+  fastify.get('/:id', { onRequest: fastify.authenticate }, getResourceServer)
   fastify.get(
     '/',
     {
+      onRequest: fastify.authenticate,
       schema: { query: queryApisSchema }
     },
     getAllResourceServers

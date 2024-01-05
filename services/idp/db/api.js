@@ -14,22 +14,28 @@ async function secretFactory() {
   return bytes.toString('base64url')
 }
 
-const loadAccounts = async ({ skip = 0, take = 20, cursor } = {}) => {
+async function flattenAccount(acc) {
+  const { Profile, ...account } = acc
+  const { addressId, ...profile } = Profile[0] || {}
+  return { ...profile, ...account }
+}
+
+const loadAccounts = async ({ skip = 0, take = 20 } = {}) => {
   const accounts = await prisma.account.findMany({
     include: {
-      Profile: true
+      Profile: {
+        include: {
+          Address: true
+        }
+      }
     },
     skip,
     take,
-    cursor,
     orderBy: {
       updatedAt: 'asc'
     }
   })
-  const flat = accounts.map((acc) => {
-    const { Profile, ...account } = acc
-    return { ...Profile[0], ...account }
-  })
+  const flat = accounts.map(flattenAccount)
   return flat
 }
 
@@ -191,8 +197,17 @@ const updateAccount = async (id, data) => {
 }
 
 const getAccount = async (id) => {
-  const account = await prisma.account.findFirst({ where: { id } })
-  return account
+  const account = await prisma.account.findFirst({
+    where: { id },
+    include: {
+      Profile: {
+        include: {
+          Address: true
+        }
+      }
+    }
+  })
+  return flattenAccount(account)
 }
 
 const createGrant = async ({ clientId, scope, identifier }) => {
