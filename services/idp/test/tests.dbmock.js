@@ -38,7 +38,8 @@ const clientMock = {
     response_types: ['code'],
     post_logout_redirect_uris: [],
     token_endpoint_auth_method: 'none',
-    id_token_signed_response_alg: 'RS256'
+    id_token_signed_response_alg: 'RS256',
+    logo_uri: 'https://somerp.com/logo.png'
   }
 }
 const debug =
@@ -72,12 +73,21 @@ export const setupPrisma = async (prisma) => {
   )
   prisma.resourceServer.create.mockImplementation(resourceServerCreate)
   prisma.resourceServer.findFirst.mockImplementation(resourceServerById)
+  prisma.resourceServer.update.mockImplementation(prismaResourceServerUpdate)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function prismaResourceServerUpdate({ where: { id }, data }) {
+  resourceServersDB[id] = {
+    ...resourceServersDB[id],
+    ...data
+  }
+  return resourceServersDB[id]
+}
 
 function resourceServerById({ where: { id } }) {
   return resourceServersDB[id]

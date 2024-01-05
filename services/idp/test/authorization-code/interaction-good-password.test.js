@@ -102,6 +102,12 @@ describe('interaction router', () => {
       }
     )
     expect(consentPage.statusCode).toEqual(200)
+    expect(
+      consentPage.headers['content-security-policy'].includes(
+        "img-src 'self' data: https://somerp.com"
+      )
+    ).toBe(true, 'csp must contain client logo url origin')
+
     const containsTitle = consentPage.body.includes('<title>Authorize</title>')
     expect(containsTitle).toBe(true)
     const consentConfirmed = await got.post(

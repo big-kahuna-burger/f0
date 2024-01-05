@@ -1,10 +1,10 @@
-import * as api from '../../../../db/api.js'
 import {
   updateApiSchema,
   updateScopesSchema
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.put(
     '/:id/scopes',
     { onRequest: fastify.authenticate, schema: { body: updateScopesSchema } },

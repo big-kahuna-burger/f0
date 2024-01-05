@@ -109,5 +109,32 @@ describe('management apps api', () => {
         'should error on duplicate identifier'
       )
     }
+
+    const updateName = await got(
+      `http://localhost:${port}/manage/v1/api/${created.id}`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        },
+        json: {
+          name: 'heyho',
+          ttl: 12345,
+          ttlBrowser: 1234,
+          allowSkipConsent: false
+        }
+      }
+    )
+    expect(updateName.statusCode).toBe(200)
+    expect(JSON.parse(updateName.body)).toEqual({
+      id: created.id,
+      name: 'heyho',
+      identifier: 'https://foo.baz',
+      scopes: [],
+      signingAlg: 'RS256',
+      ttl: 12345,
+      ttlBrowser: 1234,
+      allowSkipConsent: false
+    })
   })
 })
