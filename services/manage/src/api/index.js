@@ -155,7 +155,8 @@ async function updateApplication(
     redirect_uris,
     post_logout_redirect_uris,
     'urn:f0:type': type,
-    logo_uri
+    logo_uri,
+    grant_types
   }
 ) {
   console.log(
@@ -164,7 +165,8 @@ async function updateApplication(
     redirect_uris,
     post_logout_redirect_uris,
     logo_uri,
-    type
+    type,
+    grant_types
   )
 
   const body = {
@@ -174,15 +176,16 @@ async function updateApplication(
       : undefined,
     redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
       .map((x) => x.trim())
-      .filter((x) => Boolean(x.length)),
+      .filter((x) => Boolean(x?.length)),
     post_logout_redirect_uris: (post_logout_redirect_uris
       ? post_logout_redirect_uris.split(',')
       : []
     )
       .map((x) => x.trim())
-      .filter((x) => Boolean(x.length)),
+      .filter((x) => Boolean(x?.length)),
     'urn:f0:type': type,
-    logo_uri: logo_uri.length ? logo_uri : undefined
+    logo_uri: logo_uri?.length ? logo_uri : undefined,
+    grant_types: grant_types?.length ? grant_types : undefined
   }
 
   const opts = {

@@ -80,13 +80,15 @@ export default async function (fastify, opts) {
       client_name: clientName,
       initiate_login_uri: initiateLoginUri,
       redirect_uris: redirectUris,
-      post_logout_redirect_uris: postLogoutRedirectUris
+      post_logout_redirect_uris: postLogoutRedirectUris,
+      grant_types: grantTypes
     } = body
 
     return api.updateClient(id, {
       type,
       logoUri,
       clientName,
+      grantTypes,
       initiateLoginUri,
       redirectUris: [...new Set(redirectUris)],
       postLogoutRedirectUris: [...new Set(postLogoutRedirectUris)]

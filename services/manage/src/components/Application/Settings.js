@@ -39,18 +39,24 @@ const isValidUrlArray = (value) => {
 export const Settings = ({ app: activeApp }) => {
   const theme = useMantineTheme()
   const { metadata } = useLoaderData()
-  const supportedGrantTypes = metadata.grant_types_supported
+  const supportedGrantTypes = metadata?.grant_types_supported || []
+  const [selectedGrantTypes, setSelectedGrantTypes] = useState(
+    activeApp.grant_types
+  )
+  const [grantTypesDirty, setGrantTypesDirty] = useState(false)
+
   const [opened, { toggle, close }] = useDisclosure(false)
   const [apiResponse, setApiResponse] = useState()
   const form = useForm({
     initialValues: {
       initiate_login_uri: '',
       logo_uri: '',
-      ...activeApp
+      ...activeApp,
+      client_name: ''
     },
     validate: {
       client_name: (value) =>
-        value.trim().length > 3 ? null : 'Name is required',
+        value?.trim().length > 3 ? null : 'Name is required',
       'urn:f0:type': (value) =>
         ['native', 'spa', 'web', 'm2m'].includes(value) ? null : 'Invalid type',
       initiate_login_uri: (value) =>
@@ -82,8 +88,22 @@ export const Settings = ({ app: activeApp }) => {
       toggle()
       setTimeout(() => {
         close()
-      }, 20000)
+      }, 5000)
     })
+  }
+  const handleGrantTypeToggle = (grantType) => {
+    if (selectedGrantTypes.includes(grantType)) {
+      setSelectedGrantTypes(selectedGrantTypes.filter((i) => i !== grantType))
+    } else {
+      setSelectedGrantTypes([...selectedGrantTypes, grantType])
+    }
+    setGrantTypesDirty(true)
+  }
+
+  const saveGrantTypes = () => {
+    updateApplication(activeApp.client_id, {
+      grant_types: selectedGrantTypes
+    }).finally(() => setGrantTypesDirty(false))
   }
 
   return (
@@ -258,20 +278,34 @@ export const Settings = ({ app: activeApp }) => {
       <Divider />
       <Group align="center" justify="center">
         <Text>Advanced Settings</Text>
-        <Alert>
+        <Alert title="Grant Types Enabled">
           {supportedGrantTypes.map((i) => {
-            const enabled = activeApp.grant_types.includes(i)
+            const enabled = selectedGrantTypes.includes(i)
+            const disabled =
+              activeApp.token_endpoint_auth_method === 'none' &&
+              i === 'client_credentials'
             return (
               <Button
+                disabled={disabled}
                 variant={enabled ? 'filled' : 'outline'}
                 size="compact-xs"
                 key={i}
+                onClick={() => handleGrantTypeToggle(i)}
                 m="xs"
               >
                 {i}
               </Button>
             )
           })}
+          <Divider />
+          <Button
+            disabled={!grantTypesDirty}
+            m="xs"
+            type="submit"
+            onClick={() => saveGrantTypes()}
+          >
+            Save
+          </Button>
         </Alert>
       </Group>
       {/* <Divider />

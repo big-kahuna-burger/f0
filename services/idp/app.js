@@ -8,6 +8,7 @@ import desm from 'desm'
 import ejs from 'ejs'
 import CSP from './csp.js'
 import joseVerify from './passive-plugins/jwt-jose.js'
+import { grantType } from './passive-plugins/manage-validators.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
 
@@ -63,7 +64,7 @@ export default async function runme(fastify, opts) {
     dir: path.join(__dirname, 'plugins'),
     options: Object.assign({}, opts)
   })
-
+  fastify.addSchema(grantType)
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
     options: Object.assign({}, { maxDepth: 3 }, opts)

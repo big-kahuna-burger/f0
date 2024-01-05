@@ -64,6 +64,7 @@ const updateClient = async (
   {
     clientName,
     type,
+    grantTypes,
     redirectUris = [],
     postLogoutRedirectUris = [],
     initiateLoginUri,
@@ -78,21 +79,22 @@ const updateClient = async (
   if (foundClient.readonly) {
     throw new Error(`OIDC client is read only ${id}`)
   }
-
+  const payload = {
+    ...foundClient.payload,
+    client_name: clientName,
+    redirect_uris: redirectUris,
+    post_logout_redirect_uris: postLogoutRedirectUris,
+    initiate_login_uri: initiateLoginUri,
+    logo_uri: logoUri,
+    [F0_TYPE_PROP]: type
+    // [CORS_PROP]: [],
+  }
+  if (grantTypes) {
+    payload.grant_types = grantTypes
+  }
   const client = await prisma.oidcClient.update({
     where: { id },
-    data: {
-      payload: {
-        ...foundClient.payload,
-        client_name: clientName,
-        redirect_uris: redirectUris,
-        post_logout_redirect_uris: postLogoutRedirectUris,
-        initiate_login_uri: initiateLoginUri,
-        logo_uri: logoUri,
-        [F0_TYPE_PROP]: type
-        // [CORS_PROP]: [],
-      }
-    }
+    data: { payload }
   })
   return client
 }
