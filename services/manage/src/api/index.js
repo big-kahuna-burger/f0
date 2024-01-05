@@ -17,7 +17,8 @@ export {
   updateGrantById,
   updateResourceServerScopes,
   enableDisableConnection,
-  deleteApi
+  deleteApi,
+  getOidcMetadata
 }
 
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -25,6 +26,13 @@ const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 const usersUrl = `${baseUrl}/users`
 const resourceServersUrl = `${baseUrl}/apis`
 const applicationsUrl = `${baseUrl}/apps`
+
+async function getOidcMetadata() {
+  const wellKnown = `${process.env.REACT_APP_ISSUER}/.well-known/openid-configuration`
+  const response = await fetch(wellKnown)
+  const json = await response.json()
+  return json
+}
 
 async function deleteApi(id) {
   const opts = {

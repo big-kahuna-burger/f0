@@ -7,6 +7,7 @@ import {
   getApplicationGrants,
   getApplications,
   getConnections,
+  getOidcMetadata,
   getResourceServer,
   getResourceServers
 } from './api'
@@ -77,6 +78,10 @@ const routes = [
               type: 'db'
             })
             return { activeApp, tab: params.tab, connections }
+          }
+          if (params.tab === 'settings') {
+            const metadata = await getOidcMetadata()
+            return { activeApp, tab: params.tab, metadata }
           }
           return { activeApp, tab: params.tab }
         }

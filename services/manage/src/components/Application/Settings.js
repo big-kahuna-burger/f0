@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Code,
@@ -17,6 +18,7 @@ import { useForm } from '@mantine/form'
 import { useDisclosure } from '@mantine/hooks'
 import { IconEyeCheck, IconEyeOff } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useLoaderData } from 'react-router-dom'
 import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
 import { ArticleCard } from './ApplicationLogo'
@@ -36,6 +38,8 @@ const isValidUrlArray = (value) => {
 
 export const Settings = ({ app: activeApp }) => {
   const theme = useMantineTheme()
+  const { metadata } = useLoaderData()
+  const supportedGrantTypes = metadata.grant_types_supported
   const [opened, { toggle, close }] = useDisclosure(false)
   const [apiResponse, setApiResponse] = useState()
   const form = useForm({
@@ -250,6 +254,25 @@ export const Settings = ({ app: activeApp }) => {
         <Button maw={300} onClick={() => handleSubmit()} justify="center">
           Save
         </Button>
+      </Group>
+      <Divider />
+      <Group align="center" justify="center">
+        <Text>Advanced Settings</Text>
+        <Alert>
+          {supportedGrantTypes.map((i) => {
+            const enabled = activeApp.grant_types.includes(i)
+            return (
+              <Button
+                variant={enabled ? 'filled' : 'outline'}
+                size="compact-xs"
+                key={i}
+                m="xs"
+              >
+                {i}
+              </Button>
+            )
+          })}
+        </Alert>
       </Group>
       {/* <Divider />
       <Group grow align="center" justify="space-around">
