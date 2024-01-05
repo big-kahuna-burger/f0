@@ -23,10 +23,10 @@ describe('management apps api', () => {
     try {
       const jwt = await sign({ aud: 'bad' })
       await got(`http://localhost:${port}/manage/v1/apis`, {
-      headers: {
-        Authorization: `Bearer ${jwt}`
-      }
-    })
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
+      })
     } catch (error) {
       expect(error.response.statusCode).toBe(401)
       expect(JSON.parse(error.response.body)).toEqual({
@@ -34,9 +34,24 @@ describe('management apps api', () => {
       })
     }
   })
-  
 
-  it('should be able to list apis', async () => {
+  it('should 404 on missing id', async () => {
+    const jwt = await sign()
+    try {
+      await got(`http://localhost:${port}/manage/v1/apis/missing_id`, {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
+      })
+    } catch ({ response }) {
+      expect(response.statusCode).toBe(404)
+      expect(JSON.parse(response.body)).toEqual({
+        error: 'resource server not found'
+      })
+    }
+  })
+
+  it('should be able to list/create/getById on /apis', async () => {
     const jwt = await sign()
     const response = await got(`http://localhost:${port}/manage/v1/apis`, {
       headers: {
@@ -45,5 +60,54 @@ describe('management apps api', () => {
     })
     expect(response.statusCode).toBe(200)
     expect(JSON.parse(response.body)).toEqual([])
+
+    const createFn = async () => {
+      return await got(`http://localhost:${port}/manage/v1/apis`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        },
+        json: {
+          name: 'foo',
+          identifier: 'https://foo.baz',
+          signingAlg: 'RS256'
+        }
+      })
+    }
+    const createResponse = await createFn()
+    expect(createResponse.statusCode).toBe(200)
+    const created = JSON.parse(createResponse.body)
+
+    expect(created).toEqual({
+      id: expect.any(String),
+      name: 'foo',
+      identifier: 'https://foo.baz',
+      scopes: [],
+      signingAlg: 'RS256'
+    })
+
+    const getResp = await got(
+      `http://localhost:${port}/manage/v1/apis/${created.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${jwt}`
+        }
+      }
+    )
+    expect(getResp.statusCode).toBe(200)
+    expect(JSON.parse(getResp.body)).toEqual(created)
+
+    try {
+      await createFn()
+    } catch (error) {
+      expect(error.response.statusCode).toBe(409)
+      expect(JSON.parse(error.response.body)).toEqual(
+        {
+          error:
+            'resource indicator "https://foo.baz" is already registered with oidc server'
+        },
+        'should error on duplicate identifier'
+      )
+    }
   })
 })

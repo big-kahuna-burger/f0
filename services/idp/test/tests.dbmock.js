@@ -1,5 +1,6 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { Prisma } from '@prisma/client'
 import { readFile } from 'fs/promises'
 import { nanoid } from 'nanoid'
 import Account from '../oidc/support/account.js'
@@ -66,13 +67,37 @@ export const setupPrisma = async (prisma) => {
   prisma.profile.findFirst.mockImplementation(profileFindFirst)
   prisma.profile.create.mockImplementation(profileCreate)
   prisma.resourceServer.findMany.mockImplementation(resourceServersFindMany)
-  prisma.resourceServer.count.mockImplementation(() => Object.values(resourceServersDB).length)
+  prisma.resourceServer.count.mockImplementation(
+    () => Object.values(resourceServersDB).length
+  )
+  prisma.resourceServer.create.mockImplementation(resourceServerCreate)
+  prisma.resourceServer.findFirst.mockImplementation(resourceServerById)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function resourceServerById({ where: { id } }) {
+  return resourceServersDB[id]
+}
+
+function resourceServerCreate({ data }) {
+  if (
+    Object.values(resourceServersDB).find(
+      (rs) => rs.identifier === data.identifier
+    )
+  ) {
+    throw new Prisma.PrismaClientKnownRequestError('duplicate identifier', {
+      code: 'P2002'
+    })
+  }
+  data.id = nanoid()
+  data.scopes = data.scopes || []
+  resourceServersDB[data.id] = data
+  return data
+}
 
 function resourceServersFindMany() {
   return Object.values(resourceServersDB)
