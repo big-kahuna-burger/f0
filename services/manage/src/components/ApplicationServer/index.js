@@ -136,7 +136,8 @@ function ScopeListEditable({ api }) {
       {!readonly && (
         <Table.Td>
           <ActionIcon
-            variant="filled"
+            color="red"
+            variant="outline"
             aria-label="Delete Scope"
             onClick={(e) => handleScopeDelete(scope)}
           >
