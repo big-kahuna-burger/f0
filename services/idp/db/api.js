@@ -65,8 +65,8 @@ const updateClient = async (
     clientName,
     type,
     grantTypes,
-    redirectUris = [],
-    postLogoutRedirectUris = [],
+    redirectUris,
+    postLogoutRedirectUris,
     initiateLoginUri,
     logoUri
   }
@@ -80,14 +80,25 @@ const updateClient = async (
     throw new Error(`OIDC client is read only ${id}`)
   }
   const payload = {
-    ...foundClient.payload,
-    client_name: clientName,
-    redirect_uris: redirectUris,
-    post_logout_redirect_uris: postLogoutRedirectUris,
-    initiate_login_uri: initiateLoginUri,
-    logo_uri: logoUri,
-    [F0_TYPE_PROP]: type
-    // [CORS_PROP]: [],
+    ...foundClient.payload
+  }
+  if (clientName) {
+    payload.client_name = clientName
+  }
+  if (type) {
+    payload[F0_TYPE_PROP] = type
+  }
+  if (redirectUris) {
+    payload.redirect_uris = [...new Set(redirectUris)]
+  }
+  if (postLogoutRedirectUris) {
+    payload.post_logout_redirect_uris = [...new Set(postLogoutRedirectUris)]
+  }
+  if (initiateLoginUri) {
+    payload.initiate_login_uri = initiateLoginUri
+  }
+  if (logoUri) {
+    payload.logo_uri = logoUri
   }
   if (grantTypes) {
     payload.grant_types = grantTypes

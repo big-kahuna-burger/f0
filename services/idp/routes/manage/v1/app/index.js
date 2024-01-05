@@ -90,8 +90,8 @@ export default async function (fastify, opts) {
       clientName,
       grantTypes,
       initiateLoginUri,
-      redirectUris: [...new Set(redirectUris)],
-      postLogoutRedirectUris: [...new Set(postLogoutRedirectUris)]
+      redirectUris: redirectUris,
+      postLogoutRedirectUris: postLogoutRedirectUris
     })
   }
 }

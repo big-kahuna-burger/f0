@@ -19,6 +19,7 @@ import { useDisclosure } from '@mantine/hooks'
 import { IconEyeCheck, IconEyeOff } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
 import { ArticleCard } from './ApplicationLogo'
@@ -37,6 +38,7 @@ const isValidUrlArray = (value) => {
 }
 
 export const Settings = ({ app: activeApp }) => {
+  const navigate = useNavigate()
   const theme = useMantineTheme()
   const { metadata } = useLoaderData()
   const supportedGrantTypes = metadata?.grant_types_supported || []
@@ -51,8 +53,8 @@ export const Settings = ({ app: activeApp }) => {
     initialValues: {
       initiate_login_uri: '',
       logo_uri: '',
-      ...activeApp,
-      client_name: ''
+      client_name: '',
+      ...activeApp
     },
     validate: {
       client_name: (value) =>
@@ -103,7 +105,9 @@ export const Settings = ({ app: activeApp }) => {
   const saveGrantTypes = () => {
     updateApplication(activeApp.client_id, {
       grant_types: selectedGrantTypes
-    }).finally(() => setGrantTypesDirty(false))
+    }).finally(() => {
+      navigate(`/app/${activeApp.client_id}/settings`)
+    })
   }
 
   return (

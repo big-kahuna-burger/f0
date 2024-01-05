@@ -159,33 +159,33 @@ async function updateApplication(
     grant_types
   }
 ) {
-  console.log(
-    client_name,
-    initiate_login_uri,
-    redirect_uris,
-    post_logout_redirect_uris,
-    logo_uri,
-    type,
-    grant_types
-  )
-
-  const body = {
-    client_name,
-    initiate_login_uri: initiate_login_uri
-      ? initiate_login_uri.trim()
-      : undefined,
-    redirect_uris: (redirect_uris ? redirect_uris.split(',') : [])
+  const body = {}
+  if (redirect_uris) {
+    body.redirect_uris = redirect_uris
+      .split(',')
       .map((x) => x.trim())
-      .filter((x) => Boolean(x?.length)),
-    post_logout_redirect_uris: (post_logout_redirect_uris
-      ? post_logout_redirect_uris.split(',')
-      : []
-    )
+      .filter((x) => Boolean(x.length))
+  }
+  if (initiate_login_uri) {
+    body.initiate_login_uri = initiate_login_uri.trim()
+  }
+  if (post_logout_redirect_uris) {
+    body.post_logout_redirect_uris = post_logout_redirect_uris
+      .split(',')
       .map((x) => x.trim())
-      .filter((x) => Boolean(x?.length)),
-    'urn:f0:type': type,
-    logo_uri: logo_uri?.length ? logo_uri : undefined,
-    grant_types: grant_types?.length ? grant_types : undefined
+      .filter((x) => Boolean(x.length))
+  }
+  if (client_name) {
+    body.client_name = client_name
+  }
+  if (grant_types?.length) {
+    body.grant_types = grant_types
+  }
+  if (logo_uri?.length) {
+    body.logo_uri = logo_uri
+  }
+  if (type) {
+    body['urn:f0:type'] = type
   }
 
   const opts = {
