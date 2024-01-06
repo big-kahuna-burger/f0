@@ -13,7 +13,6 @@ import { useLoaderData } from 'react-router-dom'
 export function Connections() {
   const colorScheme = useColorScheme()
   const { connections } = useLoaderData()
-  console.log({ connections })
   const rows = connections.map((conn) => (
     <Table.Tr key={conn.name}>
       <Table.Td>

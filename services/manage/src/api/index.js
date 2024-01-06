@@ -108,25 +108,21 @@ async function getResourceServers() {
 }
 
 async function getResourceServer(id) {
-  try {
-    const opts = { headers: getHeaders() }
-    const resourceServerResponse = await fetch(
-      `${resourceServersUrl}/${id}`,
-      opts
-    )
-    const json = await resourceServerResponse.json()
-    if (json.updatedAt) {
-      return {
-        ...json,
-        formattedUpdatedAt: formatDistanceToNow(parseJSON(json.updatedAt), {
-          addSuffix: true
-        })
-      }
+  const opts = { headers: getHeaders() }
+  const resourceServerResponse = await fetch(
+    `${resourceServersUrl}/${id}`,
+    opts
+  )
+  const json = await resourceServerResponse.json()
+  if (json.updatedAt) {
+    return {
+      ...json,
+      formattedUpdatedAt: formatDistanceToNow(parseJSON(json.updatedAt), {
+        addSuffix: true
+      })
     }
-    return json
-  } catch (error) {
-    console.log(error)
   }
+  return json
 }
 
 async function getApplicationGrants(id) {

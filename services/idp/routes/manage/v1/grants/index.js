@@ -1,10 +1,10 @@
-import * as api from '../../../../db/api.js'
 import {
   createGrantSchema,
   updateGrantSchema
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.put(
     '/:id',
     { onRequest: fastify.authenticate, schema: { body: updateGrantSchema } },
@@ -38,11 +38,15 @@ export default async function (fastify, opts) {
 
   async function createGrant(request, reply) {
     const { clientId, identifier, scope = '' } = request.body || {}
-    const grantCreated = await api.createGrant({
+    const [err, grantCreated] = await api.createGrant({
       clientId,
       identifier,
       scope
     })
+    if (err) {
+      reply.code(err.code || 500).send({ error: err.message })
+      return
+    }
     return grantCreated
   }
 }

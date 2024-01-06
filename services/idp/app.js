@@ -7,6 +7,7 @@ import View from '@fastify/view'
 import desm from 'desm'
 import ejs from 'ejs'
 import CSP from './csp.js'
+import * as dbClientForManage from './db/api.js'
 import joseVerify from './passive-plugins/jwt-jose.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
@@ -66,6 +67,12 @@ export default async function runme(fastify, opts) {
 
   fastify.register(AutoLoad, {
     dir: path.join(__dirname, 'routes'),
-    options: Object.assign({}, { maxDepth: 3 }, opts)
+    options: Object.assign(
+      {
+        dbClientForManage
+      },
+      { maxDepth: 3 },
+      opts
+    )
   })
 }

@@ -94,7 +94,6 @@ export default {
     introspection: {
       enabled: true,
       allowedPolicy: async (ctx, client, token) => {
-        console.log('ALLOWED', client, token, 'END ALLOWED')
         if (
           client.clientAuthMethod === 'none' &&
           token.clientId !== ctx.oidc.client.clientId
@@ -146,55 +145,51 @@ export default {
             }
           }
         }
-        try {
-          console.log('probing client grants...')
-          const grant = await dbClient.oidcModel.findFirst({
-            where: {
-              AND: [
-                {
-                  type: 13
-                },
-                {
-                  payload: {
-                    path: ['clientId'],
-                    equals: client.clientId
-                  }
-                },
-                {
-                  payload: {
-                    path: ['resources', resourceIndicator],
-                    not: Prisma.DbNull
-                  }
-                },
-                {
-                  payload: {
-                    path: ['exp'],
-                    equals: 0
-                  }
+
+        const grant = await dbClient.oidcModel.findFirst({
+          where: {
+            AND: [
+              {
+                type: 13
+              },
+              {
+                payload: {
+                  path: ['clientId'],
+                  equals: client.clientId
                 }
-              ]
-            }
-          })
-          console.log({ grant, ci: client.clientId, resourceIndicator })
-          if (grant) {
-            return {
-              scope: grant.payload.resources[resourceIndicator],
-              audience: resourceIndicator,
-              accessTokenTTL: rs.ttl,
-              accessTokenFormat: 'jwt',
-              jwt: {
-                sign:
-                  rs.signingAlg === 'HS256'
-                    ? {
-                        alg: 'HS256',
-                        key: rs.signingSecret
-                      }
-                    : { alg: 'RS256' }
+              },
+              {
+                payload: {
+                  path: ['resources', resourceIndicator],
+                  not: Prisma.DbNull
+                }
+              },
+              {
+                payload: {
+                  path: ['exp'],
+                  equals: 0
+                }
               }
+            ]
+          }
+        })
+
+        if (grant) {
+          return {
+            scope: grant.payload.resources[resourceIndicator],
+            audience: resourceIndicator,
+            accessTokenTTL: rs.ttl,
+            accessTokenFormat: 'jwt',
+            jwt: {
+              sign:
+                rs.signingAlg === 'HS256'
+                  ? {
+                      alg: 'HS256',
+                      key: rs.signingSecret
+                    }
+                  : { alg: 'RS256' }
             }
           }
-        } catch (error) {
-          console.log(error)
         }
 
         throw new errors.InvalidTarget(

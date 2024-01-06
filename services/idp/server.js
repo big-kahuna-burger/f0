@@ -8,7 +8,6 @@ import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 
-import * as dbClientForManage from './db/api.js'
 import { configureOidc } from './oidc/index.js'
 import { MANAGEMENT } from './resource-servers/management.js'
 import { swaggerOpts } from './swagger-opts.js'
@@ -66,8 +65,7 @@ async function makeFastify(config, pretty) {
     Account,
     AccountErrors,
     localKeySet,
-    MANAGEMENT_API: MANAGEMENT,
-    dbClientForManage
+    MANAGEMENT_API: MANAGEMENT
   })
 
   // delay is the number of milliseconds for the graceful close to finish

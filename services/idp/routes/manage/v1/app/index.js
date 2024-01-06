@@ -1,4 +1,3 @@
-import * as api from '../../../../db/api.js'
 import { clientXMap } from '../../../../db/mappers/client.js'
 import { F0_TYPE_PROP } from '../../../../oidc/client-based-cors/index.js'
 import {
@@ -7,6 +6,7 @@ import {
 } from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.get('/:id', { onRequest: fastify.authenticate }, getClient)
   fastify.put(
     '/:id',
@@ -84,7 +84,7 @@ export default async function (fastify, opts) {
       grant_types: grantTypes
     } = body
 
-    return api.updateClient(id, {
+    const [err, result] = await api.updateClient(id, {
       type,
       logoUri,
       clientName,
@@ -93,5 +93,10 @@ export default async function (fastify, opts) {
       redirectUris: redirectUris,
       postLogoutRedirectUris: postLogoutRedirectUris
     })
+    if (err) {
+      reply.code(err.code).send({ error: err.message })
+      return
+    }
+    return result
   }
 }

@@ -1,4 +1,3 @@
-import * as api from '../../../../db/api.js'
 import { clientXMap } from '../../../../db/mappers/client.js'
 import { allowedClientFields } from '../../../../helpers/validation-constants.js'
 import { DEFAULT_CLIENT_INCLUDE } from '../../../../helpers/validation-constants.js'
@@ -23,6 +22,7 @@ const responseFields = [
 ]
 
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.post(
     '/',
     { onRequest: fastify.authenticate, schema: { body: createClientSchema } },

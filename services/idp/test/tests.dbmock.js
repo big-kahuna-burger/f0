@@ -40,8 +40,14 @@ const clientMock = {
     token_endpoint_auth_method: 'none',
     id_token_signed_response_alg: 'RS256',
     logo_uri: 'https://somerp.com/logo.png'
-  }
+  },
+  readonly: true
 }
+
+const oidcClientDb = {
+  goodclient: clientMock
+}
+
 const debug =
   (fn) =>
   (...args) => {
@@ -74,12 +80,60 @@ export const setupPrisma = async (prisma) => {
   prisma.resourceServer.create.mockImplementation(resourceServerCreate)
   prisma.resourceServer.findFirst.mockImplementation(resourceServerById)
   prisma.resourceServer.update.mockImplementation(prismaResourceServerUpdate)
+  prisma.oidcClient.count.mockImplementation(countClients)
+  prisma.oidcClient.findMany.mockImplementation(prismaOidcClientFindMany)
+  prisma.oidcClient.create.mockImplementation(prismaOidcClientCreate)
+  prisma.oidcClient.findFirst.mockImplementation(oidcClientFindFirst)
+  prisma.oidcClient.update.mockImplementation(updateOidcClient)
+  prisma.oidcModel.create.mockImplementation(oidcModelCreate)
+  prisma.oidcModel.count.mockImplementation(oidcModelCount)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function oidcModelCreate({ data }) {
+  if (data.type === 13) {
+    grantsDB[data.id] = data
+    return grantsDB[data.id]
+  }
+  throw new Error('mock oidcModelCreate')
+}
+
+function oidcModelCount() {
+  return (
+    Object.values(sessionDB).length +
+    Object.values(grantsDB).length +
+    Object.values(authCodes).length +
+    Object.values(accessTokensDB).length +
+    Object.values(interactionsDB).length
+  )
+}
+
+function updateOidcClient({ where: { id }, data }) {
+  oidcClientDb[id] = {
+    ...oidcClientDb[id],
+    ...data
+  }
+  return oidcClientDb[id]
+}
+
+function countClients() {
+  return Object.values(oidcClientDb).length
+}
+function prismaOidcClientFindMany() {
+  return Object.values(oidcClientDb)
+}
+
+function oidcClientFindFirst({ where: { id } }) {
+  return oidcClientDb[id]
+}
+function prismaOidcClientCreate({ data }) {
+  oidcClientDb[data.id] = data
+  return data
+}
 
 function prismaResourceServerUpdate({ where: { id }, data }) {
   resourceServersDB[id] = {
@@ -89,7 +143,12 @@ function prismaResourceServerUpdate({ where: { id }, data }) {
   return resourceServersDB[id]
 }
 
-function resourceServerById({ where: { id } }) {
+function resourceServerById({ where: { id, identifier } }) {
+  if (identifier) {
+    return Object.values(resourceServersDB).find(
+      (rs) => rs.identifier === identifier
+    )
+  }
   return resourceServersDB[id]
 }
 
@@ -199,8 +258,14 @@ function oidcModelUpsert({ create }) {
   throw new Error('make oidcModel.upsert mock for ', type)
 }
 
-function oidcModelFindFirst({ where: { uid } }) {
+function oidcModelFindFirst({ where: { id, uid } }) {
   const filtered = Object.values(sessionDB).filter((s) => s.uid === uid)
+  if (!filtered[0]) {
+    const gf = grantsDB[id]
+    if (gf) {
+      return gf
+    }
+  }
   return filtered[0]
 }
 
@@ -208,7 +273,8 @@ function oidcModelDeleteMany() {
   throw new Error('deleteMany')
 }
 
-function oidcModelUpdate({ data, where: { id_type: { id, type } } }) {
+function oidcModelUpdate({ data, where }) {
+  const { id, type } = where.id_type ? where.id_type : where
   if (type === 3) {
     // updates authCodes
     authCodes[id] = {
@@ -217,6 +283,10 @@ function oidcModelUpdate({ data, where: { id_type: { id, type } } }) {
     }
     // authCode is now consumed
     return
+  }
+  if (!type && id.startsWith('RI-')) {
+    grantsDB[id] = { ...grantsDB[id], ...data }
+    return grantsDB[id]
   }
   throw new Error(`update ${JSON.stringify({ id, type })}`)
 }
@@ -232,13 +302,26 @@ function accountFindFirst({ where: { id } }) {
   return accountsDB[id]
 }
 
-function oidcModelDelete({ where: { id_type: { type, id } } }) {
-  if (type === 10) {
-    delete interactionsDB[id]
+function oidcModelDelete({ where: { id_type, type, id } }) {
+  let _id
+  let _type
+  if (id_type) {
+    _id = id_type.id
+    _type = id_type.type
+  } else {
+    _id = id
+    _type = type
+  }
+  if (_type === 10) {
+    delete interactionsDB[_id]
     return
   }
-  if (type === 1) {
-    delete sessionDB[id]
+  if (_type === 1) {
+    delete sessionDB[_id]
+    return
+  }
+  if (_type === 13) {
+    delete grantsDB[_id]
     return
   }
   throw new Error('mock delete')

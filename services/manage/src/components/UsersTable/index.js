@@ -23,7 +23,6 @@ export function UsersTable() {
 
   useEffect(() => {
     if (token && !users.length && !users.then) {
-      console.log('riggers')
       const pm = getUsers(token).then((users) => setUsers(users))
       setUsers(pm)
     }
@@ -83,7 +82,11 @@ export function UsersTable() {
               <Table.Tbody>
                 {users.map((item, i) => (
                   <Table.Tr
-                    className={classes[i === activeIndex ? 'user-row-selected':  'user-row']}
+                    className={
+                      classes[
+                        i === activeIndex ? 'user-row-selected' : 'user-row'
+                      ]
+                    }
                     key={item.id}
                     c={
                       i === activeIndex ? theme.colors.myAltColor[6] : undefined
@@ -101,9 +104,7 @@ export function UsersTable() {
                     </Table.Td>
                     <Table.Td>
                       <Group gap="lg">
-                        <Anchor component="button">
-                          {item.email}
-                        </Anchor>
+                        <Anchor component="button">{item.email}</Anchor>
                         {item.email_verified ? (
                           <Badge variant="light">verified</Badge>
                         ) : (

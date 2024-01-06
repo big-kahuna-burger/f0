@@ -3,49 +3,16 @@ import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
 import { nanoid } from 'nanoid'
 import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
-import { epochTime } from '../oidc/helpers/epoch.js'
 import prisma from './client.js'
 
 const randomFill = promisify(crypto.randomFill)
 
-async function secretFactory() {
-  const bytes = Buffer.allocUnsafe(64)
-  await randomFill(bytes)
-  return bytes.toString('base64url')
+async function updateResourceServer(id, data) {
+  const rs = await prisma.resourceServer.update({ where: { id }, data })
+  return rs
 }
 
-function flattenAccount(acc) {
-  const { Profile, ...account } = acc
-  const { Address, addressId, ...p } = Profile[0]
-
-  return { ...account, ...p, ...Address }
-}
-
-const loadAccounts = async ({ skip = 0, take = 20 } = {}) => {
-  const accounts = await prisma.account.findMany({
-    include: {
-      Profile: {
-        include: {
-          Address: true
-        }
-      },
-      Identity: {
-        include: {
-          Connection: true
-        }
-      }
-    },
-    skip,
-    take,
-    orderBy: {
-      updatedAt: 'asc'
-    }
-  })
-  const flat = accounts.map((acc) => flattenAccount(acc))
-  return flat
-}
-
-const getClient = async (id) => {
+async function getClient(id) {
   const client = await prisma.oidcClient.findFirst({
     where: { id },
     include: {
@@ -59,7 +26,7 @@ const getClient = async (id) => {
   return client
 }
 
-const updateClient = async (
+async function updateClient(
   id,
   {
     clientName,
@@ -70,14 +37,18 @@ const updateClient = async (
     initiateLoginUri,
     logoUri
   }
-) => {
+) {
   const foundClient = await prisma.oidcClient.findFirst({ where: { id } })
   if (!foundClient) {
-    throw new Error('client not found')
+    const err = new Error('client not found')
+    err.code = 404
+    return [err]
   }
 
   if (foundClient.readonly) {
-    throw new Error(`OIDC client is read only ${id}`)
+    const err = new Error('client is readonly')
+    err.code = 403
+    return [err]
   }
   const payload = {
     ...foundClient.payload
@@ -107,30 +78,35 @@ const updateClient = async (
     where: { id },
     data: { payload }
   })
-  return client
+  return [null, client]
 }
 
-const createClient = async ({ name, type }) => {
+function epochTime(date = Date.now()) {
+  return Math.round(date / 1000)
+}
+
+async function createClient({ name, type }) {
   const id = nanoid(21)
+  const clientSecret = await secretFactory()
+  const issuedAt = epochTime()
   const payload = {
     client_id: id,
     client_name: name,
     grant_types: [],
     subject_type: 'public',
-    client_secret: await secretFactory(),
+    client_secret: clientSecret,
     redirect_uris: [],
     response_types: ['code'],
     application_type: 'native',
     require_auth_time: false,
-    client_id_issued_at: epochTime(),
+    client_id_issued_at: issuedAt,
     client_secret_expires_at: 0,
     dpop_bound_access_tokens: false,
     post_logout_redirect_uris: [],
     token_endpoint_auth_method: 'client_secret_post',
     id_token_signed_response_alg: 'RS256',
     require_pushed_authorization_requests: false,
-    // [CORS_PROP]: [],
-    [F0_TYPE_PROP]: type
+    'urn:f0:type': type
   }
   switch (type) {
     case 'spa':
@@ -155,18 +131,17 @@ const createClient = async ({ name, type }) => {
     default:
       throw new Error('invalid client type')
   }
-
   const data = { id, payload, readonly: false }
   const client = await prisma.oidcClient.create({ data })
   return client.payload
 }
 
-const loadClients = async ({
+async function loadClients({
   token_endpoint_auth_method_not,
   grant_types_include,
   page = 1,
   size = 20
-} = {}) => {
+} = {}) {
   const whereAND = []
   if (grant_types_include) {
     whereAND.push({
@@ -210,12 +185,12 @@ const loadClients = async ({
   return { clients, total }
 }
 
-const updateAccount = async (id, data) => {
+async function updateAccount(id, data) {
   const account = await prisma.account.update({ where: { id }, data })
   return account
 }
 
-const getAccount = async (id) => {
+async function getAccount(id) {
   const account = await prisma.account.findFirst({
     where: { id },
     include: {
@@ -229,7 +204,7 @@ const getAccount = async (id) => {
   return flattenAccount(account)
 }
 
-const createGrant = async ({ clientId, scope, identifier }) => {
+async function createGrant({ clientId, scope, identifier }) {
   const count = await prisma.oidcModel.count({
     where: {
       type: 13,
@@ -250,7 +225,9 @@ const createGrant = async ({ clientId, scope, identifier }) => {
     }
   })
   if (count) {
-    throw new Error('client grant already exists')
+    const err = new Error('grant already exists')
+    err.code = 409
+    return [err]
   }
   const jti = `RI-${nanoid(43)}`
   const grant = await prisma.oidcModel.create({
@@ -267,10 +244,10 @@ const createGrant = async ({ clientId, scope, identifier }) => {
       }
     }
   })
-  return grant
+  return [null, grant]
 }
 
-const updateScopesForIdentifier = async (id, scopes, identifier) => {
+async function updateScopesForIdentifier(id, scopes, identifier) {
   const found = await prisma.oidcModel.findFirst({ where: { id } })
   if (!found) {
     throw new Error('grant not found')
@@ -284,33 +261,32 @@ const updateScopesForIdentifier = async (id, scopes, identifier) => {
   }
   const possible = Object.keys(rs.scopes)
   const valid = scopes.filter((x) => possible.includes(x))
-
-  const grant = await prisma.oidcModel.update({
-    where: { id },
-    data: {
-      payload: {
-        ...found.payload,
-        resources: {
-          ...found.payload.resources,
-          [identifier]: valid.join(' ')
-        }
+  const data = {
+    payload: {
+      ...found.payload,
+      resources: {
+        ...found.payload.resources,
+        [identifier]: valid.join(' ')
       }
     }
-  })
+  }
+  const grant = await prisma.oidcModel.update({ where: { id }, data })
   return grant
 }
 
-const deleteGrant = async (id) => {
-  const deleteResult = await prisma.oidcModel.delete({ where: { id } })
+async function deleteGrant(id) {
+  const deleteResult = await prisma.oidcModel.delete({
+    where: { id, type: 13 }
+  })
   return deleteResult
 }
 
-const createResourceServer = async ({
+async function createResourceServer({
   name,
   identifier,
   signingAlg,
   scopes = []
-}) => {
+}) {
   let signingSecret
   if (signingAlg === 'HS256') {
     signingSecret = nanoid(32)
@@ -327,14 +303,14 @@ const createResourceServer = async ({
   return resourceServer
 }
 
-const getResourceServer = async (id) => {
+async function getResourceServer(id) {
   const resourceServer = await prisma.resourceServer.findFirst({
     where: { id }
   })
   return resourceServer
 }
 
-const deleteClient = async (id) => {
+async function deleteClient(id) {
   const client = await prisma.oidcClient.findFirst({ where: { id } })
   if (!client) {
     return true
@@ -346,7 +322,7 @@ const deleteClient = async (id) => {
   return deleteResult
 }
 
-const deleteResourceServer = async (id) => {
+async function deleteResourceServer(id) {
   return prisma.$transaction(async (t) => {
     const rs = await t.resourceServer.findFirst({
       where: { id }
@@ -396,7 +372,7 @@ const deleteResourceServer = async (id) => {
   })
 }
 
-const getResourceServers = async ({ sort = 'desc', page = 1, size = 20 }) => {
+async function getResourceServers({ sort = 'desc', page = 1, size = 20 }) {
   const take = size
   const skip = (page - 1) * take
   const orderBy = [{ readOnly: sort }, { updatedAt: sort }]
@@ -410,7 +386,7 @@ const getResourceServers = async ({ sort = 'desc', page = 1, size = 20 }) => {
   return { resourceServers, total }
 }
 
-const updateResourceServerScopes = async (id, add, remove) => {
+async function updateResourceServerScopes(id, add, remove) {
   return prisma.$transaction(async (t) => {
     const resourceServer = await t.resourceServer.findFirst({
       where: { id }
@@ -486,19 +462,17 @@ const updateResourceServerScopes = async (id, add, remove) => {
   })
 }
 
-const loadGrantsByResourceIdentifier = async ({
+async function loadGrantsByResourceIdentifier({
   identifier,
   skip = 0,
-  take = 100,
-  cursor
-} = {}) => {
+  take = 100
+} = {}) {
   if (!identifier) {
     throw new Error('identifier is required')
   }
   const grants = await prisma.oidcModel.findMany({
     skip,
     take,
-    cursor,
     where: {
       type: 13,
       AND: [
@@ -523,17 +497,6 @@ const loadGrantsByResourceIdentifier = async ({
     }, [])
 }
 
-async function updateResourceServer(
-  id,
-  { name, ttl, ttlBrowser, allowSkipConsent }
-) {
-  const rs = await prisma.resourceServer.update({
-    where: { id },
-    data: { name, ttl, ttlBrowser, allowSkipConsent }
-  })
-  return rs
-}
-
 async function getConnections({
   skip = 0,
   take = 100,
@@ -544,12 +507,8 @@ async function getConnections({
     skip,
     take,
     cursor,
-    orderBy: {
-      updatedAt: 'desc'
-    },
-    where: {
-      type: type.toUpperCase()
-    }
+    orderBy: { updatedAt: 'desc' },
+    where: { type: type.toUpperCase() }
   })
   return connections
 }
@@ -617,4 +576,39 @@ export {
   removeConnectionFromClient
 }
 
+async function secretFactory() {
+  const bytes = Buffer.allocUnsafe(64)
+  await randomFill(bytes)
+  return bytes.toString('base64url')
+}
+
+function flattenAccount(acc) {
+  const { Profile, ...account } = acc
+  const { Address, addressId, ...p } = Profile[0]
+
+  return { ...account, ...p, ...Address }
+}
+async function loadAccounts({ skip = 0, take = 20 } = {}) {
+  const accounts = await prisma.account.findMany({
+    include: {
+      Profile: {
+        include: {
+          Address: true
+        }
+      },
+      Identity: {
+        include: {
+          Connection: true
+        }
+      }
+    },
+    skip,
+    take,
+    orderBy: {
+      updatedAt: 'asc'
+    }
+  })
+  const flat = accounts.map((acc) => flattenAccount(acc))
+  return flat
+}
 // console.log(await loadAccounts())
