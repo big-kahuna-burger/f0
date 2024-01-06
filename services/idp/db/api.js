@@ -36,7 +36,8 @@ async function updateClient(
     redirectUris,
     initiateLoginUri,
     postLogoutRedirectUris,
-    tokenEndpointAuthMethod
+    tokenEndpointAuthMethod,
+    rotateSecret
   }
 ) {
   const foundClient = await prisma.oidcClient.findFirst({ where: { id } })
@@ -82,6 +83,11 @@ async function updateClient(
         (gt) => gt !== 'client_credentials'
       )
     }
+  }
+  if (rotateSecret === true) {
+    payload.client_secret = await secretFactory()
+    payload.client_secret_expires_at = 0
+    payload.client_id_issued_at = epochTime()
   }
   const client = await prisma.oidcClient.update({
     where: { id },

@@ -153,7 +153,8 @@ async function updateApplication(
     'urn:f0:type': type,
     logo_uri,
     grant_types,
-    token_endpoint_auth_method
+    token_endpoint_auth_method,
+    rotate_secret
   }
 ) {
   const body = {}
@@ -186,6 +187,9 @@ async function updateApplication(
   }
   if (token_endpoint_auth_method) {
     body.token_endpoint_auth_method = token_endpoint_auth_method
+  }
+  if (rotate_secret !== undefined) {
+    body.rotate_secret = rotate_secret
   }
 
   const opts = {

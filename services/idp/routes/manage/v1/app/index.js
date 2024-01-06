@@ -82,7 +82,8 @@ export default async function (fastify, opts) {
       redirect_uris: redirectUris,
       post_logout_redirect_uris: postLogoutRedirectUris,
       token_endpoint_auth_method: tokenEndpointAuthMethod,
-      grant_types: grantTypes
+      grant_types: grantTypes,
+      rotate_secret: rotateSecret
     } = body
 
     const [err, result] = await api.updateClient(id, {
@@ -90,8 +91,9 @@ export default async function (fastify, opts) {
       logoUri,
       clientName,
       grantTypes,
-      initiateLoginUri,
+      rotateSecret,
       redirectUris,
+      initiateLoginUri,
       postLogoutRedirectUris,
       tokenEndpointAuthMethod
     })

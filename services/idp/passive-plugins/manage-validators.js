@@ -74,7 +74,8 @@ export const updateClientSchema = {
         'tls_client_auth',
         'self_signed_tls_client_auth'
       ]
-    }
+    },
+    rotate_secret: { type: 'boolean', default: false }
   }
 }
 

@@ -2,24 +2,30 @@ import {
   Alert,
   Button,
   Group,
+  Modal,
   Paper,
   PasswordInput,
   Stack,
   Text,
+  TextInput,
   rem
 } from '@mantine/core'
+import { useDisclosure } from '@mantine/hooks'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
 
 export const CredentialsTab = () => {
+  const [opened, { open, close }] = useDisclosure(false)
+  const [typedName, setTypedName] = useState('')
   const { activeApp } = useLoaderData()
   const [dirty, setDirty] = useState(false)
 
   const [authmethod, setAuthmethod] = useState(
     activeApp.token_endpoint_auth_method
   )
+  const [clientSecret, setClientSecret] = useState(activeApp.client_secret)
   const handleMethodChange = (method) => {
     setDirty(true)
     setAuthmethod(method)
@@ -33,11 +39,27 @@ export const CredentialsTab = () => {
     setLoading(true)
     updateApplication(activeApp.client_id, {
       token_endpoint_auth_method: authmethod
-    }).finally(() => {
+    }).then((r) => {
       setTimeout(() => {
+        setAuthmethod(r.payload.token_endpoint_auth_method)
         setLoading(false)
         setDirty(false)
-      }, 220)
+      }, 180)
+    })
+  }
+
+  const handleRotatesecret = () => {
+    setLoading(true)
+    updateApplication(activeApp.client_id, {
+      rotate_secret: true
+    }).then((r) => {
+      setTimeout(() => {
+        setLoading(false)
+        setClientSecret(r.payload.client_secret)
+        if (activeApp.token_endpoint_auth_method === authmethod) {
+          setDirty(false)
+        }
+      }, 400)
     })
   }
   return (
@@ -72,6 +94,7 @@ export const CredentialsTab = () => {
                   size="sm"
                   disabled={loading}
                   miw={220}
+                  radius={'sm'}
                   onClick={() => handleMethodChange('private_key_jwt')}
                 >
                   <Text fw={600} fz="xs">
@@ -80,6 +103,7 @@ export const CredentialsTab = () => {
                 </Button>
                 <Button
                   size="sm"
+                  radius={'sm'}
                   variant={
                     authmethod === 'client_secret_post' ? 'filled' : 'outline'
                   }
@@ -93,6 +117,7 @@ export const CredentialsTab = () => {
                 </Button>
                 <Button
                   size="sm"
+                  radius={'sm'}
                   variant={
                     authmethod === 'client_secret_basic' ? 'filled' : 'outline'
                   }
@@ -106,6 +131,7 @@ export const CredentialsTab = () => {
                 </Button>
                 <Button
                   size="sm"
+                  radius={'sm'}
                   variant={authmethod === 'none' ? 'filled' : 'outline'}
                   disabled={loading}
                   miw={220}
@@ -116,19 +142,19 @@ export const CredentialsTab = () => {
                   </Text>
                 </Button>
               </Group>
-              {activeApp.client_secret && (
+              {clientSecret && (
                 <Stack>
                   <Text>Client Secret</Text>
                   <Group grow align="center" justify="space-between">
                     <PasswordInput
                       m={'sm'}
-                      value={activeApp.client_secret}
+                      value={clientSecret}
                       size="sm"
                       radius={'sm'}
                       maw={rem(420)}
                       onChange={() => {}}
                     />
-                    <CopyButton value={activeApp.client_secret} />
+                    <CopyButton value={clientSecret} />
                   </Group>
                 </Stack>
               )}
@@ -167,7 +193,47 @@ export const CredentialsTab = () => {
               All authorized apps will need to be updated with the new client
               secret.
             </Text>
-            <Button bg="red.7" m="md" radius={'sm'}>
+            <Modal
+              opened={opened}
+              onClose={close}
+              title="Confirm Secret Rotation?"
+              centered
+            >
+              <Paper>
+                <Stack p="md">
+                  <Text fz="sm">
+                    This action cannot be undone. It will permanently rotate the
+                    Client Secret for the application{' '}
+                    <b>{activeApp.client_name}</b> <br />
+                    Please type in the name of the application to confirm.
+                  </Text>
+                  <TextInput
+                    autoFocus={true}
+                    label="Name"
+                    withAsterisk
+                    value={typedName}
+                    onChange={(e) => setTypedName(e.currentTarget.value)}
+                  />
+                  <Group justify="flex-end">
+                    <Button onClick={close} variant="outline">
+                      Cancel
+                    </Button>
+                    <Button
+                      disabled={typedName !== activeApp.client_name}
+                      onClick={() => {
+                        setTypedName('')
+                        handleRotatesecret()
+                        close()
+                      }}
+                    >
+                      Rotate
+                    </Button>
+                  </Group>
+                </Stack>
+              </Paper>
+            </Modal>
+
+            <Button bg="red.7" m="md" radius={'sm'} onClick={open}>
               Rotate
             </Button>
           </Group>
