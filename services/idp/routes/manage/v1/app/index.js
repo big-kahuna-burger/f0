@@ -81,6 +81,7 @@ export default async function (fastify, opts) {
       initiate_login_uri: initiateLoginUri,
       redirect_uris: redirectUris,
       post_logout_redirect_uris: postLogoutRedirectUris,
+      token_endpoint_auth_method: tokenEndpointAuthMethod,
       grant_types: grantTypes
     } = body
 
@@ -90,8 +91,9 @@ export default async function (fastify, opts) {
       clientName,
       grantTypes,
       initiateLoginUri,
-      redirectUris: redirectUris,
-      postLogoutRedirectUris: postLogoutRedirectUris
+      redirectUris,
+      postLogoutRedirectUris,
+      tokenEndpointAuthMethod
     })
     if (err) {
       reply.code(err.code).send({ error: err.message })

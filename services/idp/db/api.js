@@ -29,13 +29,14 @@ async function getClient(id) {
 async function updateClient(
   id,
   {
-    clientName,
     type,
+    logoUri,
+    clientName,
     grantTypes,
     redirectUris,
-    postLogoutRedirectUris,
     initiateLoginUri,
-    logoUri
+    postLogoutRedirectUris,
+    tokenEndpointAuthMethod
   }
 ) {
   const foundClient = await prisma.oidcClient.findFirst({ where: { id } })
@@ -73,6 +74,14 @@ async function updateClient(
   }
   if (grantTypes) {
     payload.grant_types = grantTypes
+  }
+  if (tokenEndpointAuthMethod) {
+    payload.token_endpoint_auth_method = tokenEndpointAuthMethod
+    if (tokenEndpointAuthMethod === 'none') {
+      payload.grant_types = payload.grant_types.filter(
+        (gt) => gt !== 'client_credentials'
+      )
+    }
   }
   const client = await prisma.oidcClient.update({
     where: { id },

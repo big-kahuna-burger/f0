@@ -152,7 +152,8 @@ async function updateApplication(
     post_logout_redirect_uris,
     'urn:f0:type': type,
     logo_uri,
-    grant_types
+    grant_types,
+    token_endpoint_auth_method
   }
 ) {
   const body = {}
@@ -174,7 +175,7 @@ async function updateApplication(
   if (client_name) {
     body.client_name = client_name
   }
-  if (grant_types?.length) {
+  if (grant_types) {
     body.grant_types = grant_types
   }
   if (logo_uri?.length) {
@@ -182,6 +183,9 @@ async function updateApplication(
   }
   if (type) {
     body['urn:f0:type'] = type
+  }
+  if (token_endpoint_auth_method) {
+    body.token_endpoint_auth_method = token_endpoint_auth_method
   }
 
   const opts = {

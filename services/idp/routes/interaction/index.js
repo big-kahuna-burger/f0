@@ -21,6 +21,7 @@ const NO_MERGE = {
 
 export default async function interactionsRouter(fastify, opts) {
   const Account = opts.Account
+  const Connection = opts.Connection
   const AccountErrors = opts.AccountErrors
   function errorHandler(error, request, reply) {
     if (error instanceof FST_ERR_BAD_STATUS_CODE) {
@@ -54,6 +55,24 @@ export default async function interactionsRouter(fastify, opts) {
     } = await provider.interactionDetails(request, reply)
 
     const client = await provider.Client.find(params.client_id)
+    const connections = await Connection.getEnabledConnections(client.clientId)
+
+    const connectionTypes = new Set(connections.map((x) => x.type))
+
+    if (connectionTypes.size === 0) {
+      const result = {
+        error: 'access_denied',
+        error_description: 'No connections available for this client'
+      }
+      const returnTo = await provider.interactionResult(
+        request,
+        reply,
+        result,
+        NO_MERGE
+      )
+      reply.header('Content-Length', 0)
+      return reply.redirect(303, returnTo)
+    }
 
     if (prompt.name === 'consent' && client.logoUri) {
       const CSPAdjusted = { ...CSP }
@@ -77,6 +96,7 @@ export default async function interactionsRouter(fastify, opts) {
           details: prompt.details,
           params,
           title: 'Sign-in',
+          connectionTypes,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),

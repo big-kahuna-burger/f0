@@ -8,6 +8,7 @@ import desm from 'desm'
 import ejs from 'ejs'
 import CSP from './csp.js'
 import * as dbClientForManage from './db/api.js'
+import { Connection } from './oidc/support/connection.js'
 import joseVerify from './passive-plugins/jwt-jose.js'
 // Pass --options via CLI arguments in command to enable these options.
 export const options = {}
@@ -69,7 +70,8 @@ export default async function runme(fastify, opts) {
     dir: path.join(__dirname, 'routes'),
     options: Object.assign(
       {
-        dbClientForManage
+        dbClientForManage,
+        Connection
       },
       { maxDepth: 3 },
       opts

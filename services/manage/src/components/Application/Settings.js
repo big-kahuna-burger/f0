@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Code,
-  Dialog,
   Divider,
   Group,
   PasswordInput,
@@ -11,11 +10,9 @@ import {
   Stack,
   Text,
   TextInput,
-  Textarea,
-  useMantineTheme
+  Textarea
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useDisclosure } from '@mantine/hooks'
 import { IconEyeCheck, IconEyeOff } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
@@ -96,6 +93,7 @@ export const Settings = ({ app: activeApp }) => {
   }
 
   const saveGrantTypes = () => {
+    setGrantTypesDirty(false)
     updateApplication(activeApp.client_id, {
       grant_types: selectedGrantTypes
     }).finally(() => {

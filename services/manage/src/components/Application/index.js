@@ -2,7 +2,9 @@ import { Code, Group, Tabs } from '@mantine/core'
 
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { ApplicationConnections } from './ApplicationConnections'
+import { CredentialsTab } from './Credentials'
 import { Settings } from './Settings'
+
 export function Application() {
   const navigate = useNavigate()
   const { activeApp, tab } = useLoaderData()
@@ -27,7 +29,9 @@ export function Application() {
         <Tabs.Panel value="settings">
           <Settings app={activeApp} />
         </Tabs.Panel>
-        <Tabs.Panel value="credentials">credentials</Tabs.Panel>
+        <Tabs.Panel value="credentials">
+          <CredentialsTab />
+        </Tabs.Panel>
         <Tabs.Panel value="apis">apis</Tabs.Panel>
         <Tabs.Panel value="connections">
           <ApplicationConnections />

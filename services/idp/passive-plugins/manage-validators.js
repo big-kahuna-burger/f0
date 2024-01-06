@@ -62,6 +62,18 @@ export const updateClientSchema = {
       items: grantType,
       minItems: 0,
       maxItems: 16
+    },
+    token_endpoint_auth_method: {
+      type: 'string',
+      enum: [
+        'none',
+        'client_secret_basic',
+        'client_secret_post',
+        'client_secret_jwt',
+        'private_key_jwt',
+        'tls_client_auth',
+        'self_signed_tls_client_auth'
+      ]
     }
   }
 }
