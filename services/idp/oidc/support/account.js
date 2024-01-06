@@ -37,7 +37,12 @@ class Account {
   }
 
   static async findByEmail(email) {
-    const found = await prisma.account.findFirst({ where: { email } })
+    const found = await prisma.account.findFirst({
+      where: { email },
+      include: {
+        Profile: true
+      }
+    })
 
     if (!found) {
       throw new Error('no account found')
@@ -50,7 +55,12 @@ class Account {
     // token is a reference to the token used for which a given account is being loaded,
     //   it is undefined in scenarios where account claims are returned from authorization endpoint
     // ctx is the koa request context
-    const found = await prisma.account.findFirst({ where: { id } })
+    const found = await prisma.account.findFirst({
+      where: { id },
+      include: {
+        Profile: true
+      }
+    })
 
     if (!found) {
       throw new Error('no account found')
@@ -65,6 +75,7 @@ class Account {
         Address: true,
         Account: {
           include: {
+            Profile: true,
             Identity: {
               include: {
                 Connection: true,
@@ -185,15 +196,16 @@ class Account {
     ProfileData.Account = {
       connect: { id: accountCreated.id }
     }
-    await prisma.profile.create({
+    const createdProfile = await prisma.profile.create({
       data: ProfileData
     })
+    accountCreated.Profile = [createdProfile]
     return fromDbData(accountCreated)
   }
 }
 
 function fromDbData(data) {
-  return new Account(data.id, data)
+  return new Account(data.id, data.Profile[0])
 }
 
 class AccountNotFound extends Error {

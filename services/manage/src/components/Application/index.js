@@ -3,8 +3,8 @@ import { Code, Group, Stack, Tabs } from '@mantine/core'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { ApplicationConnections } from './ApplicationConnections'
 import { CredentialsTab } from './Credentials'
+import QuickStart from './QuickStart'
 import { Settings } from './Settings'
-
 export function Application() {
   const navigate = useNavigate()
   const { activeApp, tab } = useLoaderData()
@@ -24,7 +24,7 @@ export function Application() {
         </Tabs.List>
 
         <Tabs.Panel value="quick">
-          {/* <QuickStart app={activeApp} /> */}
+          <QuickStart app={activeApp} />
         </Tabs.Panel>
         <Tabs.Panel value="settings">
           <Settings app={activeApp} />

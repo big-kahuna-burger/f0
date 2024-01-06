@@ -1,23 +1,23 @@
-#!/usr/bin/env node
-
-const server = require('http').createServer().listen(0)
+const server = require('http').createServer().listen(9988)
 
 const { Issuer, generators } = require('openid-client')
 
 server.removeAllListeners('request')
-const { ISSUER = process.argv[2] || 'https://f0.pchele.com/oidc' } = process.env
+const {
+  OIDC_CLIENT_ID = 'm7vmq5wuJdU8plGie26D2',
+  OIDC_ISSUER = 'http://localhost:9876/oidc'
+} = process.env
 
 server.once('listening', () => {
   ;(async () => {
-    const issuer = await Issuer.discover(ISSUER)
+    const issuer = await Issuer.discover(OIDC_ISSUER)
     const { address, port } = server.address()
-    const redirect_uri = `http://${
-      address === '::' ? '[::1]' : address
-    }:${port}`
+    const redirect_uri = 'http://localhost:9988/cb'
 
-    const client = await issuer.Client.register({
-      redirect_uris: [redirect_uri],
-      application_type: 'native',
+    const client = new issuer.Client({
+      client_id: OIDC_CLIENT_ID,
+      redirect_uris: ['http://localhost:9988/cb'],
+      response_types: ['code'],
       token_endpoint_auth_method: 'none'
     })
     const code_verifier = generators.codeVerifier()
@@ -27,7 +27,6 @@ server.once('listening', () => {
       res.setHeader('connection', 'close')
       const params = client.callbackParams(req)
 
-      console.log(params)
       if (Object.keys(params).length) {
         const tokenSet = await client.callback(redirect_uri, params, {
           code_verifier,
@@ -50,8 +49,7 @@ server.once('listening', () => {
           redirect_uri,
           code_challenge,
           code_challenge_method: 'S256',
-          scope: 'openid email',
-          prompt: 'login'
+          scope: 'openid'
         }),
         { wait: false }
       )

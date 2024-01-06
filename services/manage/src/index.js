@@ -1,17 +1,17 @@
 import '@mantine/code-highlight/styles.css'
 import '@mantine/core/styles.css'
-
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { AuthProvider } from 'react-oauth2-code-pkce'
-import App from './App'
-import reportWebVitals from './reportWebVitals'
+import './index.css'
 
 import {
   MantineProvider,
   createTheme,
   localStorageColorSchemeManager
 } from '@mantine/core'
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import { AuthProvider } from 'react-oauth2-code-pkce'
+import App from './App'
+import reportWebVitals from './reportWebVitals'
 const ISSUER = process.env.REACT_APP_ISSUER
 const issUrl = new URL(ISSUER)
 const ORIGIN = window.location.origin

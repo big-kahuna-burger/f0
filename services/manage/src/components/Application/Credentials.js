@@ -5,13 +5,14 @@ import {
   Modal,
   Paper,
   PasswordInput,
+  Skeleton,
   Stack,
   Text,
   TextInput,
   rem
 } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import { updateApplication } from '../../api'
 import { CopyButton } from '../CopyButton'
@@ -20,46 +21,49 @@ export const CredentialsTab = () => {
   const [opened, { open, close }] = useDisclosure(false)
   const [typedName, setTypedName] = useState('')
   const { activeApp } = useLoaderData()
+  const [app, setApp] = useState(activeApp)
   const [dirty, setDirty] = useState(false)
 
   const [authmethod, setAuthmethod] = useState(
     activeApp.token_endpoint_auth_method
   )
-  const [clientSecret, setClientSecret] = useState(activeApp.client_secret)
+  const [clientSecret, setClientSecret] = useState(app.client_secret)
+
+  useEffect(() => {
+    setTimeout(() => {
+      setLoading(false)
+      setDirty(false)
+      setAuthmethod(app.token_endpoint_auth_method)
+      setClientSecret(app.client_secret)
+    }, 150)
+  }, [app])
+
   const handleMethodChange = (method) => {
     setDirty(true)
     setAuthmethod(method)
   }
+
   const handleCancel = () => {
     setDirty(false)
-    setAuthmethod(activeApp.token_endpoint_auth_method)
+    setAuthmethod(app.token_endpoint_auth_method)
   }
+
   const [loading, setLoading] = useState(false)
   const handleSubmit = () => {
     setLoading(true)
-    updateApplication(activeApp.client_id, {
+    updateApplication(app.client_id, {
       token_endpoint_auth_method: authmethod
     }).then((r) => {
-      setTimeout(() => {
-        setAuthmethod(r.payload.token_endpoint_auth_method)
-        setLoading(false)
-        setDirty(false)
-      }, 180)
+      setApp(r.payload)
     })
   }
 
   const handleRotatesecret = () => {
     setLoading(true)
-    updateApplication(activeApp.client_id, {
+    updateApplication(app.client_id, {
       rotate_secret: true
     }).then((r) => {
-      setTimeout(() => {
-        setLoading(false)
-        setClientSecret(r.payload.client_secret)
-        if (activeApp.token_endpoint_auth_method === authmethod) {
-          setDirty(false)
-        }
-      }, 400)
+      setApp(r.payload)
     })
   }
   return (
@@ -83,81 +87,94 @@ export const CredentialsTab = () => {
           </div>
           <div>
             <Stack maw={520}>
-              <Text fw={600} fz="sm">
-                Methods
-              </Text>
-              <Group m="xs" justify="space-around">
-                <Button
-                  variant={
-                    authmethod === 'private_key_jwt' ? 'filled' : 'outline'
-                  }
-                  size="sm"
-                  disabled={loading}
-                  miw={220}
-                  radius={'sm'}
-                  onClick={() => handleMethodChange('private_key_jwt')}
-                >
-                  <Text fw={600} fz="xs">
-                    Private Key JWT
-                  </Text>
-                </Button>
-                <Button
-                  size="sm"
-                  radius={'sm'}
-                  variant={
-                    authmethod === 'client_secret_post' ? 'filled' : 'outline'
-                  }
-                  disabled={loading}
-                  miw={220}
-                  onClick={() => handleMethodChange('client_secret_post')}
-                >
-                  <Text fw={600} fz="xs">
-                    Client Secret (Post)
-                  </Text>
-                </Button>
-                <Button
-                  size="sm"
-                  radius={'sm'}
-                  variant={
-                    authmethod === 'client_secret_basic' ? 'filled' : 'outline'
-                  }
-                  disabled={loading}
-                  miw={220}
-                  onClick={() => handleMethodChange('client_secret_basic')}
-                >
-                  <Text fw={600} fz="xs">
-                    Client Secret (Basic)
-                  </Text>
-                </Button>
-                <Button
-                  size="sm"
-                  radius={'sm'}
-                  variant={authmethod === 'none' ? 'filled' : 'outline'}
-                  disabled={loading}
-                  miw={220}
-                  onClick={() => handleMethodChange('none')}
-                >
-                  <Text fw={600} fz="xs">
-                    None
-                  </Text>
-                </Button>
-              </Group>
-              {clientSecret && (
-                <Stack>
-                  <Text>Client Secret</Text>
-                  <Group grow align="center" justify="space-between">
-                    <PasswordInput
-                      m={'sm'}
-                      value={clientSecret}
-                      size="sm"
-                      radius={'sm'}
-                      maw={rem(420)}
-                      onChange={() => {}}
-                    />
-                    <CopyButton value={clientSecret} />
-                  </Group>
-                </Stack>
-              )}
+              <Skeleton visible={loading}>
+                <Text fw={600} fz="sm">
+                  Methods
+                </Text>
+                <Group m="xs" mb="xl" justify="space-around">
+                  <Button
+                    variant={
+                      authmethod === 'private_key_jwt' ? 'filled' : 'outline'
+                    }
+                    size="sm"
+                    disabled={loading}
+                    miw={220}
+                    radius={'sm'}
+                    onClick={() => handleMethodChange('private_key_jwt')}
+                  >
+                    <Text fw={600} fz="xs">
+                      Private Key JWT
+                    </Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    radius={'sm'}
+                    variant={
+                      authmethod === 'client_secret_post' ? 'filled' : 'outline'
+                    }
+                    disabled={loading}
+                    miw={220}
+                    onClick={() => handleMethodChange('client_secret_post')}
+                  >
+                    <Text fw={600} fz="xs">
+                      Client Secret (Post)
+                    </Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    radius={'sm'}
+                    variant={
+                      authmethod === 'client_secret_basic'
+                        ? 'filled'
+                        : 'outline'
+                    }
+                    disabled={loading}
+                    miw={220}
+                    onClick={() => handleMethodChange('client_secret_basic')}
+                  >
+                    <Text fw={600} fz="xs">
+                      Client Secret (Basic)
+                    </Text>
+                  </Button>
+                  <Button
+                    size="sm"
+                    radius={'sm'}
+                    variant={authmethod === 'none' ? 'filled' : 'outline'}
+                    disabled={loading}
+                    miw={220}
+                    onClick={() => handleMethodChange('none')}
+                  >
+                    <Text fw={600} fz="xs">
+                      None
+                    </Text>
+                  </Button>
+                </Group>
+                {clientSecret ? (
+                  <Stack gap="xs">
+                    <Text fz="xs">Client Secret</Text>
+                    <Group grow align="center" justify="space-between">
+                      <PasswordInput
+                        m={'sm'}
+                        value={clientSecret}
+                        size="xs"
+                        fz={'xs'}
+                        radius={'sm'}
+                        maw={rem(450)}
+                        onChange={() => {}}
+                      />
+                      <CopyButton value={clientSecret} />
+                    </Group>
+                  </Stack>
+                ) : (
+                  <Paper h={84}>
+                    <Alert color="yellow" title="Not Issued">
+                      <Text fz="xs">
+                        There is no client secret for this application.
+                      </Text>
+                    </Alert>
+                  </Paper>
+                )}
+              </Skeleton>
               <Group m="xs">
                 <Button
                   radius={'xs'}
@@ -170,7 +187,6 @@ export const CredentialsTab = () => {
                 </Button>
                 <Button
                   radius={'xs'}
-                  loading={loading}
                   type={'reset'}
                   variant="outline"
                   disabled={!dirty}
@@ -203,7 +219,7 @@ export const CredentialsTab = () => {
                     <Text fz="sm">
                       This action cannot be undone. It will permanently rotate
                       the Client Secret for the application{' '}
-                      <b>{activeApp.client_name}</b> <br />
+                      <b>{app.client_name}</b> <br />
                       Please type in the name of the application to confirm.
                     </Text>
                     <TextInput
@@ -218,7 +234,7 @@ export const CredentialsTab = () => {
                         Cancel
                       </Button>
                       <Button
-                        disabled={typedName !== activeApp.client_name}
+                        disabled={typedName !== app.client_name}
                         onClick={() => {
                           setTypedName('')
                           handleRotatesecret()

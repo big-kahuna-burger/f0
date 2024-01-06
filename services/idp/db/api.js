@@ -82,12 +82,19 @@ async function updateClient(
       payload.grant_types = payload.grant_types.filter(
         (gt) => gt !== 'client_credentials'
       )
+      payload.client_secret = undefined
+      payload.client_secret_expires_at = undefined
+      payload.client_secret_issued_at = undefined
+    } else if (!payload.client_secret) {
+      payload.client_secret = await secretFactory()
+      payload.client_secret_expires_at = 0
+      payload.client_secret_issued_at = epochTime()
     }
   }
   if (rotateSecret === true) {
     payload.client_secret = await secretFactory()
     payload.client_secret_expires_at = 0
-    payload.client_id_issued_at = epochTime()
+    payload.client_secret_issued_at = epochTime()
   }
   const client = await prisma.oidcClient.update({
     where: { id },
