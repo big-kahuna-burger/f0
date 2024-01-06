@@ -66,9 +66,9 @@ export const CredentialsTab = () => {
     <>
       <Paper
         shadow="md"
+        mt="xs"
         withBorder
         p="sm"
-        m={'md'}
         radius={'sm'}
         maw={1000}
         miw={330}
@@ -81,7 +81,7 @@ export const CredentialsTab = () => {
               that requires this client to authenticate.
             </Text>
           </div>
-          <div style={{ justifyItems: 'flex-end' }}>
+          <div>
             <Stack maw={520}>
               <Text fw={600} fz="sm">
                 Methods
@@ -184,61 +184,61 @@ export const CredentialsTab = () => {
             </Stack>
           </div>
         </Group>
-      </Paper>
-      <h4 style={{ marginLeft: 25 }}>Danger Zone</h4>
-      <Stack m={'md'} maw={1000}>
-        <Alert title="Rotate Secret" color="red.3">
-          <Group justify="space-between" align="center">
-            <Text c="dimmed" fz="sm">
-              All authorized apps will need to be updated with the new client
-              secret.
-            </Text>
-            <Modal
-              opened={opened}
-              onClose={close}
-              title="Confirm Secret Rotation?"
-              centered
-            >
-              <Paper>
-                <Stack p="md">
-                  <Text fz="sm">
-                    This action cannot be undone. It will permanently rotate the
-                    Client Secret for the application{' '}
-                    <b>{activeApp.client_name}</b> <br />
-                    Please type in the name of the application to confirm.
-                  </Text>
-                  <TextInput
-                    autoFocus={true}
-                    label="Name"
-                    withAsterisk
-                    value={typedName}
-                    onChange={(e) => setTypedName(e.currentTarget.value)}
-                  />
-                  <Group justify="flex-end">
-                    <Button onClick={close} variant="outline">
-                      Cancel
-                    </Button>
-                    <Button
-                      disabled={typedName !== activeApp.client_name}
-                      onClick={() => {
-                        setTypedName('')
-                        handleRotatesecret()
-                        close()
-                      }}
-                    >
-                      Rotate
-                    </Button>
-                  </Group>
-                </Stack>
-              </Paper>
-            </Modal>
+        <h4 style={{ marginLeft: 25 }}>Danger Zone</h4>
+        <Stack m={'md'} maw={1000}>
+          <Alert title="Rotate Secret" color="red.3">
+            <Group justify="space-between" align="center">
+              <Text c="dimmed" fz="sm">
+                All authorized apps will need to be updated with the new client
+                secret.
+              </Text>
+              <Modal
+                opened={opened}
+                onClose={close}
+                title="Confirm Secret Rotation?"
+                centered
+              >
+                <Paper>
+                  <Stack p="xs">
+                    <Text fz="sm">
+                      This action cannot be undone. It will permanently rotate
+                      the Client Secret for the application{' '}
+                      <b>{activeApp.client_name}</b> <br />
+                      Please type in the name of the application to confirm.
+                    </Text>
+                    <TextInput
+                      autoFocus={true}
+                      label="Name"
+                      withAsterisk
+                      value={typedName}
+                      onChange={(e) => setTypedName(e.currentTarget.value)}
+                    />
+                    <Group justify="flex-end">
+                      <Button onClick={close} variant="outline">
+                        Cancel
+                      </Button>
+                      <Button
+                        disabled={typedName !== activeApp.client_name}
+                        onClick={() => {
+                          setTypedName('')
+                          handleRotatesecret()
+                          close()
+                        }}
+                      >
+                        Rotate
+                      </Button>
+                    </Group>
+                  </Stack>
+                </Paper>
+              </Modal>
 
-            <Button bg="red.7" m="md" radius={'sm'} onClick={open}>
-              Rotate
-            </Button>
-          </Group>
-        </Alert>
-      </Stack>
+              <Button bg="red.7" radius={'sm'} onClick={open}>
+                Rotate
+              </Button>
+            </Group>
+          </Alert>
+        </Stack>
+      </Paper>
     </>
   )
 }

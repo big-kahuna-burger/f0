@@ -1,18 +1,22 @@
 import {
   Anchor,
   Group,
+  Paper,
+  Stack,
   Switch,
   Table,
   ThemeIcon,
   rem,
   useMantineTheme
 } from '@mantine/core'
+import { useMediaQuery } from '@mantine/hooks'
 import { IconDatabase } from '@tabler/icons-react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { enableDisableConnection } from '../../api'
 
 const ApplicationConnections = () => {
+  const isMobile = useMediaQuery('(max-width: 850px)')
   const theme = useMantineTheme()
   const { activeApp, connections = [] } = useLoaderData()
   const rows = connections.map((x) => {
@@ -31,6 +35,9 @@ const ApplicationConnections = () => {
             <Anchor href={`/authn/db/${x.id}`}>{x.name}</Anchor>
           </Group>
         </Table.Td>
+        <Table.Td>
+          <div style={{ flexBasis: '100%' }}>{}</div>
+        </Table.Td>
         <Table.Td justify="center">
           <EnabledCell
             connectionId={x.id}
@@ -42,17 +49,30 @@ const ApplicationConnections = () => {
     )
   })
   return (
-    <Table.ScrollContainer>
-      <Table verticalSpacing="lg">
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>Connection Name</Table.Th>
-            <Table.Th>Enabled</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Table.ScrollContainer>
+    <Paper
+      mt="xs"
+      shadow="md"
+      withBorder
+      p="sm"
+      radius={'sm'}
+      maw={1000}
+      miw={330}
+    >
+      <Stack miw={150} maw={806} w={isMobile ? undefined : 806}>
+        <Table.ScrollContainer>
+          <Table verticalSpacing="lg">
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>Connection Name</Table.Th>
+                <Table.Th>-</Table.Th>
+                <Table.Th>Enabled</Table.Th>
+              </Table.Tr>
+            </Table.Thead>
+            <Table.Tbody>{rows}</Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
+      </Stack>
+    </Paper>
   )
 }
 
