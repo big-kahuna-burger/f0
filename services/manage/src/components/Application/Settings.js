@@ -114,12 +114,12 @@ export const Settings = ({ app: activeApp }) => {
     >
       <Stack fw={600} mt="xs">
         <Group grow align="center" justify="space-around">
-          <Text maw={350}>Basic Information</Text>
+          <Text maw={150}>Basic Information</Text>
           <Box p={'xs'}>
             <TextInput
               fw={600}
               label="Name (client_name)"
-              radius="xl"
+              radius="sm"
               m="sm"
               description={
                 'Recognizable name for your application. Will be shown in consent prompt interactions interface.'
@@ -132,7 +132,7 @@ export const Settings = ({ app: activeApp }) => {
             <TextInput
               fw={600}
               label="Issuer (oidc issuer)"
-              radius="xl"
+              radius="sm"
               m="sm"
               disabled
               defaultValue={issuer}
@@ -143,7 +143,7 @@ export const Settings = ({ app: activeApp }) => {
             <TextInput
               fw={600}
               label="Client ID (client_id)"
-              radius="xl"
+              radius="sm"
               m="sm"
               disabled
               defaultValue={activeApp.client_id}
@@ -155,7 +155,7 @@ export const Settings = ({ app: activeApp }) => {
               <Group grow m="sm">
                 <PasswordInput
                   fw={600}
-                  radius="xl"
+                  radius="sm"
                   label="Client Secret (client_secret)"
                   // disabled
                   defaultValue={activeApp.client_secret}
@@ -186,7 +186,7 @@ export const Settings = ({ app: activeApp }) => {
         </Group>
         <Divider />
         <Group grow align="center" justify="space-around">
-          <Text maw={350}>Application Properties</Text>
+          <Text maw={150}>Application Properties</Text>
           <Stack p={'xs'}>
             <ArticleCard url={form.values.logo_uri} />
             <TextInput
@@ -217,7 +217,7 @@ export const Settings = ({ app: activeApp }) => {
         </Group>
         <Divider />
         <Group grow align="center" justify="space-around">
-          <Text maw={350}>Application URIs</Text>
+          <Text maw={150}>Application URIs</Text>
           <Stack p={'xs'}>
             <TextInput
               fw={600}
@@ -313,47 +313,6 @@ export const Settings = ({ app: activeApp }) => {
             </Button>
           </Alert>
         </Group>
-        {/* <Divider />
-      <Group grow align="center" justify="space-around">
-        <Text maw={350}>OpenID Connect Back-Channel Logout</Text>
-        <Stack>TBD</Stack>
-      </Group>
-      <Divider />
-      <Group grow align="center" justify="space-around">
-        <Text maw={350}>ID Token</Text>
-        <Stack>
-          <TextInput
-            label="ID Token Expiration"
-            size="sm"
-            {...form.getInputProps('id_token_expiration')}
-            inputWrapperOrder={['label', 'input', 'description', 'errors']}
-            description={
-              'This setting allows you to set the lifetime of the id_token (in seconds)'
-            }
-          />
-        </Stack>
-      </Group>
-      <Divider />
-      <Group grow align="center" justify="space-around">
-        <Text maw={350}>Refresh Token Rotation TODO</Text>
-        <Stack>
-          <TextInput label="input1" />
-        </Stack>
-      </Group>
-      <Divider />
-      <Group grow align="center" justify="space-around">
-        <Text maw={350}>Refresh Token Expiration TODO</Text>
-        <Stack>
-          <TextInput label="input1" />
-        </Stack>
-      </Group>
-      <Divider />
-      <Group grow align="center" justify="space-around">
-        <Text maw={350}>Grant Types TODO</Text>
-        <Stack>
-          <TextInput label="todo" />
-        </Stack>
-      </Group> */}
       </Stack>
     </Paper>
   )
