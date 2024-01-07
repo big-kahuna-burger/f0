@@ -1,31 +1,68 @@
 import { CodeHighlight } from '@mantine/code-highlight'
+import { Paper } from '@mantine/core'
 
-const privateKeyBlock = ({ issuer, client_id } = {}) => `const { SignJWT } = require('jose')
-const crypto = require("crypto");
-const uuid = require("uuid");
+const privateKeyBlock = ({ issuer, client_id } = {}) => `const { readFile } = require('fs/promises')
+const crypto = require('crypto')
+const http = require('http')
+
+const { SignJWT } = require('jose')
+const uuid = require('uuid')
 
 async function main() {
- const privateKeyPEM = crypto.createPrivateKey(/**
-   Read the content of your private key here. We recommend to store your private key
-   in a secure infrastructure. 
- */);
+  const pk = // read your private key here
+  const privateKeyPEM = crypto.createPrivateKey(pk)
+  const signedJwt = await new SignJWT({})
+    .setProtectedHeader({ 
+       alg: 'RS256', // or RS384 or PS256
+       kid: '(OPTIONAL)' 
+    })
+    .setIssuedAt()
+    .setExpirationTime('1m')
+    .setJti(uuid.v4())
+    .setIssuer('${client_id}')
+    .setSubject('${client_id}')
+    .setAudience('${issuer}')
+    .sign(privateKeyPEM)
 
- const jwt = await new SignJWT({})
-   .setProtectedHeader({ 
-      alg: 'RS256', // or RS384 or PS256
-      kid: '(OPTIONAL)' 
-   })
-   .setIssuedAt()
-   .setExpirationTime('1m')
-   .setJti(uuid.v4())
-   .setIssuer('${client_id}')
-   .setSubject('${client_id}')
-   .setAudience('${issuer}')
-   .sign(privateKeyPEM);
-  console.log(jwt)
+    
+  const data = {
+    grant_type: 'client_credentials',
+    client_id: '${client_id}',
+    client_assertion_type:
+    'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+    client_assertion: signedJwt
+  }
+  
+  const dataPayload = new URLSearchParams(data).toString()
+  
+  const options = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Length': Buffer.byteLength(dataPayload)
+    }
+  }
+    
+  const url = '${issuer}/token'
+  const req = http.request(url, options, (res) => {
+    let responseData = ''
+    res.on('data', (chunk) => {
+      responseData += chunk
+    })
+    res.on('end', () => {
+      console.log(responseData)
+    })
+  })
+
+  req.on('error', (error) => {
+    console.error(error)
+  })
+
+  req.write(dataPayload)
+  req.end()
 }
 
-main();`
+main()`
 
 const codeBlock = ({
   client_id,
@@ -123,32 +160,13 @@ const QuickStart = ({ app }) => {
   }
   const cb = codeBlock(fixed)
   return (
-    <>
+    <Paper>
       <CodeHighlight code={cb} maw={850} language="js" highlightOnClient />
-      {app.token_endpoint_auth_method === 'private_key_jwt' && (
-        <>
-          Save the above code as <code>pk_jwt.cjs</code> and send assertion to
-          token endpoint:
-          <CodeHighlight
-            m="md"
-            language=""
-            code={curlBlock({ client_id: app.client_id })}
-          />
-        </>
-      )}
-    </>
+    </Paper>
   )
 }
 export default QuickStart
-function curlBlock({ client_id } = {}) {
-  return `curl --request POST \\
-  --url ${process.env.REACT_APP_ISSUER}/token \\
-  --header 'content-type: application/x-www-form-urlencoded' \\
-  --data-urlencode 'grant_type=client_credentials' \\
-  --data-urlencode 'client_id=${client_id}' \\
-  --data-urlencode 'client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer' \\
-  --data-urlencode 'client_assertion="'$(node pk_jwt.cjs)'"'`
-}
+
 function renderArry(arr) {
   return `[${arr.map((ru) => `'${ru}'`).join(', ')}]`
 }

@@ -155,7 +155,7 @@ export const CredentialsTab = () => {
                   </Button>
                 </Group>
                 {canRotateSecret(app) && (
-                  <Stack gap="xs">
+                  <Stack maw={480}>
                     <Text fz="xs">Client Secret</Text>
                     <Group grow align="center" justify="space-between">
                       <PasswordInput
@@ -164,7 +164,7 @@ export const CredentialsTab = () => {
                         size="xs"
                         fz={'xs'}
                         radius={'sm'}
-                        maw={rem(450)}
+                        maw={rem(420)}
                         onChange={() => {}}
                       />
                       <CopyButton value={clientSecret} />
@@ -234,7 +234,7 @@ function RotateSecret(props) {
   return (
     <>
       <h4 style={{ marginLeft: 18 }}>Danger Zone</h4>
-      <Stack m={'md'} maw={1000}>
+      <Stack m={'md'} maw={520}>
         <Alert title="Rotate Secret" color="red.3">
           <Group justify="space-between" align="center">
             <Text c="dimmed" fz="sm">
@@ -312,6 +312,7 @@ function PrivateKeyJWTCredentials({ credentials } = {}) {
       setFileResult(result)
       const resultText = atob(result)
       if (resultText.startsWith('-----BEGIN PUBLIC KEY-----')) {
+        importSPKI(resultText, 'RS256').then(console.log)
         setImportedKey(resultText)
         return
       }
