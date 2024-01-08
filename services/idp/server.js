@@ -1,12 +1,12 @@
-// import './otel.js'
-import './env.js'
-
+import crypto from 'crypto'
 import middie from '@fastify/middie'
 import FastifySwagger from '@fastify/swagger'
 import Scalar from '@scalar/fastify-api-reference'
 import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
+import './env.js'
+//console.log(crypto.getCurves())
 
 import { configureOidc } from './oidc/index.js'
 import { MANAGEMENT } from './resource-servers/management.js'

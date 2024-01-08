@@ -2,20 +2,24 @@ import { CodeHighlight } from '@mantine/code-highlight'
 import {
   Alert,
   Button,
+  Code,
   FileInput,
   Group,
   Modal,
   Paper,
   PasswordInput,
+  Select,
   Skeleton,
   Stack,
+  Table,
   Text,
   TextInput,
   rem
 } from '@mantine/core'
+import { DateInput } from '@mantine/dates'
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus, IconSparkles } from '@tabler/icons-react'
-import { exportJWK, importPKCS8, importSPKI, importX509 } from 'jose'
+import { exportJWK, importJWK, importPKCS8, importSPKI, importX509 } from 'jose'
 import { useEffect, useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import { updateApplication } from '../../api'
@@ -72,146 +76,148 @@ export const CredentialsTab = () => {
   }
 
   return (
-    <>
-      <Paper
-        shadow="md"
-        mt="xs"
-        withBorder
-        p="sm"
-        radius={'sm'}
-        maw={1000}
-        miw={330}
-      >
-        <Group justify="space-between" p="xs">
-          <div style={{ minWidth: 150, maxWidth: 250 }}>
-            <Text fw={600}>Authentication Methods</Text>
-            <Text c="dimmed" fz={'sm'}>
-              Configure the method to use when making requests to any endpoint
-              that requires this client to authenticate.
-            </Text>
-          </div>
-          <div>
-            <Stack maw={520}>
-              <Skeleton visible={loading}>
-                <Text fw={600} fz="sm" m="xs">
-                  Methods
-                </Text>
-                <Group m="xs" mb="xl" justify="space-around">
-                  <Button
-                    variant={
-                      authmethod === 'private_key_jwt' ? 'filled' : 'outline'
-                    }
-                    size="sm"
-                    disabled={loading}
-                    miw={220}
-                    radius={'sm'}
-                    onClick={() => handleMethodChange('private_key_jwt')}
-                  >
-                    <Text fw={600} fz="xs">
-                      Private Key JWT
-                    </Text>
-                  </Button>
-                  <Button
-                    size="sm"
-                    radius={'sm'}
-                    variant={
-                      authmethod === 'client_secret_post' ? 'filled' : 'outline'
-                    }
-                    disabled={loading}
-                    miw={220}
-                    onClick={() => handleMethodChange('client_secret_post')}
-                  >
-                    <Text fw={600} fz="xs">
-                      Client Secret (Post)
-                    </Text>
-                  </Button>
-                  <Button
-                    size="sm"
-                    radius={'sm'}
-                    variant={
-                      authmethod === 'client_secret_basic'
-                        ? 'filled'
-                        : 'outline'
-                    }
-                    disabled={loading}
-                    miw={220}
-                    onClick={() => handleMethodChange('client_secret_basic')}
-                  >
-                    <Text fw={600} fz="xs">
-                      Client Secret (Basic)
-                    </Text>
-                  </Button>
-                  <Button
-                    size="sm"
-                    radius={'sm'}
-                    variant={authmethod === 'none' ? 'filled' : 'outline'}
-                    disabled={loading}
-                    miw={220}
-                    onClick={() => handleMethodChange('none')}
-                  >
-                    <Text fw={600} fz="xs">
-                      None
-                    </Text>
-                  </Button>
-                </Group>
-                {canRotateSecret(app) && (
-                  <Stack maw={480}>
-                    <Text fz="xs">Client Secret</Text>
-                    <Group grow align="center" justify="space-between">
-                      <PasswordInput
-                        m={'sm'}
-                        value={clientSecret}
-                        size="xs"
-                        fz={'xs'}
-                        radius={'sm'}
-                        maw={rem(420)}
-                        onChange={() => {}}
-                      />
-                      <CopyButton value={clientSecret} />
-                    </Group>
-                  </Stack>
-                )}
-              </Skeleton>
-              <Group m="xs">
+    <Paper
+      shadow="md"
+      mt="xs"
+      withBorder
+      p="sm"
+      radius={'sm'}
+      maw={1000}
+      miw={330}
+    >
+      <Group justify="space-between" p="xs">
+        <div style={{ minWidth: 150, maxWidth: 250 }}>
+          <Text fw={600}>Authentication Methods</Text>
+          <Text c="dimmed" fz={'sm'}>
+            Configure the method to use when making requests to any endpoint
+            that requires this client to authenticate.
+          </Text>
+        </div>
+        <div>
+          <Stack maw={520}>
+            <Skeleton visible={loading}>
+              <Text fw={600} fz="sm" m="xs">
+                Methods
+              </Text>
+              <Group m="xs" mb="xl" justify="space-around">
                 <Button
-                  radius={'xs'}
-                  loading={loading}
-                  type="submit"
-                  disabled={!dirty}
-                  onClick={() => handleSubmit()}
+                  variant={
+                    authmethod === 'private_key_jwt' ? 'filled' : 'outline'
+                  }
+                  size="sm"
+                  disabled={loading}
+                  miw={220}
+                  radius={'sm'}
+                  onClick={() => handleMethodChange('private_key_jwt')}
                 >
-                  Save
+                  <Text fw={600} fz="xs">
+                    Private Key JWT
+                  </Text>
                 </Button>
                 <Button
-                  radius={'xs'}
-                  type={'reset'}
-                  variant="outline"
-                  disabled={!dirty}
-                  onClick={() => {
-                    handleCancel()
-                  }}
+                  size="sm"
+                  radius={'sm'}
+                  variant={
+                    authmethod === 'client_secret_post' ? 'filled' : 'outline'
+                  }
+                  disabled={loading}
+                  miw={220}
+                  onClick={() => handleMethodChange('client_secret_post')}
                 >
-                  Cancel
+                  <Text fw={600} fz="xs">
+                    Client Secret (Post)
+                  </Text>
+                </Button>
+                <Button
+                  size="sm"
+                  radius={'sm'}
+                  variant={
+                    authmethod === 'client_secret_basic' ? 'filled' : 'outline'
+                  }
+                  disabled={loading}
+                  miw={220}
+                  onClick={() => handleMethodChange('client_secret_basic')}
+                >
+                  <Text fw={600} fz="xs">
+                    Client Secret (Basic)
+                  </Text>
+                </Button>
+                <Button
+                  size="sm"
+                  radius={'sm'}
+                  variant={authmethod === 'none' ? 'filled' : 'outline'}
+                  disabled={loading}
+                  miw={220}
+                  onClick={() => handleMethodChange('none')}
+                >
+                  <Text fw={600} fz="xs">
+                    None
+                  </Text>
                 </Button>
               </Group>
-            </Stack>
-            {canRotateSecret(app) ? (
-              <RotateSecret onRotate={handleRotatesecret} />
-            ) : app.token_endpoint_auth_method === 'none' ? (
-              <Paper h={84}>
-                <Alert color="yellow" title="Not Issued">
-                  <Text fz="xs">
-                    There is no client secret for this application.
-                  </Text>
-                </Alert>
-              </Paper>
-            ) : (
-              <PrivateKeyJWTCredentials />
-            )}
-          </div>
-        </Group>
-      </Paper>
-    </>
+              {canRotateSecret(app) && (
+                <Stack maw={480}>
+                  <Text fz="xs">Client Secret</Text>
+                  <Group grow align="center" justify="space-between">
+                    <PasswordInput
+                      m={'sm'}
+                      value={clientSecret}
+                      size="xs"
+                      fz={'xs'}
+                      radius={'sm'}
+                      maw={rem(420)}
+                      onChange={() => {}}
+                    />
+                    <CopyButton value={clientSecret} />
+                  </Group>
+                </Stack>
+              )}
+            </Skeleton>
+            <Group m="xs">
+              <Button
+                radius={'xs'}
+                loading={loading}
+                type="submit"
+                disabled={!dirty}
+                onClick={() => handleSubmit()}
+              >
+                Save
+              </Button>
+              <Button
+                radius={'xs'}
+                type={'reset'}
+                variant="outline"
+                disabled={!dirty}
+                onClick={() => {
+                  handleCancel()
+                }}
+              >
+                Cancel
+              </Button>
+            </Group>
+          </Stack>
+          {canRotateSecret(app) ? (
+            <RotateSecret onRotate={handleRotatesecret} />
+          ) : app.token_endpoint_auth_method === 'none' ? (
+            <Paper h={84}>
+              <Alert color="yellow" title="Not Issued">
+                <Text fz="xs">
+                  There is no client secret for this application.
+                </Text>
+              </Alert>
+            </Paper>
+          ) : (
+            <></>
+          )}
+        </div>
+      </Group>
+      {app.token_endpoint_auth_method === 'private_key_jwt' && (
+        <PrivateKeyJWTCredentials
+          clientId={app.client_id}
+          credentials={app.jwks?.keys}
+        />
+      )}
+    </Paper>
   )
 }
 
@@ -279,7 +285,6 @@ function RotateSecret(props) {
                 </Stack>
               </Paper>
             </Modal>
-
             <Button bg="red.7" radius={'sm'} onClick={open}>
               Rotate
             </Button>
@@ -290,19 +295,35 @@ function RotateSecret(props) {
   )
 }
 
-function PrivateKeyJWTCredentials({ credentials } = {}) {
+function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
   const [opened, { open, close }] = useDisclosure(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
   const [fileResult, setFileResult] = useState()
   const [filename, setFilename] = useState()
   const [nameValue, setNameValue] = useState()
+  const [modulus, setModulus] = useState()
+  const [cryptoKey, setCryptoKey] = useState()
+  const [algOptions, setAlgOptions] = useState([])
+  useEffect(() => {
+    if (!cryptoKey) return
 
-  const [importedKey, setImportedKey] = useState()
-  const [importedCert, setImportedCert] = useState()
-  const handleAddCredential = () => {
-    open()
-  }
+    setModulus(cryptoKey.algorithm.modulusLength)
+  }, [cryptoKey])
+  useEffect(() => {
+    switch (modulus) {
+      case 2048:
+        setAlgOptions(['RS256'])
+        break
+      case 3072:
+        setAlgOptions(['RS256', 'RS384'])
+        break
+      case 4096:
+        setAlgOptions(['RS256', 'RS384', 'RS512'])
+        break
+    }
+  }, [modulus])
+
   const handleCredentialInput = (file) => {
     if (!file) return
     setFilename(file.name)
@@ -311,132 +332,161 @@ function PrivateKeyJWTCredentials({ credentials } = {}) {
       const result = event.target.result.split(',')[1]
       setFileResult(result)
       const resultText = atob(result)
-      if (resultText.startsWith('-----BEGIN PUBLIC KEY-----')) {
-        importSPKI(resultText, 'RS256').then(console.log)
-        setImportedKey(resultText)
-        return
-      }
-      if (resultText.startsWith('-----BEGIN CERTIFICATE-----')) {
-        setImportedCert(resultText)
-      }
+      console.log(resultText)
     })
     reader.readAsDataURL(file)
   }
+
+  const saveAKey = () => {
+    setLoading(true)
+    updateApplication(clientId, {
+      private_key_jwt_credentials: {
+        name: nameValue,
+        key: fileResult,
+        expires_at: new Date().toISOString(),
+        alg: 'RS256' // TODO: respect selection e2e
+      }
+    })
+      .then((r) => {
+        console.log(r.payload)
+        setLoading(false)
+      })
+      .finally(close)
+  }
+
   return (
-    <>
-      <Paper p="md">
-        <Modal
-          opened={opened}
-          onClose={close}
-          size={'lg'}
-          title="Add New Credential"
-        >
-          <Paper p="md">
-            <TextInput
-              label="Name"
-              radius={'sm'}
-              placeholder="Enter a name for this credential"
-              description="Optionally set a name for this credential"
-              inputWrapperOrder={['label', 'input', 'description']}
-              rightSection={
-                <IconSparkles
+    <Paper p="md">
+      <Modal
+        opened={opened}
+        onClose={close}
+        size={'lg'}
+        title="Add New Credential"
+      >
+        <Paper p="md">
+          <TextInput
+            label="Name"
+            radius={'sm'}
+            placeholder="Enter a name for this credential"
+            description="Optionally set a name for this credential"
+            inputWrapperOrder={['label', 'input', 'description']}
+            rightSection={
+              <IconSparkles
+                style={{ width: rem(16), height: rem(16) }}
+                stroke={3}
+                onClick={() =>
+                  setNameValue(`${filename} ${new Date().toDateString()}`)
+                }
+              />
+            }
+            defaultValue={nameValue}
+          />
+          <Group m="sm" justify="space-around">
+            <FileInput
+              size="xs"
+              maw={250}
+              type="reset"
+              leftSection={
+                <IconPlus
                   style={{ width: rem(16), height: rem(16) }}
                   stroke={3}
-                  onClick={() =>
-                    setNameValue(`${filename} ${new Date().toDateString()}`)
-                  }
                 />
               }
-              defaultValue={nameValue}
+              placeholder="Upload RSA Public Key (pem), x509 cert (pem), JWK (jwk)"
+              onChange={handleCredentialInput}
+              accept=".pem, .pub, .key, .txt, .x509, .crt, .jwk, .jwks"
             />
-            <Group m="sm" justify="space-around">
-              <FileInput
-                size="xs"
-                maw={250}
-                type="reset"
-                leftSection={
-                  <IconPlus
-                    style={{ width: rem(16), height: rem(16) }}
-                    stroke={3}
-                  />
-                }
-                placeholder="Upload X509 Cert (.pem)"
-                onChange={handleCredentialInput}
-                accept=".pem, .pub, .key, .txt, .x509, .crt"
-              />
-              <FileInput
-                size="xs"
-                maw={250}
-                type="reset"
-                leftSection={
-                  <IconPlus
-                    style={{ width: rem(16), height: rem(16) }}
-                    stroke={3}
-                  />
-                }
-                placeholder="Upload RSA Public Key (.pem)"
-                onChange={handleCredentialInput}
-              />
-              <FileInput
-                size="xs"
-                maw={250}
-                type="reset"
-                leftSection={
-                  <IconPlus
-                    style={{ width: rem(16), height: rem(16) }}
-                    stroke={3}
-                  />
-                }
-                placeholder="Upload JWK (.jwk)"
-                onChange={handleCredentialInput}
-              />
-            </Group>
-            {fileResult && (
-              <Paper>
-                <Stack>
-                  <Text fz="xs">Credential Preview</Text>
-                  <CodeHighlight
-                    code={atob(fileResult)}
-                    maw={700}
-                    language={''}
-                  />
-                </Stack>
-                <Group>Select ALG</Group>
-              </Paper>
-            )}
-          </Paper>
-        </Modal>
-
-        <Paper>
-          <Stack m={'xs'} maw={1000}>
-            <Alert
-              title={
-                credentials
-                  ? 'Available Credentials'
-                  : 'No Available Credentials'
-              }
-              color="gray.3"
-            >
-              <Group justify="space-between">
-                <div />
-                <Button
-                  leftSection={
-                    <IconPlus
-                      style={{ width: rem(12), height: rem(12) }}
-                      stroke={1.5}
-                    />
-                  }
-                  variant="outline"
-                  size={'compact-xs'}
-                  onClick={handleAddCredential}
-                >
-                  Add Credential
+          </Group>
+          {fileResult && (
+            <Paper>
+              <Stack>
+                <Text fz="xs">Credential Preview</Text>
+                <CodeHighlight
+                  fz={'xs'}
+                  fw={100}
+                  code={atob(fileResult)}
+                  maw={700}
+                  language={''}
+                  withCopyButton={false}
+                />
+              </Stack>
+              <Group>
+                <Paper>
+                  <Text fz="xs">
+                    Credential Details <br />
+                    Key Modulus: {modulus}
+                  </Text>
+                </Paper>
+                <Select
+                  data={algOptions.map((opt) => ({ value: opt, label: opt }))}
+                  placeholder="Select Algorithm"
+                  label="Algorithm"
+                  radius={'sm'}
+                  defaultValue={'RS256'}
+                />
+                <DateInput label={'Set Expiry'} />
+                <Button mt="lg" onClick={saveAKey}>
+                  Submit
                 </Button>
               </Group>
-            </Alert>
-          </Stack>
+            </Paper>
+          )}
         </Paper>
-      </Paper>
-    </>
+      </Modal>
+      <Group justify="space-between">
+        <div />
+        <Button
+          leftSection={
+            <IconPlus
+              style={{ width: rem(12), height: rem(12) }}
+              stroke={1.5}
+            />
+          }
+          variant="outline"
+          size={'compact-sm'}
+          onClick={open}
+        >
+          Add Credential
+        </Button>
+      </Group>
+      {credentials && <CredentialsTable jwks={credentials} />}
+    </Paper>
+  )
+}
+
+function CredentialsTable({ jwks }) {
+  const rows = jwks.map(({ kid, kty, alg, crv, exp, ...jwk }, i) => {
+    // const jwkt = importJWK(jwk)
+    console.log(jwk)
+    return (
+      <Table.Tr key={`key-${i}`}>
+        <Table.Td>
+          <Group>
+            <Code>{kid}</Code>
+          </Group>
+        </Table.Td>
+        <Table.Td>{alg}</Table.Td>
+        <Table.Td>{crv}</Table.Td>
+        <Table.Td>{exp}</Table.Td>
+        <Table.Td>
+          <Button radius="sm" variant="outline" color={'red.3'}>
+            Revoke
+          </Button>
+        </Table.Td>
+      </Table.Tr>
+    )
+  })
+  return (
+    <Table>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>kid</Table.Th>
+          <Table.Th>alg</Table.Th>
+          <Table.Th>crv</Table.Th>
+          <Table.Th>exp</Table.Th>
+          <Table.Th>Actions</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   )
 }

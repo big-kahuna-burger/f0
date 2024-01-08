@@ -15,6 +15,28 @@ import ttl from './ttl.js'
 const { DASHBOARD_CLIENT_ID } = process.env
 
 export default {
+  enabledJWA: {
+    clientAuthSigningAlgValues: [
+      'RS256',
+      'RS384',
+      'RS512',
+
+      'PS256',
+      'PS384',
+      'PS512',
+
+      'ES256',
+      'ES256K',
+      'ES384',
+      'ES512',
+
+      'EdDSA',
+
+      'HS256',
+      'HS384',
+      'HS512'
+    ]
+  },
   // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
     properties: [CORS_PROP, F0_TYPE_PROP],
@@ -110,100 +132,13 @@ export default {
     resourceIndicators: {
       enabled: true,
       async defaultResource(ctx, client, oneOf) {
-        // @param ctx - koa request context
-        // @param client - client making the request
-        // @param oneOf {string[]} - The OP needs to select **one** of the values provided.
-        //                           Default is that the array is provided so that the request will fail.
-        //                           This argument is only provided when called during
-        //                           Authorization Code / Refresh Token / Device Code exchanges.
         if (client.clientId === DASHBOARD_CLIENT_ID) {
           return MANAGEMENT.identifier
         }
         return undefined
       },
-      async getResourceServerInfo(ctx, resourceIndicator, client) {
-        // @param ctx - koa request context
-        // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
-        // @param client - client making the request
-        const rs = await dbClient.resourceServer.findFirst({
-          where: { identifier: resourceIndicator }
-        })
-        if (client.clientId === DASHBOARD_CLIENT_ID) {
-          return {
-            scope: Object.keys(rs.scopes).join(' '),
-            audience: resourceIndicator,
-            accessTokenTTL: rs.ttlBrowser,
-            accessTokenFormat: 'jwt',
-            jwt: {
-              sign:
-                rs.signingAlg === 'HS256'
-                  ? {
-                      alg: 'HS256',
-                      key: rs.signingSecret
-                    }
-                  : { alg: 'RS256' }
-            }
-          }
-        }
-
-        const grant = await dbClient.oidcModel.findFirst({
-          where: {
-            AND: [
-              {
-                type: 13
-              },
-              {
-                payload: {
-                  path: ['clientId'],
-                  equals: client.clientId
-                }
-              },
-              {
-                payload: {
-                  path: ['resources', resourceIndicator],
-                  not: Prisma.DbNull
-                }
-              },
-              {
-                payload: {
-                  path: ['exp'],
-                  equals: 0
-                }
-              }
-            ]
-          }
-        })
-
-        if (grant) {
-          return {
-            scope: grant.payload.resources[resourceIndicator],
-            audience: resourceIndicator,
-            accessTokenTTL: rs.ttl,
-            accessTokenFormat: 'jwt',
-            jwt: {
-              sign:
-                rs.signingAlg === 'HS256'
-                  ? {
-                      alg: 'HS256',
-                      key: rs.signingSecret
-                    }
-                  : { alg: 'RS256' }
-            }
-          }
-        }
-
-        throw new errors.InvalidTarget(
-          `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
-        )
-      },
-      async useGrantedResource(ctx, model) {
-        // @param ctx - koa request context
-        // @param model - depending on the request's grant_type this can be either an AuthorizationCode, BackchannelAuthenticationRequest,
-        //                RefreshToken, or DeviceCode model instance.
-        //                You can use the instanceof operator to determine the type.
-
-        return true
-      }
+      getResourceServerInfo,
+      useGrantedResource: async (ctx, model) => true
     },
     // introspection: { enabled: true },
     rpInitiatedLogout: { enabled: true },
@@ -218,4 +153,68 @@ export default {
       return client.clientId !== DASHBOARD_CLIENT_ID
     }
   }
+}
+
+async function getResourceServerInfo(ctx, resourceIndicator, client) {
+  // @param ctx - koa request context
+  // @param resourceIndicator - resource indicator value either requested or resolved by the defaultResource helper.
+  // @param client - client making the request
+  const rs = await dbClient.resourceServer.findFirst({
+    where: { identifier: resourceIndicator }
+  })
+  if (client.clientId === DASHBOARD_CLIENT_ID) {
+    return {
+      scope: Object.keys(rs.scopes).join(' '),
+      audience: resourceIndicator,
+      accessTokenTTL: rs.ttlBrowser,
+      accessTokenFormat: 'jwt',
+      jwt: {
+        sign:
+          rs.signingAlg === 'HS256'
+            ? {
+                alg: 'HS256',
+                key: rs.signingSecret
+              }
+            : { alg: 'RS256' }
+      }
+    }
+  }
+
+  const grant = await dbClient.oidcModel.findFirst({
+    where: {
+      AND: [
+        { type: 13 },
+        { payload: { path: ['exp'], equals: 0 } },
+        { payload: { path: ['clientId'], equals: client.clientId } },
+        {
+          payload: {
+            path: ['resources', resourceIndicator],
+            not: Prisma.DbNull
+          }
+        }
+      ]
+    }
+  })
+
+  if (grant) {
+    return {
+      scope: grant.payload.resources[resourceIndicator],
+      audience: resourceIndicator,
+      accessTokenTTL: rs.ttl,
+      accessTokenFormat: 'jwt',
+      jwt: {
+        sign:
+          rs.signingAlg === 'HS256'
+            ? {
+                alg: 'HS256',
+                key: rs.signingSecret
+              }
+            : { alg: 'RS256' }
+      }
+    }
+  }
+
+  throw new errors.InvalidTarget(
+    `client "${client.clientId}" is not authorized to access requested "${resourceIndicator}" resource`
+  )
 }

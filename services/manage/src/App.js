@@ -4,8 +4,9 @@ import { SelectedUserContext } from './SelectedUser.context'
 import Shell from './Shell'
 import {
   getApplication,
-  getApplicationGrants,
   getApplications,
+  getClientGrantsByClientId,
+  getClientGrantsByResourceServerId,
   getConnections,
   getOidcMetadata,
   getResourceServer,
@@ -41,7 +42,7 @@ const routes = [
         element: <AppServer />,
         loader: async ({ params, request }) => {
           const activeApi = await getResourceServer(params.id)
-          const grants = await getApplicationGrants(params.id)
+          const grants = await getClientGrantsByResourceServerId(params.id)
           const searchParams = new URL(request.url).searchParams
           const page = searchParams.get('page')
             ? parseInt(searchParams.get('page'))
@@ -82,6 +83,14 @@ const routes = [
           if (params.tab === 'settings') {
             const metadata = await getOidcMetadata()
             return { activeApp, tab: params.tab, metadata }
+          }
+          if (
+            params.tab === 'quick' &&
+            activeApp.token_endpoint_auth_method === 'private_key_jwt'
+          ) {
+            const apis = await getResourceServers()
+            const grants = await getClientGrantsByClientId(params.id)
+            return { activeApp, tab: params.tab, apis, grants }
           }
           return { activeApp, tab: params.tab }
         }

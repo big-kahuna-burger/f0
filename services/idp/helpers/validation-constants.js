@@ -66,6 +66,8 @@ export const DEFAULT_CLIENT_INCLUDE = [
   'logo_uri',
   'grant_types',
   'response_types',
+  'jwks',
+  'jwks_uri',
   'token_endpoint_auth_method',
   'redirect_uris',
   'post_logout_redirect_uris',

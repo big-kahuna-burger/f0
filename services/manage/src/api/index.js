@@ -6,7 +6,7 @@ export {
   createApplication,
   deleteGrantById,
   getApplication,
-  getApplicationGrants,
+  getClientGrantsByResourceServerId,
   getApplications,
   getConnections,
   getResourceServer,
@@ -18,9 +18,10 @@ export {
   updateResourceServerScopes,
   enableDisableConnection,
   deleteApi,
-  getOidcMetadata
+  getOidcMetadata,
+  getClientGrantsByClientId
 }
-
+import { importJWK } from 'jose'
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 
 const usersUrl = `${baseUrl}/users`
@@ -125,9 +126,16 @@ async function getResourceServer(id) {
   return json
 }
 
-async function getApplicationGrants(id) {
+async function getClientGrantsByResourceServerId(id) {
   const opts = { headers: getHeaders() }
   const applicationGrants = await fetch(`${baseUrl}/api/${id}/grants`, opts)
+  const json = await applicationGrants.json()
+  return json
+}
+
+async function getClientGrantsByClientId(id) {
+  const opts = { headers: getHeaders() }
+  const applicationGrants = await fetch(`${baseUrl}/app/${id}/grants`, opts)
   const json = await applicationGrants.json()
   return json
 }
@@ -154,7 +162,8 @@ async function updateApplication(
     logo_uri,
     grant_types,
     token_endpoint_auth_method,
-    rotate_secret
+    rotate_secret,
+    private_key_jwt_credentials
   }
 ) {
   const body = {}
@@ -190,6 +199,9 @@ async function updateApplication(
   }
   if (rotate_secret !== undefined) {
     body.rotate_secret = rotate_secret
+  }
+  if (private_key_jwt_credentials) {
+    body.private_key_jwt_credentials = private_key_jwt_credentials
   }
 
   const opts = {
