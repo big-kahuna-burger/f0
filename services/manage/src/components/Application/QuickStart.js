@@ -1,7 +1,7 @@
 import { CodeHighlight } from '@mantine/code-highlight'
-import { Paper } from '@mantine/core'
-
-const privateKeyBlock = ({ issuer, client_id } = {}) => `const { readFile } = require('fs/promises')
+import { Paper, Select } from '@mantine/core'
+import { useEffect, useState } from 'react'
+const privateKeyBlock = ({ issuer, client_id, alg, kid } = {}) => `const { readFile } = require('fs/promises')
 const crypto = require('crypto')
 const http = require('http')
 
@@ -13,8 +13,8 @@ async function main() {
   const privateKeyPEM = crypto.createPrivateKey(pk)
   const signedJwt = await new SignJWT({})
     .setProtectedHeader({ 
-       alg: 'RS256', // or RS384 or PS256
-       kid: '(OPTIONAL)' 
+       alg: '${alg}',
+       kid: '${kid}' // it's optional
     })
     .setIssuedAt()
     .setExpirationTime('1m')
@@ -72,10 +72,12 @@ const codeBlock = ({
   response_types,
   redirect_uri,
   redirect_uris,
-  client_secret
+  client_secret,
+  alg,
+  kid
 }) =>
   token_endpoint_auth_method === 'private_key_jwt'
-    ? privateKeyBlock({ issuer, client_id })
+    ? privateKeyBlock({ issuer, client_id, alg, kid })
     : `const server = require('http').createServer().listen(9988)
 
 const { Issuer, generators } = require('openid-client')
@@ -152,17 +154,51 @@ server.once('listening', () => {
 
 const QuickStart = ({ app }) => {
   const redirectUris = app.redirect_uris ? app.redirect_uris.split(',') : []
-  const fixed = {
+  const fixedApp = {
     ...app,
     redirect_uris: renderArry(redirectUris),
     response_types: renderArry(app.response_types),
     redirect_uri: redirectUris[0]
   }
-  const cb = codeBlock(fixed)
-  return (
+  const [selectedCredential, setSelectedCredential] = useState()
+  const [alg, setAlg] = useState()
+  const [kid, setKid] = useState()
+  useEffect(() => {
+    if (selectedCredential && selectedCredential !== 'N/A') {
+      const cred = app.jwks?.keys?.find(
+        (cred) => cred.kid === selectedCredential
+      )
+      const { alg, kid } = cred
+      setAlg(alg)
+      setKid(kid)
+    }
+  }, [app, selectedCredential])
+
+  const options =
+    app.jwks?.keys?.map((cred) => ({
+      label: `${cred.alg} 🔑 ${cred.kid} ` || 'N/A',
+      value: cred.kid || 'N/A'
+    })) || []
+
+  return app.token_endpoint_auth_method === 'private_key_jwt' ? (
     <Paper>
-      <CodeHighlight code={cb} maw={850} language="js" highlightOnClient />
+      <Select
+        variant="outline"
+        onChange={(v) => setSelectedCredential(v)}
+        placeholder="Select a credential"
+        data={options}
+        miw={450}
+      />
+
+      {selectedCredential && (
+        <CodeHighlight
+          code={codeBlock({ alg, kid, ...fixedApp })}
+          language="js"
+        />
+      )}
     </Paper>
+  ) : (
+    <CodeHighlight code={codeBlock(fixedApp)} language="js" />
   )
 }
 export default QuickStart

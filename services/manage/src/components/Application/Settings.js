@@ -120,7 +120,7 @@ export const Settings = ({ app: activeApp }) => {
               fw={600}
               label="Name (client_name)"
               radius="sm"
-              m="sm"
+              m="md"
               description={
                 'Recognizable name for your application. Will be shown in consent prompt interactions interface.'
               }
@@ -194,6 +194,7 @@ export const Settings = ({ app: activeApp }) => {
               placeholder="https://my.app/logo-small.png"
               {...form.getInputProps('logo_uri')}
               disabled={activeApp.readonly}
+              m={'xs'}
             />
             <Select
               m="sm"

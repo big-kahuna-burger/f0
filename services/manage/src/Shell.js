@@ -10,7 +10,7 @@ import { UserCardImage } from './components/UserCardImage'
 const notLocalhost = !window.location.hostname.includes('localhost')
 function Shell() {
   const location = useLocation()
-  const [opened, { toggle }] = useDisclosure()
+  const [opened, { toggle }] = useDisclosure(true)
   return (
     <AppShell
       header={{ height: 60 }}
@@ -21,7 +21,7 @@ function Shell() {
         collapsed: { mobile: !opened, desktop: !opened }
       }}
       aside={{
-        width: '15%',
+        width: '0%',
         breakpoint: 'sm',
         collapsed: { desktop: false, mobile: true }
       }}
@@ -30,7 +30,7 @@ function Shell() {
       <AppShell.Header>
         {notLocalhost && <SpeedInsights />}
         <Group width="100%" px="md" align="center" justify="space-between">
-          <Burger opened={opened} onClick={toggle} size="sm" />
+          <Burger pt="xl" pl="md" opened={opened} onClick={toggle} size="sm" />
           <ToggleScheme />
         </Group>
       </AppShell.Header>

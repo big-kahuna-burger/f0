@@ -1,6 +1,7 @@
 import '@mantine/code-highlight/styles.css'
 import '@mantine/core/styles.css'
 import '@mantine/dates/styles.css'
+import './fonts/font.css'
 import './index.css'
 
 import {
@@ -8,6 +9,7 @@ import {
   createTheme,
   localStorageColorSchemeManager
 } from '@mantine/core'
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { AuthProvider } from 'react-oauth2-code-pkce'
@@ -47,8 +49,8 @@ const myAltColor = [
 ]
 
 const theme = createTheme({
-  fontFamily: 'Montserrat, sans-serif',
-  defaultRadius: 'md',
+  fontFamily: 'MonaspaceNeon-Regular, sans-serif',
+  defaultRadius: 'sm',
   colors: {
     myColor,
     myAltColor

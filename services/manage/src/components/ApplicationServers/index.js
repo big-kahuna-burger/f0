@@ -160,7 +160,6 @@ function CreateModal(props) {
         onClose={close}
         title="Create new API (Resource server)"
       >
-        <Anchor>https://datatracker.ietf.org/doc/html/rfc8707</Anchor>
         <CreateFormBox onSubmit={(values) => setSubmitting(values)} />
       </Modal>
 
@@ -242,8 +241,7 @@ function CreateFormBox(props) {
           <Group justify="center" mt="xl">
             <Button
               type="submit"
-              mt="xl"
-              fullWidth
+              m="lg"
               onClick={() => {
                 if (form.validate().hasErrors) {
                   return

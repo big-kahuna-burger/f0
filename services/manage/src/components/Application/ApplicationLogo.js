@@ -1,21 +1,11 @@
-import {
-  Card,
-  Group,
-  Image,
-  Text,
-  TextInput,
-  useMantineTheme
-} from '@mantine/core'
-import { useState } from 'react'
+import { Card, Group, Text } from '@mantine/core'
 import classes from './ApplicationLogo.module.css'
 
 const skeletonLogo = `${window.location.origin}/svg/fastify-seeklogo.com.svg`
 
 export function ArticleCard({ url }) {
-  const theme = useMantineTheme()
-
   return (
-    <Card withBorder m="sm" radius="md" className={classes.card}>
+    <Card withBorder m="xs" radius="md" className={classes.card}>
       <Group justify="center" m="sm">
         <Card.Section mih={75}>
           {url ? (

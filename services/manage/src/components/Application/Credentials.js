@@ -85,7 +85,7 @@ export const CredentialsTab = () => {
       miw={330}
     >
       <Group justify="space-between" p="xs">
-        <div style={{ minWidth: 150, maxWidth: 250 }}>
+        <div style={{ minWidth: 50, maxWidth: 250 }}>
           <Text fw={600}>Authentication Methods</Text>
           <Text c="dimmed" fz={'sm'}>
             Configure the method to use when making requests to any endpoint
@@ -93,19 +93,18 @@ export const CredentialsTab = () => {
           </Text>
         </div>
         <div>
-          <Stack maw={850}>
+          <Stack miw={150} maw={850}>
             <Skeleton visible={loading}>
               <Text fw={600} fz="sm" m="xs">
                 Methods
               </Text>
-              <Group m="xs" mb="xl" justify="space-around">
+              <Group>
                 <Button
                   variant={
                     authmethod === 'private_key_jwt' ? 'filled' : 'outline'
                   }
                   size="sm"
                   disabled={loading}
-                  miw={220}
                   radius={'sm'}
                   onClick={() => handleMethodChange('private_key_jwt')}
                 >
@@ -120,7 +119,6 @@ export const CredentialsTab = () => {
                     authmethod === 'client_secret_post' ? 'filled' : 'outline'
                   }
                   disabled={loading}
-                  miw={220}
                   onClick={() => handleMethodChange('client_secret_post')}
                 >
                   <Text fw={600} fz="xs">
@@ -134,7 +132,6 @@ export const CredentialsTab = () => {
                     authmethod === 'client_secret_basic' ? 'filled' : 'outline'
                   }
                   disabled={loading}
-                  miw={220}
                   onClick={() => handleMethodChange('client_secret_basic')}
                 >
                   <Text fw={600} fz="xs">
@@ -146,7 +143,6 @@ export const CredentialsTab = () => {
                   radius={'sm'}
                   variant={authmethod === 'none' ? 'filled' : 'outline'}
                   disabled={loading}
-                  miw={220}
                   onClick={() => handleMethodChange('none')}
                 >
                   <Text fw={600} fz="xs">
@@ -156,14 +152,15 @@ export const CredentialsTab = () => {
               </Group>
               {canRotateSecret(app) && (
                 <Stack maw={480}>
-                  <Text fz="xs">Client Secret</Text>
                   <Group grow align="center" justify="space-between">
                     <PasswordInput
+                      label="Client Secret"
                       m={'sm'}
                       value={clientSecret}
                       size="xs"
                       fz={'xs'}
                       radius={'sm'}
+                      pt="md"
                       maw={rem(420)}
                       onChange={() => {}}
                     />
@@ -356,7 +353,7 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
   }
 
   return (
-    <Paper p="md">
+    <Paper p="md" shadow={'xl'}>
       <Modal
         opened={opened}
         onClose={close}
@@ -442,8 +439,11 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
               stroke={1.5}
             />
           }
+          radius={'xs'}
+          mb="sm"
           variant="outline"
           size={'compact-sm'}
+          color={'blue.3'}
           onClick={open}
         >
           Add Credential
@@ -483,12 +483,22 @@ function CredentialsTable({ jwks }) {
 
   const rows = jwks.map(({ kid, kty, alg, crv, exp, ...jwk }, i) => {
     const mod = jwkImported?.[i]
-      ? jwkImported[i].algorithm.modulusLength
+      ? jwkImported[i]?.algorithm?.modulusLength
       : undefined
+
     let opts
-    if (mod) {
+
+    if (crv?.startsWith('P-')) {
+      const es = {
+        'P-256': 'ES256',
+        'P-384': 'ES384',
+        'P-521': 'ES512'
+      }[crv]
+      opts = [es]
+    } else if (mod) {
       opts = algOpts[mod / 8]
     }
+
     return (
       <Table.Tr key={`key-${i}`}>
         <Table.Td>
@@ -505,6 +515,7 @@ function CredentialsTable({ jwks }) {
               miw={78}
               size="xs"
               value={kidAlgo[kid] || alg}
+              disabled={kty !== 'RSA'}
               data={opts.map((o) => ({
                 value: o,
                 label: o
@@ -529,8 +540,19 @@ function CredentialsTable({ jwks }) {
         </Table.Td>
         <Table.Td>{crv}</Table.Td>
         <Table.Td>{exp}</Table.Td>
-        <Table.Td align="flex-end">
-          <Group align="flex-end" justify="space-between" miw={220} maw={220}>
+        <Table.Td>
+          <Group
+            classNames={{
+              root: {
+                '--group-align': 'flex-end'
+              }
+            }}
+            align="flex-end"
+            justify="flex-end"
+            miw={220}
+            maw={220}
+            gap="sm"
+          >
             {dirtyKeys.includes(kid) ? (
               <>
                 <Button
@@ -578,21 +600,18 @@ function CredentialsTable({ jwks }) {
     )
   })
   return (
-    <Paper maw={1200}>
-      <Table>
-        <Table.Thead>
-          <Table.Tr>
-            <Table.Th>kid</Table.Th>
-            <Table.Th>mod</Table.Th>
-            <Table.Th>kty</Table.Th>
-            <Table.Th>alg</Table.Th>
-            <Table.Th>crv?</Table.Th>
-            <Table.Th>exp</Table.Th>
-            <Table.Th>Actions</Table.Th>
-          </Table.Tr>
-        </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
-      </Table>
-    </Paper>
+    <Table striped highlightOnHover withTableBorder>
+      <Table.Thead>
+        <Table.Tr>
+          <Table.Th>kid</Table.Th>
+          <Table.Th>mod</Table.Th>
+          <Table.Th>kty</Table.Th>
+          <Table.Th>alg</Table.Th>
+          <Table.Th>crv?</Table.Th>
+          <Table.Th>{}</Table.Th>
+        </Table.Tr>
+      </Table.Thead>
+      <Table.Tbody>{rows}</Table.Tbody>
+    </Table>
   )
 }
