@@ -6,11 +6,13 @@ const { SignJWT } = require('jose')
 const uuid = require('uuid')
 
 async function main() {
-  const alg = 'ES256K'
-  const pk = await readFile('./secp256k1.pem')
+  const pk = await readFile('./test/fixtures/secp256k1.pem')
   const privateKeyPEM = crypto.createPrivateKey(pk)
   const signedJwt = await new SignJWT({})
-    .setProtectedHeader({ alg })
+    .setProtectedHeader({
+      alg: 'ES256K'
+      //kid: 'hiwHDoFj0sbbSfsAWJ9btyMunxwC2rli-tRgwYrVgWc' // it's optional
+    })
     .setIssuedAt()
     .setExpirationTime('1m')
     .setJti(uuid.v4())
@@ -18,10 +20,6 @@ async function main() {
     .setSubject('yXBRcQvj8shwFyuGz9pV_')
     .setAudience('http://localhost:9876/oidc')
     .sign(privateKeyPEM)
-  const [header, pl, sig] = signedJwt.split('.')
-  console.log(Buffer.from(header, 'base64url').toString(), {
-    secretLength: sig.length
-  })
 
   const data = {
     grant_type: 'client_credentials',
