@@ -24,6 +24,18 @@ export default async function (fastify, opts) {
     updateApplicationConnection
   )
 
+  fastify.get(
+    '/:id/grants',
+    { onRequest: fastify.authenticate },
+    getClientGrants
+  )
+
+  async function getClientGrants(request, reply) {
+    const { id } = request.params
+    const grants = await api.getClientGrantsByClientId(id)
+    return grants
+  }
+
   async function updateApplicationConnection(request, reply) {
     const { id, connectionId, action } = request.params
     const client = await api.getClient(id)
@@ -83,7 +95,8 @@ export default async function (fastify, opts) {
       post_logout_redirect_uris: postLogoutRedirectUris,
       token_endpoint_auth_method: tokenEndpointAuthMethod,
       grant_types: grantTypes,
-      rotate_secret: rotateSecret
+      rotate_secret: rotateSecret,
+      private_key_jwt_credentials: privateKeyJwtCredentials
     } = body
 
     const [err, result] = await api.updateClient(id, {
@@ -95,7 +108,8 @@ export default async function (fastify, opts) {
       redirectUris,
       initiateLoginUri,
       postLogoutRedirectUris,
-      tokenEndpointAuthMethod
+      tokenEndpointAuthMethod,
+      privateKeyJwtCredentials
     })
     if (err) {
       reply.code(err.code).send({ error: err.message })

@@ -1,10 +1,11 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
+import { exportJWK, importSPKI } from 'jose'
 import { nanoid } from 'nanoid'
 import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
+import { calculateKid } from '../oidc/helpers/keystore.js'
 import prisma from './client.js'
-
 const randomFill = promisify(crypto.randomFill)
 
 async function updateResourceServer(id, data) {
@@ -33,11 +34,12 @@ async function updateClient(
     logoUri,
     clientName,
     grantTypes,
+    rotateSecret,
     redirectUris,
     initiateLoginUri,
     postLogoutRedirectUris,
     tokenEndpointAuthMethod,
-    rotateSecret
+    privateKeyJwtCredentials
   }
 ) {
   const foundClient = await prisma.oidcClient.findFirst({ where: { id } })
@@ -85,16 +87,47 @@ async function updateClient(
       payload.client_secret = undefined
       payload.client_secret_expires_at = undefined
       payload.client_secret_issued_at = undefined
-    } else if (!payload.client_secret) {
-      payload.client_secret = await secretFactory()
-      payload.client_secret_expires_at = 0
-      payload.client_secret_issued_at = epochTime()
     }
   }
-  if (rotateSecret === true) {
+  if (
+    (payload.token_endpoint_auth_method === 'client_secret_post' ||
+      payload.token_endpoint_auth_method === 'client_secret_basic') &&
+    (rotateSecret === true || !payload.client_secret)
+  ) {
     payload.client_secret = await secretFactory()
     payload.client_secret_expires_at = 0
     payload.client_secret_issued_at = epochTime()
+  }
+
+  if (privateKeyJwtCredentials) {
+    const { key, expires_at, remove } = privateKeyJwtCredentials
+    if (key) {
+      const fromB64 = Buffer.from(key, 'base64')
+      const pem = fromB64.toString()
+      console.log(pem)
+      const spki = await importSPKI(pem)
+      if (spki.type !== 'public') {
+        throw new Error('invalid key type. Expected public key')
+      }
+
+      const exported = await exportJWK(spki)
+      exported.kid ||= calculateKid(exported)
+      exported.alg ||= generateAlg(exported)
+
+      if (payload?.jwks?.keys?.length) {
+        const found = payload.jwks.keys.find((x) => x.kid === exported.kid)
+        if (found) {
+          throw new Error('kid already exists')
+        }
+
+        payload.jwks.keys = [...payload.jwks.keys, exported]
+      } else {
+        payload.jwks = { keys: [exported] }
+      }
+    }
+    if (remove && payload?.jwks?.keys?.length) {
+      payload.jwks.keys = payload.jwks?.keys.filter((x) => x.kid !== remove)
+    }
   }
   const client = await prisma.oidcClient.update({
     where: { id },
@@ -519,6 +552,23 @@ async function loadGrantsByResourceIdentifier({
     }, [])
 }
 
+async function getClientGrantsByClientId(id) {
+  const grants = await prisma.oidcModel.findMany({
+    where: {
+      type: 13,
+      AND: [
+        {
+          payload: { path: ['clientId'], equals: id }
+        },
+        {
+          payload: { path: ['accountId'], equals: Prisma.DbNull }
+        }
+      ]
+    }
+  })
+  return grants.map((x) => x.payload)
+}
+
 async function getConnections({
   skip = 0,
   take = 100,
@@ -595,7 +645,8 @@ export {
   deleteResourceServer,
   deleteClient,
   addConnectionToClient,
-  removeConnectionFromClient
+  removeConnectionFromClient,
+  getClientGrantsByClientId
 }
 
 async function secretFactory() {
@@ -633,4 +684,25 @@ async function loadAccounts({ skip = 0, take = 20 } = {}) {
   const flat = accounts.map((acc) => flattenAccount(acc))
   return flat
 }
-// console.log(await loadAccounts())
+
+function generateAlg(jwk) {
+  if (jwk.kty === 'RSA') {
+    const keyl = Buffer.from(jwk.n, 'base64').length
+    return `RS${keyl}`
+  }
+
+  if (jwk.kty === 'EC') {
+    switch (jwk.crv) {
+      case 'P-256':
+        return 'ES256'
+      case 'P-384':
+        return 'ES384'
+      case 'P-521':
+        return 'ES512'
+      case 'secp256k1':
+        return 'ES256K'
+      default:
+        throw new Error('unsupported EC curve')
+    }
+  }
+}

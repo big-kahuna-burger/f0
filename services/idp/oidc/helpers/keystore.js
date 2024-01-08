@@ -21,7 +21,7 @@ export const calculateJwks = async (jwks) => {
   return createLocalJWKSet({ keys: publicKeys })
 }
 
-function calculateKid(jwk) {
+export function calculateKid(jwk) {
   let components
 
   switch (jwk.kty) {
