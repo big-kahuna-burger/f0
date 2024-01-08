@@ -19,7 +19,6 @@ import {
 import { DateInput } from '@mantine/dates'
 import { useDisclosure } from '@mantine/hooks'
 import { IconPlus, IconSparkles } from '@tabler/icons-react'
-import { exportJWK, importJWK, importPKCS8, importSPKI, importX509 } from 'jose'
 import { useEffect, useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
 import { updateApplication } from '../../api'
@@ -82,7 +81,7 @@ export const CredentialsTab = () => {
       withBorder
       p="sm"
       radius={'sm'}
-      maw={1000}
+      maw={1200}
       miw={330}
     >
       <Group justify="space-between" p="xs">
@@ -94,7 +93,7 @@ export const CredentialsTab = () => {
           </Text>
         </div>
         <div>
-          <Stack maw={520}>
+          <Stack maw={850}>
             <Skeleton visible={loading}>
               <Text fw={600} fz="sm" m="xs">
                 Methods
@@ -305,24 +304,27 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
   const [modulus, setModulus] = useState()
   const [cryptoKey, setCryptoKey] = useState()
   const [algOptions, setAlgOptions] = useState([])
+  const [kty, setKty] = useState()
   useEffect(() => {
     if (!cryptoKey) return
 
     setModulus(cryptoKey.algorithm.modulusLength)
   }, [cryptoKey])
   useEffect(() => {
-    switch (modulus) {
-      case 2048:
-        setAlgOptions(['RS256'])
-        break
-      case 3072:
-        setAlgOptions(['RS256', 'RS384'])
-        break
-      case 4096:
-        setAlgOptions(['RS256', 'RS384', 'RS512'])
-        break
+    if (kty === 'RSA') {
+      switch (modulus) {
+        case 2048:
+          setAlgOptions(['RS256', 'PS256'])
+          break
+        case 3072:
+          setAlgOptions(['RS256', 'RS384', 'PS256', 'PS384'])
+          break
+        case 4096:
+          setAlgOptions(['RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512'])
+          break
+      }
     }
-  }, [modulus])
+  }, [modulus, kty])
 
   const handleCredentialInput = (file) => {
     if (!file) return
@@ -332,7 +334,6 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
       const result = event.target.result.split(',')[1]
       setFileResult(result)
       const resultText = atob(result)
-      console.log(resultText)
     })
     reader.readAsDataURL(file)
   }
@@ -454,39 +455,144 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
 }
 
 function CredentialsTable({ jwks }) {
+  const { activeApp } = useLoaderData()
+  const jwkImported = activeApp.jwkImported
+  const algOpts = {
+    256: ['RS256', 'PS256'],
+    384: ['RS256', 'RS384', 'PS256', 'PS384'],
+    512: ['RS256', 'RS384', 'RS512', 'PS256', 'PS384', 'PS512']
+  }
+  const [kidAlgo, setkidAlgo] = useState({})
+  const [dirtyKeys, setDirtyKeys] = useState([])
+  const handleChange = (kid, data) => {
+    setkidAlgo({ ...kidAlgo, [kid]: data })
+    setDirtyKeys([...dirtyKeys, kid])
+  }
+
+  const saveJwk = (kid) => {
+    console.log('save', kid, kidAlgo[kid])
+    updateApplication(activeApp.client_id, {
+      private_key_jwt_credentials: {
+        change: {
+          kid,
+          alg: kidAlgo[kid]
+        }
+      }
+    })
+  }
+
   const rows = jwks.map(({ kid, kty, alg, crv, exp, ...jwk }, i) => {
-    // const jwkt = importJWK(jwk)
-    console.log(jwk)
+    const mod = jwkImported?.[i]
+      ? jwkImported[i].algorithm.modulusLength
+      : undefined
+    let opts
+    if (mod) {
+      opts = algOpts[mod / 8]
+    }
     return (
       <Table.Tr key={`key-${i}`}>
         <Table.Td>
-          <Group>
-            <Code>{kid}</Code>
-          </Group>
+          <pre fz="xs" c="dimmed" maw={150}>
+            {`${kid?.slice(0, 16) || ''}...`}
+          </pre>
         </Table.Td>
-        <Table.Td>{alg}</Table.Td>
+        <Table.Td>{mod}</Table.Td>
+        <Table.Td>{kty}</Table.Td>
+        <Table.Td>
+          {opts ? (
+            <Select
+              maw={120}
+              miw={78}
+              size="xs"
+              value={kidAlgo[kid] || alg}
+              data={opts.map((o) => ({
+                value: o,
+                label: o
+              }))}
+              onChange={(data) => handleChange(kid, data)}
+            />
+          ) : (
+            <Select
+              maw={120}
+              miw={78}
+              size="xs"
+              value={alg}
+              disabled
+              data={[
+                {
+                  value: alg,
+                  label: alg
+                }
+              ]}
+            />
+          )}
+        </Table.Td>
         <Table.Td>{crv}</Table.Td>
         <Table.Td>{exp}</Table.Td>
-        <Table.Td>
-          <Button radius="sm" variant="outline" color={'red.3'}>
-            Revoke
-          </Button>
+        <Table.Td align="flex-end">
+          <Group align="flex-end" justify="space-between" miw={220} maw={220}>
+            {dirtyKeys.includes(kid) ? (
+              <>
+                <Button
+                  radius="xs"
+                  size="compact-xs"
+                  variant="outline"
+                  color={'blue.3'}
+                  onClick={() => saveJwk(kid)}
+                >
+                  Save
+                </Button>
+                <Button
+                  radius="xs"
+                  size="compact-xs"
+                  variant="outline"
+                  color={'gray.3'}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  radius="xs"
+                  size="compact-xs"
+                  variant="outline"
+                  color={'red.3'}
+                >
+                  Revoke
+                </Button>
+              </>
+            ) : (
+              <>
+                <div style={{ minWidth: 140 }} />
+                <Button
+                  radius="xs"
+                  size="compact-xs"
+                  variant="outline"
+                  color={'red.3'}
+                >
+                  Revoke
+                </Button>
+              </>
+            )}
+          </Group>
         </Table.Td>
       </Table.Tr>
     )
   })
   return (
-    <Table>
-      <Table.Thead>
-        <Table.Tr>
-          <Table.Th>kid</Table.Th>
-          <Table.Th>alg</Table.Th>
-          <Table.Th>crv</Table.Th>
-          <Table.Th>exp</Table.Th>
-          <Table.Th>Actions</Table.Th>
-        </Table.Tr>
-      </Table.Thead>
-      <Table.Tbody>{rows}</Table.Tbody>
-    </Table>
+    <Paper maw={1200}>
+      <Table>
+        <Table.Thead>
+          <Table.Tr>
+            <Table.Th>kid</Table.Th>
+            <Table.Th>mod</Table.Th>
+            <Table.Th>kty</Table.Th>
+            <Table.Th>alg</Table.Th>
+            <Table.Th>crv?</Table.Th>
+            <Table.Th>exp</Table.Th>
+            <Table.Th>Actions</Table.Th>
+          </Table.Tr>
+        </Table.Thead>
+        <Table.Tbody>{rows}</Table.Tbody>
+      </Table>
+    </Paper>
   )
 }

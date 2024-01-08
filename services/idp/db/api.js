@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
-import { exportJWK, importSPKI } from 'jose'
+import { exportJWK, importJWK, importSPKI } from 'jose'
 import { nanoid } from 'nanoid'
 import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
 import { calculateKid } from '../oidc/helpers/keystore.js'
@@ -100,7 +100,7 @@ async function updateClient(
   }
 
   if (privateKeyJwtCredentials) {
-    const { key, expires_at, remove } = privateKeyJwtCredentials
+    const { key, expires_at, remove, change } = privateKeyJwtCredentials
     if (key) {
       const fromB64 = Buffer.from(key, 'base64')
       const pem = fromB64.toString()
@@ -127,6 +127,25 @@ async function updateClient(
     }
     if (remove && payload?.jwks?.keys?.length) {
       payload.jwks.keys = payload.jwks?.keys.filter((x) => x.kid !== remove)
+    }
+    if (change) {
+      const { kid, alg } = change
+      const found = payload.jwks.keys.find((x) => x.kid === kid)
+      if (!found) {
+        throw new Error('kid not found')
+      }
+      if (found.kty !== 'RSA') {
+        throw new Error('only alg change to RSA keys is supported for now')
+      }
+      const n = Buffer.from(found.n, 'base64')
+
+      if (parseInt(alg.slice(-3), 10) > n.length) {
+        throw new Error('invalid alg')
+      }
+      found.alg = alg
+      payload.jwks.keys = payload.jwks.keys.map((x) =>
+        x.kid === kid ? found : x
+      )
     }
   }
   const client = await prisma.oidcClient.update({

@@ -21,7 +21,7 @@ export {
   getOidcMetadata,
   getClientGrantsByClientId
 }
-import { importJWK } from 'jose'
+import { exportJWK, importJWK } from 'jose'
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
 
 const usersUrl = `${baseUrl}/users`
@@ -144,10 +144,21 @@ async function getApplication(id) {
   const opts = { headers: getHeaders() }
   const application = await fetch(`${baseUrl}/app/${id}`, opts)
   const json = await application.json()
+  const jwkImported = json.jwks?.keys?.length
+    ? await Promise.all(
+        json.jwks.keys.map((jwk) => {
+          if (jwk.alg === 'ES256K') {
+            return Promise.resolve()
+          }
+          return importJWK(jwk, jwk.alg)
+        })
+      )
+    : undefined
   return {
     ...json,
     redirect_uris: json.redirect_uris.join(','),
-    post_logout_redirect_uris: json.post_logout_redirect_uris.join(',')
+    post_logout_redirect_uris: json.post_logout_redirect_uris.join(','),
+    jwkImported
   }
 }
 

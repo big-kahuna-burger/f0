@@ -15,7 +15,11 @@ function Shell() {
     <AppShell
       header={{ height: 60 }}
       footer={{ height: 60 }}
-      navbar={{ width: 300, breakpoint: 'sm', collapsed: { mobile: !opened } }}
+      navbar={{
+        width: 300,
+        breakpoint: 'sm',
+        collapsed: { mobile: !opened, desktop: !opened }
+      }}
       aside={{
         width: '15%',
         breakpoint: 'sm',
@@ -26,7 +30,7 @@ function Shell() {
       <AppShell.Header>
         {notLocalhost && <SpeedInsights />}
         <Group width="100%" px="md" align="center" justify="space-between">
-          <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
+          <Burger opened={opened} onClick={toggle} size="sm" />
           <ToggleScheme />
         </Group>
       </AppShell.Header>

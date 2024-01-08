@@ -109,7 +109,7 @@ export const Settings = ({ app: activeApp }) => {
       withBorder
       p="sm"
       radius={'sm'}
-      maw={832}
+      maw={1000}
       miw={330}
     >
       <Stack fw={600} mt="xs">
