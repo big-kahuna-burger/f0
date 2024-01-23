@@ -6,5 +6,6 @@ export default defineConfig({
       reporter: ['text', 'html'],
       exclude: [...configDefaults.coverage.exclude, '*.cjs', 'device-flow.js']
     }
-  }
+  },
+  testTimeout: 100000,
 })

@@ -156,11 +156,7 @@ export default async function interactionsRouter(fastify, opts) {
       return reply.redirect(303, returnTo)
     }
 
-    const result = {
-      login: {
-        accountId: account.accountId
-      }
-    }
+    const result = { login: { accountId: account.accountId } }
 
     const returnTo = await provider.interactionResult(
       request,

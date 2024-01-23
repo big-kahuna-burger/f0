@@ -22,6 +22,7 @@ describe('interaction router', () => {
       await fastify.close()
     }
   })
+
   test('random interaction hit will produce SessionNotFound', async (t) => {
     const baseUrl = `http://localhost:${port}`
     try {
@@ -61,7 +62,7 @@ describe('interaction router', () => {
     const loginResponse = await got.post(
       `${baseUrl}${headers.location}/login`,
       {
-        followRedirect: false, // important to not follow redirects
+        followRedirect: false,
         headers: {
           Cookie: headers['set-cookie'].join(';')
         },

@@ -28,6 +28,15 @@ const identDb = {}
 const passwordHashDb = {}
 const resourceServersDB = {}
 
+const connectionsDB = {
+  default: {
+    id: 'default',
+    name: 'default',
+    type: 'DB',
+    readonly: true
+  }
+}
+
 const clientMock = {
   id: 'goodclient',
   payload: {
@@ -42,6 +51,14 @@ const clientMock = {
     logo_uri: 'https://somerp.com/logo.png'
   },
   readonly: true
+}
+
+const clientConnectionsDB = {
+  default: {
+    connectionId: 'default',
+    clientId: 'goodclient',
+    connection: connectionsDB.default
+  }
 }
 
 const oidcClientDb = {
@@ -87,12 +104,20 @@ export const setupPrisma = async (prisma) => {
   prisma.oidcClient.update.mockImplementation(updateOidcClient)
   prisma.oidcModel.create.mockImplementation(oidcModelCreate)
   prisma.oidcModel.count.mockImplementation(oidcModelCount)
+  prisma.clientConnection.findMany.mockImplementation(findManyClientConnections)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function findManyClientConnections({
+  where: { clientId },
+  include: { connection }
+}) {
+  return Object.values(clientConnectionsDB)
+}
 
 function oidcModelCreate({ data }) {
   if (data.type === 13) {
@@ -188,6 +213,7 @@ async function profileFindFirst({ where: { email } }) {
 
 async function profileCreate({ data: { Account, Address, ...data } }) {
   profilesDB[data.email] = data
+  accountsDB[Account.connect.id].Profile = [profilesDB[data.email]] // cross connect account and profile
   profilesDB[data.email].Account = accountsDB[Account.connect.id]
   return profilesDB[data.email]
 }
