@@ -105,12 +105,20 @@ export const setupPrisma = async (prisma) => {
   prisma.oidcModel.create.mockImplementation(oidcModelCreate)
   prisma.oidcModel.count.mockImplementation(oidcModelCount)
   prisma.clientConnection.findMany.mockImplementation(findManyClientConnections)
+  prisma.connection.findFirst.mockImplementation(findFirstConnection)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
   return prisma
 }
 
 export { clientMock, getCurrentKeys }
+
+function findFirstConnection({ where: { id, name } }) {
+  if (id) {
+    return connectionsDB[id]
+  }
+  return Object.values(connectionsDB).find((c) => c.name === name)
+}
 
 function findManyClientConnections({
   where: { clientId },

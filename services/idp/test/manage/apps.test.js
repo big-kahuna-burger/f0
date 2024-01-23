@@ -1,4 +1,3 @@
-import exp from 'constants'
 import got from 'got'
 import { beforeEach, describe, expect, it } from 'vitest'
 import * as helper from '../helper.js'

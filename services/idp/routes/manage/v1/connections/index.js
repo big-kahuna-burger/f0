@@ -1,6 +1,5 @@
-import * as api from '../../../../db/api.js'
-
 export default async function (fastify, opts) {
+  const api = opts.dbClientForManage
   fastify.get('/', { onRequest: fastify.authenticate }, getConnections)
   fastify.get('/:id', { onRequest: fastify.authenticate }, getConnection)
   fastify.delete('/:id', { onRequest: fastify.authenticate }, deleteConnection)

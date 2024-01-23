@@ -7,7 +7,7 @@ class Connection {
     this.id = id
     this.data = data
   }
-  async enableClient(clientId) {}
+  // async enableClient(clientId) {}
   static async getEnabledConnections(clientId) {
     const args = {
       where: { clientId },
