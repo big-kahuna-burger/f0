@@ -1,0 +1,189 @@
+datasource db {
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [pgcrypto]
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "tracing"]
+}
+
+// Dynamic Configuration
+model Config {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  jwks       Json[]
+  cookieKeys String[]
+  grantDebug Boolean? @default(false)
+  updatedAt  DateTime @default(now()) @updatedAt
+}
+
+// ADAPTER
+model OidcModel {
+  id         String    @id
+  type       Int
+  payload    Json
+  grantId    String?
+  userCode   String?
+  uid        String?
+  expiresAt  DateTime?
+  consumedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+
+  @@unique([id, type])
+  @@map("oidc_model")
+}
+
+model OidcClient {
+  id               String             @id
+  payload          Json
+  readonly         Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @default(now()) @updatedAt
+  ClientConnection ClientConnection[]
+
+  @@map("oidc_client")
+}
+
+// END ADAPTER
+
+model Account {
+  id        String     @id
+  updatedAt DateTime   @default(now()) @updatedAt
+  Login     Login[]
+  Identity  Identity[]
+  Profile   Profile[]
+
+  @@map("account")
+}
+
+model Profile {
+  id                  String    @id
+  email               String    @unique
+  Account             Account   @relation(fields: [id], references: [id])
+  birthdate           DateTime? @db.Date
+  emailVerified       Boolean   @default(false)
+  familyName          String?
+  gender              String?
+  givenName           String?
+  locale              String?
+  middleName          String?
+  name                String?
+  nickname            String?
+  phoneNumber         String?
+  phoneNumberVerified Boolean   @default(false)
+  picture             String?
+  preferredUsername   String?
+  profile             String?
+  updatedAt           DateTime  @default(now()) @updatedAt
+  website             String?
+  zoneinfo            String?
+  Address             Address?  @relation(fields: [addressId], references: [id], onDelete: SetNull)
+  addressId           String?   @db.Uuid
+
+  @@map("profile")
+}
+
+model Address {
+  id            String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  formatted     String?
+  streetAddress String?
+  locality      String?
+  region        String?
+  postalCode    String?
+  country       String?
+  updatedAt     DateTime  @default(now()) @updatedAt
+  Profile       Profile[]
+
+  @@map("address")
+}
+
+model Login {
+  id      String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  loginTs DateTime? @default(now()) @db.Timestamptz
+  sub     String
+  Account Account?  @relation(fields: [sub], references: [id], onDelete: Cascade)
+  method  AMR       @default(PWD)
+
+  @@map("login")
+}
+
+model Identity {
+  id           String         @id @default(dbgenerated("gen_random_uuid()"))
+  sub          String
+  provider     String
+  updatedAt    DateTime       @default(now()) @updatedAt
+  Account      Account        @relation(fields: [sub], references: [id], onDelete: Cascade)
+  PasswordHash PasswordHash[]
+  connectionId String
+  Connection   Connection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+
+  @@index([sub])
+  @@map("identity")
+}
+
+model PasswordHash {
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  identityId String
+  hash       String
+  updatedAt  DateTime @default(now()) @updatedAt
+  Identity   Identity @relation(fields: [identityId], references: [id], onDelete: Cascade)
+
+  @@map("password_hash")
+}
+
+model ResourceServer {
+  id               String         @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  identifier       String         @unique
+  signingAlg       RS_SIGNING_ALG @default(RS256)
+  scopes           Json           @default("{}")
+  updatedAt        DateTime       @default(now()) @updatedAt
+  ttl              Int            @default(86400)
+  ttlBrowser       Int            @default(7200)
+  allowSkipConsent Boolean        @default(false)
+  readOnly         Boolean        @default(false)
+  signingSecret    String?        @db.Char(32)
+
+  @@map("resource_server")
+}
+
+model Connection {
+  id               String             @id @default(dbgenerated("gen_random_uuid()"))
+  name             String
+  updatedAt        DateTime           @default(now()) @updatedAt
+  type             CONNECTION_TYPE    @default(DB)
+  ClientConnection ClientConnection[]
+  readonly         Boolean            @default(false)
+  Identities       Identity[]
+
+  @@map("connection")
+}
+
+model ClientConnection {
+  clientId     String
+  connectionId String
+  client       OidcClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+  readonly     Boolean    @default(false)
+
+  @@id([clientId, connectionId, readonly])
+  @@map("client_connection")
+}
+
+enum RS_SIGNING_ALG {
+  RS256
+  HS256
+}
+
+enum CONNECTION_TYPE {
+  DB
+}
+
+enum AMR {
+  PWD
+  PASSKEY
+}

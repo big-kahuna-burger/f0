@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "password_hash" ALTER COLUMN "updatedAt" SET DEFAULT CURRENT_TIMESTAMP;

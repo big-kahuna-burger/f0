@@ -1,0 +1,25 @@
+@font-face {
+    font-family: 'MonaspaceNeon';
+    src: local('MonaspaceNeon-Regular'),
+         url('./MonaspaceNeon-Regular.woff') format('woff')
+}
+@font-face {
+    font-family: 'MonaspaceNeon-SemiBold';
+    src: local('MonaspaceNeon-SemiBold'),
+         url('./MonaspaceNeon-SemiBold.woff') format('woff')
+}
+@font-face {
+    font-family: 'MonaspaceNeon-Light';
+    src: local('MonaspaceNeon-Light'),
+         url('./MonaspaceNeon-Light.woff') format('woff')
+}
+@font-face {
+    font-family: 'MonaspaceNeon-WideRegular';
+    src: local('MonaspaceNeon-WideRegular'),
+         url('./MonaspaceNeon-WideRegular.woff') format('woff')
+}
+@font-face {
+    font-family: 'MonaspaceNeon-Medium';
+    src: local('MonaspaceNeon-Medium'),
+         url('./MonaspaceNeon-Medium.woff') format('woff')
+}

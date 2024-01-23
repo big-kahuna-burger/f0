@@ -1,0 +1,29 @@
+{
+  "name": "fastify-zero",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "packageManager": "pnpm@8.11.0",
+  "scripts": {
+    "test": "pnpm -r --workspace-concurrency=1 c8",
+    "lint": "pnpm -r --workspace-concurrency=1 lint",
+    "build": "pnpm -r --workspace-concurrency=1 run build",
+    "clean": "rm -rf node_modules && rm -rf services/*/node_modules",
+    "cleanall": "rm pnpm-lock.yaml && rm -rf node_modules && rm -rf services/*/node_modules",
+    "dev": "pnpm -r dev",
+    "start": "pnpm -r start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@biomejs/biome": "^1.4.1",
+    "@vercel/node": "^3.0.12",
+    "pnpm": "^8.11.0"
+  },
+  "dependencies": {
+    "desm": "^1.3.0",
+    "open": "^9.1.0",
+    "tsx": "^4.6.0"
+  }
+}
