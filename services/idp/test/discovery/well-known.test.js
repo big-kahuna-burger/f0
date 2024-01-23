@@ -103,11 +103,20 @@ const expectedMetadata = (port) => ({
     'none'
   ],
   token_endpoint_auth_signing_alg_values_supported: [
-    'HS256',
-    'RS256',
-    'PS256',
-    'ES256',
-    'EdDSA'
+    "RS256",
+    "RS384",
+    "RS512",
+    "PS256",
+    "PS384",
+    "PS512",
+    "ES256",
+    "ES256K",
+    "ES384",
+    "ES512",
+    "EdDSA",
+    "HS256",
+    "HS384",
+    "HS512"
   ],
   token_endpoint: `http://localhost:${port}/oidc/token`,
   id_token_signing_alg_values_supported: ['PS256', 'RS256', 'ES256'],
@@ -117,5 +126,13 @@ const expectedMetadata = (port) => ({
   request_uri_parameter_supported: false,
   userinfo_endpoint: `http://localhost:${port}/oidc/me`,
   revocation_endpoint: `http://localhost:${port}/oidc/token/revocation`,
-  claim_types_supported: ['normal']
+  claim_types_supported: ['normal'],
+  id_token_encryption_alg_values_supported: [
+    "A128KW",
+    "A256KW",
+    "ECDH-ES",
+    "RSA-OAEP",
+    "RSA-OAEP-256",
+    "dir"
+  ]
 })

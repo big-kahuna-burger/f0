@@ -50,10 +50,10 @@ const oidcClientDb = {
 
 const debug =
   (fn) =>
-  (...args) => {
-    console.log('DEBUG TEST MOCK', fn.name, ...args)
-    return fn(...args)
-  }
+    (...args) => {
+      console.log('DEBUG TEST MOCK', fn.name, ...args)
+      return fn(...args)
+    }
 
 export const setupPrisma = async (prisma) => {
   prisma.config.findMany.mockImplementation(configFindMany)
@@ -189,6 +189,7 @@ async function profileFindFirst({ where: { email } }) {
 async function profileCreate({ data: { Account, Address, ...data } }) {
   profilesDB[data.email] = data
   profilesDB[data.email].Account = accountsDB[Account.connect.id]
+  return profilesDB[data.email]
 }
 
 function configUpdate({ data }) {

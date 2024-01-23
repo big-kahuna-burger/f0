@@ -11,7 +11,6 @@ import {
 } from '../client-based-cors/index.js'
 import ttl from './ttl.js'
 // TODO dynamic features state loading
-// TODO dynamic resource server loading
 const { DASHBOARD_CLIENT_ID } = process.env
 
 export default {
@@ -172,9 +171,9 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
         sign:
           rs.signingAlg === 'HS256'
             ? {
-                alg: 'HS256',
-                key: rs.signingSecret
-              }
+              alg: 'HS256',
+              key: rs.signingSecret
+            }
             : { alg: 'RS256' }
       }
     }
@@ -206,9 +205,9 @@ async function getResourceServerInfo(ctx, resourceIndicator, client) {
         sign:
           rs.signingAlg === 'HS256'
             ? {
-                alg: 'HS256',
-                key: rs.signingSecret
-              }
+              alg: 'HS256',
+              key: rs.signingSecret
+            }
             : { alg: 'RS256' }
       }
     }

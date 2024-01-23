@@ -69,7 +69,8 @@ describe('management apps api', () => {
         post_logout_redirect_uris: [],
         readonly: true, //this is the difference but ok for now
         redirect_uris: ['https://somerp.com/cb'],
-        token_endpoint_auth_method: 'none'
+        token_endpoint_auth_method: 'none',
+        response_types: ['code']
       }
     ])
 
