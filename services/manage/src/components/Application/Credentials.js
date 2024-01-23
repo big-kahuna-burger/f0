@@ -1,4 +1,3 @@
-import { CodeHighlight } from '@mantine/code-highlight'
 import {
   Alert,
   Button,
@@ -11,9 +10,11 @@ import {
   Select,
   Skeleton,
   Stack,
+  Switch,
   Table,
   Text,
   TextInput,
+  Textarea,
   rem
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
@@ -162,7 +163,7 @@ export const CredentialsTab = () => {
                       radius={'sm'}
                       pt="md"
                       maw={rem(420)}
-                      onChange={() => {}}
+                      onChange={() => { }}
                     />
                     <CopyButton value={clientSecret} />
                   </Group>
@@ -295,18 +296,29 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
   const [opened, { open, close }] = useDisclosure(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
-  const [fileResult, setFileResult] = useState()
+  const [fileResult, setFileResult] = useState('')
   const [filename, setFilename] = useState()
   const [nameValue, setNameValue] = useState()
   const [modulus, setModulus] = useState()
   const [cryptoKey, setCryptoKey] = useState()
   const [algOptions, setAlgOptions] = useState([])
   const [kty, setKty] = useState()
+  const [certText, setCertText] = useState('')
+
   useEffect(() => {
     if (!cryptoKey) return
 
     setModulus(cryptoKey.algorithm.modulusLength)
   }, [cryptoKey])
+  // this needs to be handled properly as in either file upload or paste a text
+  useEffect(() => {
+    const asMlText = atob(fileResult)
+    if (!asMlText.length) {
+      return
+    }
+    setCertText(asMlText)
+  }, [fileResult])
+
   useEffect(() => {
     if (kty === 'RSA') {
       switch (modulus) {
@@ -331,6 +343,7 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
       const result = event.target.result.split(',')[1]
       setFileResult(result)
       const resultText = atob(result)
+      console.log('loaded...', resultText)
     })
     reader.readAsDataURL(file)
   }
@@ -352,12 +365,20 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
       .finally(close)
   }
 
+  const handleCertChange = (cert) => {
+    const _cert = cert
+      .split('\n')
+      .filter((l) => l.length > 0 && !l.startsWith('-----'))
+      .join('')
+    setFileResult(btoa(_cert))
+  }
+
   return (
-    <Paper p="md" shadow={'xl'}>
+    <Paper p="md" shadow={'xl'} miw={350} maw={1200}>
       <Modal
         opened={opened}
         onClose={close}
-        size={'lg'}
+        size={'xl'}
         title="Add New Credential"
       >
         <Paper p="md">
@@ -389,24 +410,21 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
                   stroke={3}
                 />
               }
-              placeholder="Upload RSA Public Key (pem), x509 cert (pem), JWK (jwk)"
+              placeholder="Upload Public Key (pem), x509 cert (pem), JWK (jwk)"
               onChange={handleCredentialInput}
               accept=".pem, .pub, .key, .txt, .x509, .crt, .jwk, .jwks"
             />
           </Group>
+          <Stack>
+            <Text fz="xs">Credential Preview</Text>
+            <Textarea
+              autosize
+              onChange={(e) => handleCertChange(e.target.value)}
+              value={certText}
+            />
+          </Stack>
           {fileResult && (
             <Paper>
-              <Stack>
-                <Text fz="xs">Credential Preview</Text>
-                <CodeHighlight
-                  fz={'xs'}
-                  fw={100}
-                  code={atob(fileResult)}
-                  maw={700}
-                  language={''}
-                  withCopyButton={false}
-                />
-              </Stack>
               <Group>
                 <Paper>
                   <Text fz="xs">
@@ -431,6 +449,8 @@ function PrivateKeyJWTCredentials({ credentials, clientId } = {}) {
         </Paper>
       </Modal>
       <Group justify="space-between">
+        <h3>JSON Web Keys (jwks)</h3>
+        <Switch label="Use 'jwks_uri'" />
         <div />
         <Button
           leftSection={
@@ -608,7 +628,7 @@ function CredentialsTable({ jwks }) {
           <Table.Th>kty</Table.Th>
           <Table.Th>alg</Table.Th>
           <Table.Th>crv?</Table.Th>
-          <Table.Th>{}</Table.Th>
+          <Table.Th>{ }</Table.Th>
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>{rows}</Table.Tbody>
