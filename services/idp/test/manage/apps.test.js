@@ -70,7 +70,7 @@ describe('management apps api', () => {
         readonly: true, //this is the difference but ok for now
         redirect_uris: ['https://somerp.com/cb'],
         token_endpoint_auth_method: 'none',
-        response_types: ['code']
+
       }
     ])
 
@@ -128,7 +128,8 @@ describe('management apps api', () => {
       post_logout_redirect_uris: [],
       redirect_uris: [],
       token_endpoint_auth_method: 'none',
-      'urn:f0:type': 'spa'
+      'urn:f0:type': 'spa',
+      response_types: ['code']
     })
 
     const updateName = await got(
