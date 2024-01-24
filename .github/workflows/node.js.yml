@@ -47,7 +47,7 @@ jobs:
     - name: Install dependencies
       run: pnpm install --ignore-scripts
 
-    - run: pnpm rebuild --update-binary bcrypt
+    - run: pnpm rebuild bcrypt
     
     - run: pnpm run build
 
