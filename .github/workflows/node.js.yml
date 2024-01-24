@@ -45,9 +45,7 @@ jobs:
           ${{ runner.os }}-pnpm-store-
 
     - name: Install dependencies
-      run: pnpm install --ignore-scripts
-
-    - run: pnpm rebuild bcrypt
+      run: pnpm install
     
     - run: pnpm run build
 
