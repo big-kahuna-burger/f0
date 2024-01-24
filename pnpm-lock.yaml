@@ -8,12 +8,12 @@ importers:
 
   .:
     dependencies:
-      project-a:
-        specifier: ./project-a
-        version: link:project-a
-      project-b:
-        specifier: ./project-b
-        version: link:project-b
+      idp:
+        specifier: ./services/idp
+        version: link:services/idp
+      manage:
+        specifier: ./services/manage
+        version: link:services/manage
 
   services/idp:
     dependencies:
