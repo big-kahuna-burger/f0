@@ -11,13 +11,11 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-  # Maintain dependencies for idp
+  # Maintain dependencies for npm
   - package-ecosystem: "npm"
-    directory: "services/idp"
+    directory: "/"
     schedule:
-      interval: "weekly"
-  # Maintain dependencies for dashboard
-  - package-ecosystem: "npm"
-    directory: "services/manage"
-    schedule:
-      interval: "weekly"
+      interval: daily
+      time: "10:13"
+      timezone: "Europe/Belgrade"
+    versioning-strategy: auto
