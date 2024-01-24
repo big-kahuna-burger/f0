@@ -17,7 +17,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "project-a": "./project-a",
-    "project-b": "./project-b"
+    "idp": "./services/idp",
+    "manage": "./services/manage"
   }
 }
