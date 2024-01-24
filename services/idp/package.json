@@ -18,7 +18,6 @@
     "lint": "biome check .",
     "lint:ci": "biome ci .",
     "build": "prisma generate",
-    "postinstall": "prisma generate",
     "migrate": "prisma migrate deploy",
     "create:account": "node ./scripts/create-account.js",
     "init": "node ./scripts/init.js"
