@@ -111,8 +111,8 @@ importers:
         specifier: ^4.25.2
         version: 4.25.2
       fastify-disablecache:
-        specifier: ^3.1.7
-        version: 3.1.8
+        specifier: ^3.1.9
+        version: 3.1.9
       fastify-plugin:
         specifier: ^4.5.1
         version: 4.5.1
@@ -6938,8 +6938,8 @@ packages:
       punycode: 1.4.1
     dev: false
 
-  /fastify-disablecache@3.1.8:
-    resolution: {integrity: sha512-Ulfb9DyaqUUfnlh27xDmu1ZGQjAmJElhaYKO/IrzVlxnudbb7avw2kgx+MDCNANeNFuCeHypvCJe+uyHn/pDBg==}
+  /fastify-disablecache@3.1.9:
+    resolution: {integrity: sha512-RelP1ANJs0olkGxXVIiHJukmhMWqXbVV9FGkzYJFjh+3MzMGmLyH0vI0cEfXWBDS7SLKPTW/XIQm/FyHRqcitQ==}
     engines: {node: '>=14.18.0'}
     dependencies:
       fastify-plugin: 4.5.1
