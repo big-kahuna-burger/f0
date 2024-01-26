@@ -820,19 +820,6 @@ export const swaggerOpts = {
                   }
                 }
               }
-            },
-            409: {
-              description: 'Conflict',
-              content: {
-                'application/json': {
-                  schema: {
-                    $ref: '#/components/schemas/Error'
-                  },
-                  example: {
-                    error: 'connection already exists'
-                  }
-                }
-              }
             }
           }
         }
