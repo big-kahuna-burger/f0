@@ -1,12 +1,13 @@
 import crypto from 'crypto'
 import { promisify } from 'util'
 import { Prisma } from '@prisma/client'
-import { exportJWK, importJWK, importSPKI } from 'jose'
-import { nanoid } from 'nanoid'
+import { exportJWK, importSPKI } from 'jose'
+import { customAlphabet, nanoid } from 'nanoid'
 import { CORS_PROP, F0_TYPE_PROP } from '../oidc/client-based-cors/index.js'
 import { calculateKid } from '../oidc/helpers/keystore.js'
 import prisma from './client.js'
 const randomFill = promisify(crypto.randomFill)
+const nanoidAlpha = customAlphabet('abcdefghijklmnopqrstuvwxyz')
 
 async function updateResourceServer(id, data) {
   const rs = await prisma.resourceServer.update({ where: { id }, data })
@@ -604,6 +605,18 @@ async function getConnections({
   return connections
 }
 
+async function createDBConnection({ name, disableSignup }) {
+  const connection = await prisma.connection.create({
+    data: {
+      id: `conn_${nanoidAlpha(8)}`,
+      name,
+      type: 'DB',
+      disableSignup
+    }
+  })
+  return connection
+}
+
 async function getConnection(id) {
   const connection = await prisma.connection.findFirst({
     where: { id },
@@ -660,6 +673,7 @@ export {
   updateResourceServer,
   getConnections,
   getConnection,
+  createDBConnection,
   deleteConnection,
   deleteResourceServer,
   deleteClient,
