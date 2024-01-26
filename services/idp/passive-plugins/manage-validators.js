@@ -124,6 +124,16 @@ export const createClientSchema = {
   required: ['name', F0_TYPE_PROP]
 }
 
+export const createConnectionSchema = {
+  $id: 'createConnection',
+  type: 'object',
+  properties: {
+    name: { type: 'string', minLength: 1, maxLength: 35 },
+    disableSignup: { type: 'boolean' }
+  },
+  required: ['name']
+}
+
 export const apiCreateSchema = {
   $id: 'apiCreate',
   type: 'object',

@@ -4,6 +4,7 @@ import { F0_TYPE_PROP } from './oidc/client-based-cors/index.js'
 import {
   apiCreateSchema,
   createClientSchema,
+  createConnectionSchema,
   createGrantSchema,
   updateApiSchema,
   updateClientSchema,
@@ -16,11 +17,7 @@ export const swaggerOpts = {
       title: 'Management API',
       version: '1.0.0'
     },
-    servers: [
-      {
-        url: `${url.origin}/manage/v1`
-      }
-    ],
+    servers: [{ url: `${url.origin}/manage/v1` }],
     paths: {
       '/apis': {
         get: {
@@ -773,6 +770,71 @@ export const swaggerOpts = {
               }
             }
           }
+        },
+        post: {
+          tags: ['Connections'],
+          summary: 'Create a Connection',
+          operationId: 'createDBConnection',
+          requestBody: {
+            description: 'Connection object that needs to be created',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/CreateConnection',
+                  example: {
+                    name: 'My Connection',
+                    disableSignup: false
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Successful response',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Connection'
+                  },
+                  example: {
+                    id: 'a039971e-af01-4395-9f50-6e172314addf',
+                    name: 'Tenant Members DB',
+                    updatedAt: '2021-07-01T00:00:00.000Z',
+                    type: 'DB',
+                    readonly: true
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Bad request',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error: 'invalid connection name'
+                  }
+                }
+              }
+            },
+            409: {
+              description: 'Conflict',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/Error'
+                  },
+                  example: {
+                    error: 'connection already exists'
+                  }
+                }
+              }
+            }
+          }
         }
       },
       '/connections/{id}': {
@@ -1472,6 +1534,9 @@ export const swaggerOpts = {
         },
         UpdateGrant: {
           ...updateGrantSchema
+        },
+        CreateConnection: {
+          ...createConnectionSchema
         }
       },
       responses: {

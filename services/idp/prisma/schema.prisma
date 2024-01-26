@@ -158,7 +158,7 @@ model Connection {
   ClientConnection ClientConnection[]
   readonly         Boolean            @default(false)
   Identities       Identity[]
-
+  disableSignup    Boolean            @default(true)
   @@map("connection")
 }
 
