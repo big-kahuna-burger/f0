@@ -43,7 +43,7 @@
     "@opentelemetry/instrumentation": "^0.47.0",
     "@opentelemetry/instrumentation-http": "^0.47.0",
     "@opentelemetry/resources": "^1.19.0",
-    "@opentelemetry/sdk-trace-base": "^1.19.0",
+    "@opentelemetry/sdk-trace-base": "^1.21.0",
     "@opentelemetry/sdk-trace-node": "^1.21.0",
     "@opentelemetry/semantic-conventions": "^1.19.0",
     "@prisma/client": "^5.7.1",
