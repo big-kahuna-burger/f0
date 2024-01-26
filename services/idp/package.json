@@ -56,7 +56,7 @@
     "dotenv": "^16.4.1",
     "ejs": "^3.1.9",
     "fastify": "^4.25.2",
-    "fastify-disablecache": "^3.1.7",
+    "fastify-disablecache": "^3.1.9",
     "fastify-plugin": "^4.5.1",
     "pino-pretty": "^10.3.1",
     "jose": "^5.1.3",
