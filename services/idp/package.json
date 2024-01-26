@@ -39,7 +39,7 @@
     "@fastify/view": "^8.2.0",
     "@opentelemetry/api": "^1.7.0",
     "@opentelemetry/context-async-hooks": "^1.19.0",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.47.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.48.0",
     "@opentelemetry/instrumentation": "^0.47.0",
     "@opentelemetry/instrumentation-http": "^0.47.0",
     "@opentelemetry/resources": "^1.19.0",
