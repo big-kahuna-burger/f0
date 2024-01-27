@@ -631,6 +631,14 @@ async function deleteConnection(id) {
   return deleteResult
 }
 
+async function updateDBConnection(id, { disableSignup }) {
+  const connection = await prisma.connection.update({
+    where: { id },
+    data: { disableSignup }
+  })
+  return connection
+}
+
 async function addConnectionToClient(clientId, connectionId) {
   return prisma.clientConnection.create({
     data: {
@@ -673,6 +681,7 @@ export {
   updateResourceServer,
   getConnections,
   getConnection,
+  updateDBConnection,
   createDBConnection,
   deleteConnection,
   deleteResourceServer,

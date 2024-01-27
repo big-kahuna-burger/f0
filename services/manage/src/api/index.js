@@ -20,7 +20,9 @@ export {
   deleteApi,
   getOidcMetadata,
   getClientGrantsByClientId,
-  createDBConnection
+  createDBConnection,
+  getConnection,
+  updateDBConnection
 }
 import { importJWK } from 'jose'
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -52,8 +54,9 @@ async function enableDisableConnection(clientId, connectionId, enabled) {
     headers: { 'Content-Type': 'application/json', ...getHeaders() },
     body: JSON.stringify({ enabled })
   }
-  const url = `${baseUrl}/app/${clientId}/connection/${connectionId}/${enabled ? 'disable' : 'enable'
-    }`
+  const url = `${baseUrl}/app/${clientId}/connection/${connectionId}/${
+    enabled ? 'disable' : 'enable'
+  }`
   const response = await fetch(url, opts)
   const json = await response.json()
   return json
@@ -73,6 +76,32 @@ async function getConnections({ page = 1, size = 20, type = 'db' } = {}) {
       ? formatDistanceToNow(parseJSON(x.updatedAt), { addSuffix: true })
       : undefined
   }))
+}
+
+async function getConnection(id) {
+  const opts = { headers: getHeaders() }
+  const connectionResponse = await fetch(`${baseUrl}/connections/${id}`, opts)
+  const json = await connectionResponse.json()
+  if (json.updatedAt) {
+    return {
+      ...json,
+      formattedUpdatedAt: formatDistanceToNow(parseJSON(json.updatedAt), {
+        addSuffix: true
+      })
+    }
+  }
+  return json
+}
+
+async function updateDBConnection({ id, disableSignup }) {
+  const opts = {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({ disableSignup })
+  }
+  const connectionsResponse = await fetch(`${baseUrl}/connections/${id}`, opts)
+  const json = await connectionsResponse.json()
+  return json
 }
 
 async function createDBConnection({ name, disableSignup }) {
@@ -157,13 +186,13 @@ async function getApplication(id) {
   const json = await application.json()
   const jwkImported = json.jwks?.keys?.length
     ? await Promise.all(
-      json.jwks.keys.map((jwk) => {
-        if (jwk.alg === 'ES256K') {
-          return Promise.resolve()
-        }
-        return importJWK(jwk, jwk.alg)
-      })
-    )
+        json.jwks.keys.map((jwk) => {
+          if (jwk.alg === 'ES256K') {
+            return Promise.resolve()
+          }
+          return importJWK(jwk, jwk.alg)
+        })
+      )
     : undefined
   return {
     ...json,
@@ -327,8 +356,9 @@ async function getUsers() {
   return usersJson.map((u, i) => ({
     ...u,
     name: `${u.given_name} ${u.family_name}`,
-    picture: `https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-${(i % 10) + 1
-      }.png`,
+    picture: `https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-${
+      (i % 10) + 1
+    }.png`,
     stats: [
       { value: Math.round(Math.random() * 255), label: 'Logins' },
       { value: '2h ago', label: 'Last Login' },

@@ -190,3 +190,11 @@ export const updateApiSchema = {
     allowSkipConsent: { type: 'boolean' }
   }
 }
+
+export const updateConnectionSchema = {
+  $id: 'updateConnection',
+  type: 'object',
+  properties: {
+    disableSignup: { type: 'boolean' }
+  }
+}

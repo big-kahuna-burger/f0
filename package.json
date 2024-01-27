@@ -19,5 +19,8 @@
   "dependencies": {
     "idp": "./services/idp",
     "manage": "./services/manage"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.5.3"
   }
 }

@@ -10,7 +10,8 @@ import {
   getConnections,
   getOidcMetadata,
   getResourceServer,
-  getResourceServers
+  getResourceServers,
+  getConnection,
 } from './api'
 import { Application } from './components/Application'
 import { AppServer } from './components/ApplicationServer'
@@ -19,6 +20,7 @@ import { Applications } from './components/Applications'
 import { Connections } from './components/Connections'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
+import { Connection } from './components/Connection'
 
 const routes = [
   {
@@ -109,6 +111,22 @@ const routes = [
           return { apps, total, page, size }
         },
         element: <Applications />
+      },
+      {
+        path: '/authn/db/:id',
+        element: <Connection />,
+        loader: async ({ params }) => {
+          const connection = await getConnection(params.id)
+          return { connection }
+        }
+      },
+      {
+        path: '/authn/db/:id/:tab',
+        element: <Connection />,
+        loader: async ({ params }) => {
+          const connection = await getConnection(params.id)
+          return { connection }
+        }
       },
       {
         path: '/authn/db',
