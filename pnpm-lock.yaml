@@ -232,8 +232,8 @@ importers:
         specifier: 5.0.1
         version: 5.0.1(@babel/plugin-syntax-flow@7.23.3)(@babel/plugin-transform-react-jsx@7.23.4)(eslint@8.56.0)(react@18.2.0)(typescript@5.3.3)
       web-vitals:
-        specifier: ^3.5.1
-        version: 3.5.1
+        specifier: ^3.5.2
+        version: 3.5.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.4.1
@@ -13193,8 +13193,8 @@ packages:
       minimalistic-assert: 1.0.1
     dev: false
 
-  /web-vitals@3.5.1:
-    resolution: {integrity: sha512-xQ9lvIpfLxUj0eSmT79ZjRoU5wIRfIr7pNukL7ZE4EcWZSmfZQqOlhuAGfkVa3EFmzPHZhWhXfm2i5ys+THVPg==}
+  /web-vitals@3.5.2:
+    resolution: {integrity: sha512-c0rhqNcHXRkY/ogGDJQxZ9Im9D19hDihbzSQJrsioex+KnFgmMzBiy57Z1EjkhX/+OjyBpclDCzz2ITtjokFmg==}
     dev: false
 
   /webidl-conversions@3.0.1:
