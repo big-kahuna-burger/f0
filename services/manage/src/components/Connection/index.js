@@ -154,13 +154,17 @@ function DangerZone() {
         opened={opened}
         onClose={close}
         size={'lg'}
-        title="Delete This Database Connection?"
+        title={
+          <Text p="md" pb={'xs'}>
+            Delete This Database Connection?
+          </Text>
+        }
       >
-        <Text c="dimmed">
-          Note: This will delete the database connection and all associated user
-          identities. This action cannot be undone.
-        </Text>
         <Paper p="md">
+          <Text c="dimmed" size="xs" mb="md">
+            Note: This will delete the database connection and all associated
+            user identities. This action cannot be undone.
+          </Text>
           <TextInput
             label={`Type "${connection.name}" to confirm`}
             placeholder="Enter connection name"

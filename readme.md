@@ -22,6 +22,9 @@ POSTGRES_PRISMA_URL='postgres://postgres:secret123@localhost:5432/idp'
 POSTGRES_URL_NON_POOLING='postgres://postgres:secret123@localhost:5432/idp'
 GRANTS_DEBUG=1
 DEBUG=oidc:events:*
+DASHBOARD_ORIGIN=http://localhost:3036
+
+# after running scripts/init
 DASHBOARD_CLIENT_ID=
 EOT
 ```
@@ -33,7 +36,8 @@ cat <<EOT > services/manage/.env
 # React App Environment Variables
 PORT=3036
 REACT_APP_ISSUER=http://localhost:9876/oidc
-# Later
+
+# after running scripts/init
 DASHBOARD_CLIENT_ID=
 EOT
 ```
@@ -53,7 +57,7 @@ Install deps: it will run client generation and db migrations as well
 npm i
 ```
 
-#### initialize 
+#### Initialize 
 
 Makes those default/readonly objects for bootstrapping:
 - `Management API` ResourceServer
