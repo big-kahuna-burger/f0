@@ -164,7 +164,7 @@ model Connection {
 
 model ClientConnection {
   clientId     String
-  connectionId String
+  connectionId String 
   client       OidcClient @relation(fields: [clientId], references: [id], onDelete: Cascade)
   connection   Connection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
   createdAt    DateTime   @default(now())

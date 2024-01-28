@@ -22,7 +22,8 @@ export {
   getClientGrantsByClientId,
   createDBConnection,
   getConnection,
-  updateDBConnection
+  updateDBConnection,
+  deleteDbConnection
 }
 import { importJWK } from 'jose'
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -111,6 +112,16 @@ async function createDBConnection({ name, disableSignup }) {
     body: JSON.stringify({ name, disableSignup })
   }
   const connectionsResponse = await fetch(`${baseUrl}/connections`, opts)
+  const json = await connectionsResponse.json()
+  return json
+}
+
+async function deleteDbConnection(id) {
+  const opts = {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() }
+  }
+  const connectionsResponse = await fetch(`${baseUrl}/connections/${id}`, opts)
   const json = await connectionsResponse.json()
   return json
 }

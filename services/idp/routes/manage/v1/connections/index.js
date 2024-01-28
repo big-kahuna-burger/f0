@@ -63,7 +63,6 @@ export default async function (fastify, opts) {
   async function updateConnection(request, reply) {
     const { id } = request.params
     const { disableSignup } = request.body
-    console.log({ disableSignup })
     const connection = await api.updateDBConnection(id, { disableSignup })
     return connection
   }

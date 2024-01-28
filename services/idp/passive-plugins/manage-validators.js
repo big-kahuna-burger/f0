@@ -84,7 +84,7 @@ export const updateClientConnectionSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
-    connectionId: { type: 'string', format: 'uuid' },
+    connectionId: { type: 'string' },
     action: { type: 'string', enum: ['enable', 'disable'] }
   }
 }

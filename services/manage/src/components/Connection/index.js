@@ -2,20 +2,23 @@ import {
   Alert,
   Button,
   Group,
+  Modal,
   Paper,
   Stack,
   Switch,
   Tabs,
   Text,
+  TextInput,
   ThemeIcon,
   rem,
   useMantineTheme
 } from '@mantine/core'
-import { useColorScheme } from '@mantine/hooks'
+import { useColorScheme, useDisclosure } from '@mantine/hooks'
 import { IconDatabase, IconPlayerPlay } from '@tabler/icons-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useLoaderData } from 'react-router-dom'
-import { updateDBConnection } from '../../api'
+import { deleteDbConnection, updateDBConnection } from '../../api'
 
 export function Connection() {
   const { connection, tab } = useLoaderData()
@@ -123,7 +126,7 @@ function SettingsPanel() {
           </>
         </Group>
       </Paper>
-      <DangerZone />
+      {!connection.readonly && <DangerZone />}
     </>
   )
 }
@@ -137,26 +140,70 @@ function AppsPanel() {
 }
 
 function DangerZone() {
+  const navigate = useNavigate()
+  const { connection } = useLoaderData()
+  const [opened, { open, close }] = useDisclosure(false)
+  const [nameInput, setNameInput] = useState('')
+  const handleDelete = async () => {
+    await deleteDbConnection(connection.id)
+    navigate('/authn/db')
+  }
   return (
-    <Paper m="md" withBorder>
-      <Alert title={'Delete this connection'} color="red">
-        <Group justify="space-between" align="center">
-          <Text size="sm" c="var(--mantine-color-red-light-color)">
-            Warning! Once confirmed, this operation can't be undone!
-          </Text>
-          <Button
-            mb={'xl'}
-            size="sm"
-            type={'button'}
-            color={'red'}
-            onClick={() => {
-              console.log('delete')
+    <>
+      <Modal
+        opened={opened}
+        onClose={close}
+        size={'lg'}
+        title="Delete This Database Connection?"
+      >
+        <Text c="dimmed">
+          Note: This will delete the database connection and all associated user
+          identities. This action cannot be undone.
+        </Text>
+        <Paper p="md">
+          <TextInput
+            label={`Type "${connection.name}" to confirm`}
+            placeholder="Enter connection name"
+            required
+            onChange={(event) => {
+              setNameInput(event.currentTarget.value)
             }}
-          >
-            Delete
-          </Button>
-        </Group>
-      </Alert>
-    </Paper>
+          />
+          <Group>
+            <Button
+              mt="md"
+              size="sm"
+              type={'button'}
+              color={'red'}
+              onClick={handleDelete}
+              disabled={nameInput !== connection.name}
+            >
+              Delete
+            </Button>
+            <Button mt="md" size="sm" type={'button'} onClick={close}>
+              Cancel
+            </Button>
+          </Group>
+        </Paper>
+      </Modal>
+      <Paper m="md" withBorder>
+        <Alert title={'Delete this connection'} color="red">
+          <Group justify="space-between" align="center">
+            <Text size="sm" c="var(--mantine-color-red-light-color)">
+              Warning! Once confirmed, this operation can't be undone!
+            </Text>
+            <Button
+              mb={'xl'}
+              size="sm"
+              type={'button'}
+              color={'red'}
+              onClick={open}
+            >
+              Delete
+            </Button>
+          </Group>
+        </Alert>
+      </Paper>
+    </>
   )
 }

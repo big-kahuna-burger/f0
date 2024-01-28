@@ -627,6 +627,10 @@ async function getConnection(id) {
 }
 
 async function deleteConnection(id) {
+  const connection = await prisma.connection.findFirst({ where: { id } })
+  if (connection.readonly) {
+    throw new Error('Cannot delete read only connection')
+  }
   const deleteResult = await prisma.connection.delete({ where: { id } })
   return deleteResult
 }
