@@ -53,7 +53,8 @@ async function deleteApi(id) {
 async function enableDisableConnection(clientId, connectionId, enabled) {
   const opts = {
     method: 'PUT',
-    headers: getHeaders()
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: '{}'
   }
   const url = `${baseUrl}/app/${clientId}/connection/${connectionId}/${
     enabled ? 'disable' : 'enable'
