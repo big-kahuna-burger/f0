@@ -23,7 +23,8 @@ export {
   createDBConnection,
   getConnection,
   updateDBConnection,
-  deleteDbConnection
+  deleteDbConnection,
+  userInfo
 }
 import { importJWK } from 'jose'
 const baseUrl = `${new URL(process.env.REACT_APP_ISSUER).origin}/manage/v1`
@@ -52,8 +53,7 @@ async function deleteApi(id) {
 async function enableDisableConnection(clientId, connectionId, enabled) {
   const opts = {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...getHeaders() },
-    body: JSON.stringify({ enabled })
+    headers: getHeaders()
   }
   const url = `${baseUrl}/app/${clientId}/connection/${connectionId}/${
     enabled ? 'disable' : 'enable'
@@ -396,3 +396,10 @@ const getToken = () =>
     .split('"')
     .filter((x) => x.length)[0]
 const getHeaders = () => ({ Authorization: `Bearer ${getToken()}` })
+
+async function userInfo(token) {
+  const opts = { headers: { Authorization: `Bearer ${token}` } }
+  const response = await fetch(`${process.env.REACT_APP_ISSUER}/me`, opts)
+  const json = await response.json()
+  return json
+}

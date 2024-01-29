@@ -19,13 +19,17 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLoaderData } from 'react-router-dom'
 import { deleteDbConnection, updateDBConnection } from '../../api'
-
+import { ConnectionApplications } from './ConnectionApplications'
 export function Connection() {
   const { connection, tab } = useLoaderData()
-
+  const navigate = useNavigate()
   return (
     <Paper align="center">
-      <Tabs maw={850} defaultValue={tab || 'settings'}>
+      <Tabs
+        maw={850}
+        defaultValue={tab || 'settings'}
+        onChange={(value) => navigate(`/authn/db/${connection.id}/${value}`)}
+      >
         <Header />
         <Tabs.List grow justify="center">
           <Tabs.Tab value="settings">Settings</Tabs.Tab>
@@ -39,7 +43,7 @@ export function Connection() {
           <AuthMethodsPanel />
         </Tabs.Panel>
         <Tabs.Panel value="apps">
-          <AppsPanel />
+          <ConnectionApplications />
         </Tabs.Panel>
       </Tabs>
     </Paper>
@@ -47,7 +51,7 @@ export function Connection() {
 }
 
 function Header() {
-  const colorScheme = useColorScheme()
+  const navigate = useNavigate()
   const { connection } = useLoaderData()
   return (
     <Group align={'center'} p="md" pb="lg" justify="space-between">
@@ -67,13 +71,14 @@ function Header() {
             <Text size="xs" c={'dimmed'}>
               Identifier
             </Text>
-            <Text size="xs" c={colorScheme === 'dark' ? 'lime' : 'purple'}>
+            <Text size="xs" c={'lime'}>
               {connection.id}
             </Text>
           </Group>
         </Stack>
       </Group>
       <Button
+        onClick={(e) => navigate('/tester/callback')}
         variant="outline"
         rightSection={
           <ThemeIcon variant={'transparent'}>
@@ -133,10 +138,6 @@ function SettingsPanel() {
 
 function AuthMethodsPanel() {
   return <Text>AuthMethods</Text>
-}
-
-function AppsPanel() {
-  return <Text>Apps</Text>
 }
 
 function DangerZone() {

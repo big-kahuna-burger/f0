@@ -636,6 +636,10 @@ async function deleteConnection(id) {
 }
 
 async function updateDBConnection(id, { disableSignup }) {
+  const connectionFound = await prisma.connection.findFirst({ where: { id } })
+  if (connectionFound.readonly) {
+    throw new Error('Cannot update read only connection')
+  }
   const connection = await prisma.connection.update({
     where: { id },
     data: { disableSignup }

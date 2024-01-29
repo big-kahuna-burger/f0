@@ -23,7 +23,55 @@ class Account {
    *   or not return them in id tokens but only userinfo and so on.
    */
   async claims(use, scope) {
-    return this.profile
+    let claimsValues = { sub: this.accountId }
+    if (use === 'userinfo') {
+      if (scope.includes('email')) {
+        claimsValues = {
+          ...claimsValues,
+          email: this.profile.email,
+          email_verified: this.profile.emailVerified
+        }
+      }
+      if (scope.includes('profile')) {
+        claimsValues = {
+          ...claimsValues,
+          ...this.profile
+        }
+      }
+
+      if (scope.includes('address')) {
+        let address
+        try {
+          const { Address } = await prisma.profile.findFirst({
+            where: { id: this.profile.id },
+            include: {
+              Address: true
+            }
+          })
+          address = {
+            // formatted: Address.formatted,
+            street_address: Address.streetAddress,
+            locality: Address.locality,
+            region: Address.region,
+            postal_code: Address.postalCode,
+            country: Address.country
+          }
+        } catch (error) {}
+        claimsValues = {
+          ...claimsValues,
+          address
+        }
+      }
+
+      if (scope.includes('phone')) {
+        claimsValues = {
+          ...claimsValues,
+          phone_number: this.profile.phoneNumber,
+          phone_number_verified: this.profile.phoneNumberVerified
+        }
+      }
+    }
+    return claimsValues
   }
 
   static async findByFederated(provider, claims) {

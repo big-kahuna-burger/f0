@@ -7,26 +7,31 @@ import {
   getApplications,
   getClientGrantsByClientId,
   getClientGrantsByResourceServerId,
+  getConnection,
   getConnections,
   getOidcMetadata,
   getResourceServer,
-  getResourceServers,
-  getConnection,
+  getResourceServers
 } from './api'
 import { Application } from './components/Application'
 import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
 import { Applications } from './components/Applications'
+import { Connection } from './components/Connection'
+import { Tester } from './components/Connection/Tester'
 import { Connections } from './components/Connections'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
-import { Connection } from './components/Connection'
 
 const routes = [
   {
     root: '*',
     element: <Shell />,
     children: [
+      {
+        path: 'tester/callback',
+        element: <Tester />
+      },
       {
         path: '/',
         element: <></>
@@ -125,7 +130,14 @@ const routes = [
         element: <Connection />,
         loader: async ({ params }) => {
           const connection = await getConnection(params.id)
-          return { connection }
+          if (params.tab === 'apps') {
+            const applications = await getApplications({
+              page: 0,
+              size: 20
+            })
+            return { connection, applications, tab: 'apps' }
+          }
+          return { connection, tab: params.tab }
         }
       },
       {
