@@ -7,6 +7,7 @@ import {
   getApplications,
   getClientGrantsByClientId,
   getClientGrantsByResourceServerId,
+  getConnection,
   getConnections,
   getOidcMetadata,
   getResourceServer,
@@ -16,6 +17,8 @@ import { Application } from './components/Application'
 import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
 import { Applications } from './components/Applications'
+import { Connection } from './components/Connection'
+import { Tester } from './components/Connection/Tester'
 import { Connections } from './components/Connections'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
@@ -25,6 +28,10 @@ const routes = [
     root: '*',
     element: <Shell />,
     children: [
+      {
+        path: 'tester/callback',
+        element: <Tester />
+      },
       {
         path: '/',
         element: <></>
@@ -109,6 +116,29 @@ const routes = [
           return { apps, total, page, size }
         },
         element: <Applications />
+      },
+      {
+        path: '/authn/db/:id',
+        element: <Connection />,
+        loader: async ({ params }) => {
+          const connection = await getConnection(params.id)
+          return { connection }
+        }
+      },
+      {
+        path: '/authn/db/:id/:tab',
+        element: <Connection />,
+        loader: async ({ params }) => {
+          const connection = await getConnection(params.id)
+          if (params.tab === 'apps') {
+            const applications = await getApplications({
+              page: 0,
+              size: 20
+            })
+            return { connection, applications, tab: 'apps' }
+          }
+          return { connection, tab: params.tab }
+        }
       },
       {
         path: '/authn/db',

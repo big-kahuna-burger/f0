@@ -627,8 +627,24 @@ async function getConnection(id) {
 }
 
 async function deleteConnection(id) {
+  const connection = await prisma.connection.findFirst({ where: { id } })
+  if (connection.readonly) {
+    throw new Error('Cannot delete read only connection')
+  }
   const deleteResult = await prisma.connection.delete({ where: { id } })
   return deleteResult
+}
+
+async function updateDBConnection(id, { disableSignup }) {
+  const connectionFound = await prisma.connection.findFirst({ where: { id } })
+  if (connectionFound.readonly) {
+    throw new Error('Cannot update read only connection')
+  }
+  const connection = await prisma.connection.update({
+    where: { id },
+    data: { disableSignup }
+  })
+  return connection
 }
 
 async function addConnectionToClient(clientId, connectionId) {
@@ -673,6 +689,7 @@ export {
   updateResourceServer,
   getConnections,
   getConnection,
+  updateDBConnection,
   createDBConnection,
   deleteConnection,
   deleteResourceServer,

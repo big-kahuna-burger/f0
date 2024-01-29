@@ -84,7 +84,7 @@ export const updateClientConnectionSchema = {
   type: 'object',
   properties: {
     id: { type: 'string' },
-    connectionId: { type: 'string', format: 'uuid' },
+    connectionId: { type: 'string' },
     action: { type: 'string', enum: ['enable', 'disable'] }
   }
 }
@@ -188,5 +188,13 @@ export const updateApiSchema = {
     ttl: { type: 'number', minimum: 1, maximum: 365.25 * 86400 },
     ttlBrowser: { type: 'number', minimum: 1, maximum: 365.25 * 86400 },
     allowSkipConsent: { type: 'boolean' }
+  }
+}
+
+export const updateConnectionSchema = {
+  $id: 'updateConnection',
+  type: 'object',
+  properties: {
+    disableSignup: { type: 'boolean' }
   }
 }

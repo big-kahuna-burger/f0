@@ -8,6 +8,7 @@ import {
   createGrantSchema,
   updateApiSchema,
   updateClientSchema,
+  updateConnectionSchema,
   updateGrantSchema,
   updateScopesSchema
 } from './passive-plugins/manage-validators.js'
@@ -886,6 +887,47 @@ export const swaggerOpts = {
               description: 'Forbidden'
             }
           }
+        },
+        patch: {
+          tags: ['Connections'],
+          summary: 'Update a connection',
+          operationId: 'updateConnection',
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              description: 'ID of connection to update',
+              required: true,
+              schema: {
+                type: 'string'
+              }
+            }
+          ],
+          requestBody: {
+            description: 'Connection object that needs to be updated',
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/requestBodies/UpdateConnection',
+                  example: {
+                    disableSignup: false
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Successful response'
+            },
+            400: {
+              description: 'Bad request'
+            },
+            403: {
+              description: 'Forbidden'
+            }
+          }
         }
       },
       '/grants': {
@@ -1524,6 +1566,9 @@ export const swaggerOpts = {
         },
         CreateConnection: {
           ...createConnectionSchema
+        },
+        UpdateConnection: {
+          ...updateConnectionSchema
         }
       },
       responses: {

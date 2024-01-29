@@ -59,7 +59,7 @@ export default async function interactionsRouter(fastify, opts) {
 
     const connectionTypes = new Set(connections.map((x) => x.type))
 
-    if (connectionTypes.size === 0) {
+    if (connectionTypes.size === 0 && client.clientId !== 'tester') {
       const result = {
         error: 'access_denied',
         error_description: 'No connections available for this client'

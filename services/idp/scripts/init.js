@@ -8,6 +8,8 @@ import { default as configureProvider } from '../oidc/configure.js'
 import { epochTime } from '../oidc/helpers/epoch.js'
 import { upsertManagementApi } from '../resource-servers/initialize-management.js'
 
+const { DASHBOARD_ORIGIN } = process.env
+
 const { provider } = await configureProvider()
 await upsertManagementApi()
 const dashboard =
@@ -31,7 +33,7 @@ await enableConnection(clientId, connection.id)
 
 async function createClient(
   provider,
-  { managementHost = 'http://localhost:3036' } = {}
+  { managementHost = DASHBOARD_ORIGIN } = {}
 ) {
   const metadata = {
     client_id: nanoid(22),

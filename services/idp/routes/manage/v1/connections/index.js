@@ -1,4 +1,7 @@
-import { createConnectionSchema } from '../../../../passive-plugins/manage-validators.js'
+import {
+  createConnectionSchema,
+  updateConnectionSchema
+} from '../../../../passive-plugins/manage-validators.js'
 
 export default async function (fastify, opts) {
   const api = opts.dbClientForManage
@@ -7,8 +10,21 @@ export default async function (fastify, opts) {
   fastify.delete('/:id', { onRequest: fastify.authenticate }, deleteConnection)
   fastify.post(
     '/',
-    { onRequest: fastify.authenticate, schema: { body: createConnectionSchema } },
+    {
+      onRequest: fastify.authenticate,
+      schema: { body: createConnectionSchema }
+    },
     createDBConnection
+  )
+  fastify.patch(
+    '/:id',
+    {
+      onRequest: fastify.authenticate,
+      schema: {
+        body: updateConnectionSchema
+      }
+    },
+    updateConnection
   )
 
   async function deleteConnection(request, reply) {
@@ -41,6 +57,13 @@ export default async function (fastify, opts) {
       return reply.code(400).send({ error })
     }
     const connection = await api.createDBConnection({ name, disableSignup })
+    return connection
+  }
+
+  async function updateConnection(request, reply) {
+    const { id } = request.params
+    const { disableSignup } = request.body
+    const connection = await api.updateDBConnection(id, { disableSignup })
     return connection
   }
 }
