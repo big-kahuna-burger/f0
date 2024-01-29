@@ -13,7 +13,7 @@
     "@testing-library/jest-dom": "^6.3.0",
     "@testing-library/react": "^14.1.2",
     "@testing-library/user-event": "^14.5.2",
-    "@vercel/speed-insights": "^1.0.2",
+    "@vercel/speed-insights": "^1.0.8",
     "clsx": "^2.0.0",
     "date-fns": "^3.0.6",
     "jose": "^5.2.0",
