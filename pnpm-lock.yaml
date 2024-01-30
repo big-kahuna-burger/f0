@@ -209,8 +209,8 @@ importers:
         specifier: ^14.5.2
         version: 14.5.2(@testing-library/dom@9.3.4)
       '@vercel/speed-insights':
-        specifier: ^1.0.8
-        version: 1.0.8(react@18.2.0)
+        specifier: ^1.0.9
+        version: 1.0.9(react@18.2.0)
       clsx:
         specifier: ^2.0.0
         version: 2.1.0
@@ -4098,8 +4098,8 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: false
 
-  /@vercel/speed-insights@1.0.8(react@18.2.0):
-    resolution: {integrity: sha512-x1V9MHUMGkaNafmgY0qRbmbr+jfeU+Cvo5KgreeEGo63SFuBYRg9RS52GUJ9p82nEL6NBzc9HNru6fkcvufYcQ==}
+  /@vercel/speed-insights@1.0.9(react@18.2.0):
+    resolution: {integrity: sha512-f+XFP0O+aZ4Olj9h+BitkB1b4NJQaxtyCb69wWuDxytJHY6Pa4QtZPdBUftHOcajUCHRVeq062fk3MKXKtjNVQ==}
     requiresBuild: true
     peerDependencies:
       '@sveltejs/kit': ^1 || ^2
