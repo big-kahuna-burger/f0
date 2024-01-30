@@ -37,6 +37,7 @@ export default {
       'HS512'
     ]
   },
+  extraParams: ['connection'],
   // TODO dynamic skip consent loading for Resource Servers based on loadExistingGrant
   extraClientMetadata: {
     properties: [CORS_PROP, F0_TYPE_PROP],
@@ -57,7 +58,6 @@ export default {
     return client[CORS_PROP].includes(origin)
   },
   async renderError(ctx, out, error) {
-    console.log('renderError', error)
     defaults.renderError(ctx, out, error)
   },
   clients: [TESTER],
