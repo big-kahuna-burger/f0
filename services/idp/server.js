@@ -1,4 +1,3 @@
-import crypto from 'crypto'
 import middie from '@fastify/middie'
 import FastifySwagger from '@fastify/swagger'
 import Scalar from '@scalar/fastify-api-reference'
@@ -6,9 +5,9 @@ import closeWithGrace from 'close-with-grace'
 import { filename } from 'desm'
 import { fastify as Fastify } from 'fastify'
 import './env.js'
-//console.log(crypto.getCurves())
 
 import { configureOidc } from './oidc/index.js'
+import InteractonsAPI from './oidc/support/interaction.js'
 import { MANAGEMENT } from './resource-servers/management.js'
 import { swaggerOpts } from './swagger-opts.js'
 
@@ -65,7 +64,8 @@ async function makeFastify(config, pretty) {
     Account,
     AccountErrors,
     localKeySet,
-    MANAGEMENT_API: MANAGEMENT
+    MANAGEMENT_API: MANAGEMENT,
+    InteractonsAPI
   })
 
   // delay is the number of milliseconds for the graceful close to finish
@@ -95,9 +95,7 @@ async function makeFastify(config, pretty) {
 async function start(port, pretty) {
   const app = await makeFastify(null, pretty)
   await app.register(FastifySwagger, swaggerOpts)
-  await app.register(Scalar, {
-    routePrefix: '/reference'
-  })
+  await app.register(Scalar, { routePrefix: '/reference' })
   await app.ready()
 
   // console.log(

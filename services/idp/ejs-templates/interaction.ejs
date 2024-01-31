@@ -60,4 +60,7 @@
 <% } %>
 <form autocomplete="off" action="/interaction/<%= uid %>/confirm" method="post">
   <button autofocus type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
+  <div class="login-help">
+    <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
+  </div>
 </form>

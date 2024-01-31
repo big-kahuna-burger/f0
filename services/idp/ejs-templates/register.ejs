@@ -20,7 +20,7 @@
 
 
 
-<form id="authnform" autocomplete="off" action="/interaction/<%= uid %>/login" method="post">
+<form id="authnform" autocomplete="off" action="/interaction/<%= uid %>/register" method="post">
   <input required type="text" name="login" placeholder="Enter any login" <% if (!params.login_hint) {
         %>autofocus="on" <% } else { %> value="<%= params.login_hint %>" <% } %>>
   <input required type="password" name="password" placeholder="and password" <% if (params.login_hint) {
@@ -31,12 +31,10 @@
   <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
   <div class="login-help">
     <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
-    <% if (supportsRegister) { %>
     <hr />
     <div>
-      Don't have an account? <a href="/interaction/<%= uid %>/register">Sign up</a>
+      Already have an account? <a href="/interaction/<%= uid %>">Sign in</a>
     </div>
-    <% } %>
   </div>
 </form>
 

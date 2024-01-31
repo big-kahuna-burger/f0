@@ -2,6 +2,7 @@ import middie from '@fastify/middie'
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
 import { MANAGEMENT } from '../resource-servers/management.js'
+import InteractonsAPI from './oidc/support/interaction.js'
 const config = {}
 const parsedHost = new URL(config?.issuer || process.env.ISSUER)
 const { hostname, protocol, port, pathname } = parsedHost
@@ -43,7 +44,8 @@ app.register(appService, {
   AccountErrors,
   isVercel: true,
   localKeySet,
-  MANAGEMENT_API: MANAGEMENT
+  MANAGEMENT_API: MANAGEMENT,
+  InteractonsAPI
 })
 
 export const handler = async (req, res) => {

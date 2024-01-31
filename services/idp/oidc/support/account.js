@@ -162,6 +162,42 @@ class Account {
     return fromDbData(found.Account)
   }
 
+  static async register(email, password, connectionId) {
+    const found = await prisma.profile.findFirst({
+      where: { email }
+    })
+    if (found) {
+      throw new AccountExists()
+    }
+    const accountCreated = await prisma.account.create({
+      data: {
+        id: `f0.${customid()}`,
+        Identity: {
+          create: [
+            {
+              provider: 'f0',
+              connectionId,
+              PasswordHash: {
+                create: [{ hash: await generateHash(password) }]
+              }
+            }
+          ]
+        }
+      }
+    })
+
+    const createdProfile = await prisma.profile.create({
+      data: {
+        email,
+        Account: {
+          connect: { id: accountCreated.id }
+        }
+      }
+    })
+    accountCreated.Profile = [createdProfile]
+    return fromDbData(accountCreated)
+  }
+
   static async createFromClaims(claims, provider = 'f0') {
     const {
       address,
@@ -265,8 +301,18 @@ class AccountNotFound extends Error {
   }
 }
 
+class AccountExists extends Error {
+  constructor(message, ...args) {
+    super(...args)
+    this.name = 'AccountExists'
+    this.message = message || 'Account already exists'
+    this.status = 409
+  }
+}
+
 export const errors = {
-  AccountNotFound
+  AccountNotFound,
+  AccountExists
 }
 
 export default Account
