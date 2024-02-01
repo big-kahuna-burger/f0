@@ -62,8 +62,34 @@ export default async function interactionsRouter(fastify, opts) {
       lastSubmission.lastAction === 'register'
 
     const client = await provider.Client.find(params.client_id)
-    const connections = await Connection.getEnabledConnections(client.clientId)
+    const isTester = client.clientId === 'tester'
+    const enabled = isTester
+      ? await Connection.getAllConnections()
+      : await Connection.getEnabledConnections(client.clientId)
+
+    let connections = enabled
+
+    if (params.connection) {
+      const selected = enabled.find((c) => c.name === params.connection)
+      if (!selected) {
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          {
+            error: 'access_denied',
+            error_description: 'Invalid connection'
+          },
+          NO_MERGE
+        )
+        reply.header('Content-Length', 0)
+        return reply.redirect(303, returnTo)
+      }
+      // narrow down the list of connections to just the selected one
+      connections = [selected]
+    }
+
     const connectionsSupportingRegister =
+      connections.length &&
       connections.filter((c) => c.disableSignup).length === 0
 
     if (isRegister && !connectionsSupportingRegister) {
@@ -115,8 +141,8 @@ export default async function interactionsRouter(fastify, opts) {
       case 'login': {
         const viewName = isRegister ? 'register.ejs' : 'login.ejs'
         const title = isRegister ? 'Register' : 'Sign In'
-        // resetError
         const error = lastSubmission.user_error_desc
+        // resetError
         if (error) {
           await InteractonsAPI.clearInteractionError(request.params.uid)
         }
@@ -160,14 +186,28 @@ export default async function interactionsRouter(fastify, opts) {
   async function checkLogin(request, reply) {
     const provider = this.oidc
     const {
-      prompt: { name }
+      prompt: { name },
+      params
     } = await provider.interactionDetails(request, reply)
     assert.equal(name, 'login')
+    const client = await provider.Client.find(params.client_id)
+    const isTester = client.clientId === 'tester'
+
+    const connections = isTester
+      ? await Connection.getAllConnections()
+      : await Connection.getEnabledConnections(client.clientId)
+    const dbConnections = connections.filter((c) => c.type === 'DB')
+    const targetConnections = params.connection
+      ? [dbConnections.find((c) => c.name === params.connection)]
+      : dbConnections
+
+    const targetConnectionIds = targetConnections.map((c) => c.id)
     let account
     try {
       account = await Account.authenticate(
         request.body.login,
-        request.body.password
+        request.body.password,
+        targetConnectionIds
       )
     } catch (error) {
       this.log.error(error)
@@ -211,6 +251,7 @@ export default async function interactionsRouter(fastify, opts) {
     const client = await provider.Client.find(params.client_id)
     const connections = await Connection.getEnabledConnections(client.clientId)
     const dbConnections = connections.filter((c) => c.type === 'DB')
+    // check that at least one connection supports registration
     if (dbConnections.length === 0) {
       const returnTo = await provider.interactionResult(
         request,
@@ -223,12 +264,17 @@ export default async function interactionsRouter(fastify, opts) {
       )
       return reply.redirect(303, returnTo)
     }
+
+    const targetConnection = params.connection
+      ? dbConnections.find((c) => c.name === params.connection) // HRD (home realm discovery) done on client side somehow
+      : dbConnections[0] // no HRD, so register to first connection
+
     let account
     try {
       account = await Account.register(
         request.body.login,
         request.body.password,
-        dbConnections[0].id
+        targetConnection.id
       )
     } catch (error) {
       this.log.error(error)

@@ -16,6 +16,10 @@ class Connection {
     const connectionsFound = await prisma.clientConnection.findMany(args)
     return connectionsFound.map((x) => x.connection)
   }
+  static async getAllConnections() {
+    const connectionsFound = await prisma.connection.findMany()
+    return connectionsFound
+  }
 }
 
 export { Connection }

@@ -30,7 +30,12 @@ const routes = [
     children: [
       {
         path: 'tester/callback',
-        element: <Tester />
+        element: <Tester />,
+        loader: async ({ request }) => {
+          const searchParams = new URL(request.url).searchParams
+          const connectionName = searchParams.get('connection')
+          return { connectionName }
+        }
       },
       {
         path: '/',

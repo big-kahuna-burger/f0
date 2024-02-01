@@ -152,7 +152,7 @@ model ResourceServer {
 
 model Connection {
   id               String             @id @default(dbgenerated("gen_random_uuid()"))
-  name             String
+  name             String             @unique
   updatedAt        DateTime           @default(now()) @updatedAt
   type             CONNECTION_TYPE    @default(DB)
   ClientConnection ClientConnection[]

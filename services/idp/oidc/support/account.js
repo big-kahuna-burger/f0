@@ -116,20 +116,18 @@ class Account {
     return fromDbData(found)
   }
 
-  static async authenticate(email, password) {
+  static async authenticate(email, password, connectionIds) {
     const found = await prisma.profile.findFirst({
-      where: { email },
+      where: {
+        email,
+        Account: { Identity: { some: { connectionId: { in: connectionIds } } } }
+      },
       include: {
         Address: true,
         Account: {
           include: {
             Profile: true,
-            Identity: {
-              include: {
-                Connection: true,
-                PasswordHash: true
-              }
-            }
+            Identity: { include: { Connection: true, PasswordHash: true } }
           }
         }
       }
@@ -177,9 +175,7 @@ class Account {
             {
               provider: 'f0',
               connectionId,
-              PasswordHash: {
-                create: [{ hash: await generateHash(password) }]
-              }
+              PasswordHash: { create: [{ hash: await generateHash(password) }] }
             }
           ]
         }
@@ -187,12 +183,7 @@ class Account {
     })
 
     const createdProfile = await prisma.profile.create({
-      data: {
-        email,
-        Account: {
-          connect: { id: accountCreated.id }
-        }
-      }
+      data: { email, Account: { connect: { id: accountCreated.id } } }
     })
     accountCreated.Profile = [createdProfile]
     return fromDbData(accountCreated)
@@ -268,9 +259,7 @@ class Account {
             {
               provider: 'f0',
               connectionId,
-              PasswordHash: {
-                create: [{ hash: await generateHash(password) }]
-              }
+              PasswordHash: { create: [{ hash: await generateHash(password) }] }
             }
           ]
         }

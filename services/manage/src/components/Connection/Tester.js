@@ -1,6 +1,7 @@
 import { Button, Group, Paper, Stack } from '@mantine/core'
 import { useContext, useState } from 'react'
 import { AuthContext, AuthProvider } from 'react-oauth2-code-pkce'
+import { useLoaderData } from 'react-router-dom'
 import { userInfo } from '../../api'
 const ISSUER = process.env.REACT_APP_ISSUER
 const ORIGIN = window.location.origin
@@ -10,7 +11,6 @@ const authConfig = {
   tokenEndpoint: `${ISSUER}/token`,
   redirectUri: `${ORIGIN}/tester/callback`,
   scope: ['openid', 'profile', 'email', 'address', 'phone'].join(' '),
-
   extraAuthParameters: {
     prompt: 'login'
   },
@@ -22,6 +22,11 @@ const authConfig = {
 }
 
 export function Tester() {
+  const { connectionName } = useLoaderData()
+  // prevents sending a stringified 'null'
+  if (connectionName) {
+    authConfig.extraAuthParameters.connection = connectionName
+  }
   return (
     <AuthProvider authConfig={authConfig}>
       <IsolatedApp />
