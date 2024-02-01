@@ -78,7 +78,9 @@ function Header() {
         </Stack>
       </Group>
       <Button
-        onClick={(e) => navigate('/tester/callback')}
+        onClick={(e) =>
+          navigate(`/tester/callback?connection=${connection.name}`)
+        }
         variant="outline"
         rightSection={
           <ThemeIcon variant={'transparent'}>

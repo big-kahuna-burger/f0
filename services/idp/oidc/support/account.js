@@ -116,20 +116,18 @@ class Account {
     return fromDbData(found)
   }
 
-  static async authenticate(email, password) {
+  static async authenticate(email, password, connectionIds) {
     const found = await prisma.profile.findFirst({
-      where: { email },
+      where: {
+        email,
+        Account: { Identity: { some: { connectionId: { in: connectionIds } } } }
+      },
       include: {
         Address: true,
         Account: {
           include: {
             Profile: true,
-            Identity: {
-              include: {
-                Connection: true,
-                PasswordHash: true
-              }
-            }
+            Identity: { include: { Connection: true, PasswordHash: true } }
           }
         }
       }
@@ -160,6 +158,35 @@ class Account {
     }
 
     return fromDbData(found.Account)
+  }
+
+  static async register(email, password, connectionId) {
+    const found = await prisma.profile.findFirst({
+      where: { email }
+    })
+    if (found) {
+      throw new AccountExists()
+    }
+    const accountCreated = await prisma.account.create({
+      data: {
+        id: `f0.${customid()}`,
+        Identity: {
+          create: [
+            {
+              provider: 'f0',
+              connectionId,
+              PasswordHash: { create: [{ hash: await generateHash(password) }] }
+            }
+          ]
+        }
+      }
+    })
+
+    const createdProfile = await prisma.profile.create({
+      data: { email, Account: { connect: { id: accountCreated.id } } }
+    })
+    accountCreated.Profile = [createdProfile]
+    return fromDbData(accountCreated)
   }
 
   static async createFromClaims(claims, provider = 'f0') {
@@ -232,9 +259,7 @@ class Account {
             {
               provider: 'f0',
               connectionId,
-              PasswordHash: {
-                create: [{ hash: await generateHash(password) }]
-              }
+              PasswordHash: { create: [{ hash: await generateHash(password) }] }
             }
           ]
         }
@@ -265,8 +290,18 @@ class AccountNotFound extends Error {
   }
 }
 
+class AccountExists extends Error {
+  constructor(message, ...args) {
+    super(...args)
+    this.name = 'AccountExists'
+    this.message = message || 'Account already exists'
+    this.status = 409
+  }
+}
+
 export const errors = {
-  AccountNotFound
+  AccountNotFound,
+  AccountExists
 }
 
 export default Account

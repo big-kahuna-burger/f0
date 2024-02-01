@@ -54,7 +54,7 @@ describe('interaction router', () => {
       }
     })
     const containsLoginTitle = interactionResponse.body.includes(
-      '<title>Sign-in</title>'
+      '<title>Sign In</title>'
     )
     expect(containsLoginTitle).toBe(true)
     expect(statusCode).toEqual(303)

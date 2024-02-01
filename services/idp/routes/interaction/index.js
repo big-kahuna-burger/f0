@@ -23,6 +23,8 @@ export default async function interactionsRouter(fastify, opts) {
   const Account = opts.Account
   const Connection = opts.Connection
   const AccountErrors = opts.AccountErrors
+  const InteractonsAPI = opts.InteractonsAPI
+
   function errorHandler(error, request, reply) {
     if (error instanceof FST_ERR_BAD_STATUS_CODE) {
       this.log.error(error)
@@ -39,10 +41,12 @@ export default async function interactionsRouter(fastify, opts) {
   fastify.register(FormBody)
   fastify.register(NoCache)
 
-  fastify.get('/:uid', getInteraction)
-  fastify.post('/:uid/login', checkLogin)
-  fastify.post('/:uid/confirm', interactionConfirm)
-  fastify.get('/:uid/abort', interactionAbort)
+  fastify.get('/:uid', getInteraction) // render login prompt - login page
+  fastify.get('/:uid/register', getInteraction) // render login prompt - register page
+  fastify.post('/:uid/login', checkLogin) // submit login prompt with authentication
+  fastify.post('/:uid/register', registerUser) // submit login prompt with registration
+  fastify.post('/:uid/confirm', interactionConfirm) // submit consent prompt
+  fastify.get('/:uid/abort', interactionAbort) // abort the interaction
 
   async function getInteraction(request, reply) {
     const provider = this.oidc
@@ -53,9 +57,55 @@ export default async function interactionsRouter(fastify, opts) {
       session,
       lastSubmission = {}
     } = await provider.interactionDetails(request, reply)
+    const isRegister =
+      request.url.includes('register') ||
+      lastSubmission.lastAction === 'register'
 
     const client = await provider.Client.find(params.client_id)
-    const connections = await Connection.getEnabledConnections(client.clientId)
+    const isTester = client.clientId === 'tester'
+    const enabled = isTester
+      ? await Connection.getAllConnections()
+      : await Connection.getEnabledConnections(client.clientId)
+
+    let connections = enabled
+
+    if (params.connection) {
+      const selected = enabled.find((c) => c.name === params.connection)
+      if (!selected) {
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          {
+            error: 'access_denied',
+            error_description: 'Invalid connection'
+          },
+          NO_MERGE
+        )
+        reply.header('Content-Length', 0)
+        return reply.redirect(303, returnTo)
+      }
+      // narrow down the list of connections to just the selected one
+      connections = [selected]
+    }
+
+    const connectionsSupportingRegister =
+      connections.length &&
+      connections.filter((c) => c.disableSignup).length === 0
+
+    if (isRegister && !connectionsSupportingRegister) {
+      const result = {
+        error: 'access_denied',
+        error_description: 'No connections support registration'
+      }
+      const returnTo = await provider.interactionResult(
+        request,
+        reply,
+        result,
+        NO_MERGE
+      )
+      reply.header('Content-Length', 0)
+      return reply.redirect(303, returnTo)
+    }
 
     const connectionTypes = new Set(connections.map((x) => x.type))
 
@@ -89,20 +139,28 @@ export default async function interactionsRouter(fastify, opts) {
 
     switch (prompt.name) {
       case 'login': {
-        return reply.view('login.ejs', {
+        const viewName = isRegister ? 'register.ejs' : 'login.ejs'
+        const title = isRegister ? 'Register' : 'Sign In'
+        const error = lastSubmission.user_error_desc
+        // resetError
+        if (error) {
+          await InteractonsAPI.clearInteractionError(request.params.uid)
+        }
+        return reply.view(viewName, {
           nonce,
           client,
           uid,
           details: prompt.details,
           params,
-          title: 'Sign-in',
+          title,
+          supportsRegister: connectionsSupportingRegister,
           connectionTypes,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),
             prompt: debug(prompt)
           },
-          error: lastSubmission.user_error_desc
+          error
         })
       }
       case 'consent': {
@@ -128,14 +186,28 @@ export default async function interactionsRouter(fastify, opts) {
   async function checkLogin(request, reply) {
     const provider = this.oidc
     const {
-      prompt: { name }
+      prompt: { name },
+      params
     } = await provider.interactionDetails(request, reply)
     assert.equal(name, 'login')
+    const client = await provider.Client.find(params.client_id)
+    const isTester = client.clientId === 'tester'
+
+    const connections = isTester
+      ? await Connection.getAllConnections()
+      : await Connection.getEnabledConnections(client.clientId)
+    const dbConnections = connections.filter((c) => c.type === 'DB')
+    const targetConnections = params.connection
+      ? [dbConnections.find((c) => c.name === params.connection)]
+      : dbConnections
+
+    const targetConnectionIds = targetConnections.map((c) => c.id)
     let account
     try {
       account = await Account.authenticate(
         request.body.login,
-        request.body.password
+        request.body.password,
+        targetConnectionIds
       )
     } catch (error) {
       this.log.error(error)
@@ -145,7 +217,75 @@ export default async function interactionsRouter(fastify, opts) {
       }
       const iErr = {
         user_error: 'access_denied',
-        user_error_desc: 'Invalid email or password'
+        user_error_desc: 'Invalid email or password',
+        lastAction: 'login'
+      }
+      const returnTo = await provider.interactionResult(
+        request,
+        reply,
+        iErr,
+        NO_MERGE
+      )
+      return reply.redirect(303, returnTo)
+    }
+
+    const result = { login: { accountId: account.accountId } }
+
+    const returnTo = await provider.interactionResult(
+      request,
+      reply,
+      result,
+      NO_MERGE
+    )
+    return reply.redirect(303, returnTo)
+  }
+
+  async function registerUser(request, reply) {
+    const provider = this.oidc
+    const {
+      prompt: { name },
+      params
+    } = await provider.interactionDetails(request, reply)
+
+    assert.equal(name, 'login')
+    const client = await provider.Client.find(params.client_id)
+    const connections = await Connection.getEnabledConnections(client.clientId)
+    const dbConnections = connections.filter((c) => c.type === 'DB')
+    // check that at least one connection supports registration
+    if (dbConnections.length === 0) {
+      const returnTo = await provider.interactionResult(
+        request,
+        reply,
+        {
+          user_error: 'access_denied',
+          user_error_desc: 'No connections support registration'
+        },
+        MERGE
+      )
+      return reply.redirect(303, returnTo)
+    }
+
+    const targetConnection = params.connection
+      ? dbConnections.find((c) => c.name === params.connection) // HRD (home realm discovery) done on client side somehow
+      : dbConnections[0] // no HRD, so register to first connection
+
+    let account
+    try {
+      account = await Account.register(
+        request.body.login,
+        request.body.password,
+        targetConnection.id
+      )
+    } catch (error) {
+      this.log.error(error)
+
+      if (!(error instanceof AccountErrors.AccountExists)) {
+        throw error
+      }
+      const iErr = {
+        user_error: 'access_denied',
+        user_error_desc: 'Account already exists',
+        lastAction: 'register'
       }
       const returnTo = await provider.interactionResult(
         request,

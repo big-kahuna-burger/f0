@@ -9,70 +9,77 @@ export default subscribe
 // or for groups of events DEBUG=oidc:event:interaction.*,oidc:event:authorization.*
 
 function subscribe(provider) {
-	const eventHandlers = [
-		['access_token.destroyed', onAccessTokenDestroyed],
-		['access_token.saved', onAccessTokenSaved],
-		['access_token.issued', onAccessTokenIssued],
-		['authorization_code.consumed', onAuthorizationCodeConsumed],
-		['authorization_code.destroyed', onAuthorizationCodeDestroyed],
-		['authorization_code.saved', onAuthorizationCodeSaved],
-		['authorization.accepted', onAuthorizationAccepted],
-		['authorization.error', onAuthorizationError],
-		['authorization.success', onAuthorizationSuccess],
-		['backchannel.error', onBackchannelError],
-		['backchannel.success', onBackchannelSuccess],
-		['jwks.error', onJwksError],
-		['client_credentials.destroyed', onClientCredentialsDestroyed],
-		['client_credentials.saved', onClientCredentialsSaved],
-		['client_credentials.issued', onClientCredentialsIssued],
-		['device_code.consumed', onDeviceCodeConsumed],
-		['device_code.destroyed', onDeviceCodeDestroyed],
-		['device_code.saved', onDeviceCodeSaved],
-		['discovery.error', onDiscoveryError],
-		['end_session.error', onEndSessionError],
-		['end_session.success', onEndSessionSuccess],
-		['grant.error', onGrantError],
-		['grant.revoked', onGrantRevoked],
-		['grant.success', onGrantSuccess],
-		['initial_access_token.destroyed', onInitialAccessTokenDestroyed],
-		['initial_access_token.saved', onInitialAccessTokenSaved],
-		['interaction.destroyed', onInteractionDestroyed],
-		['interaction.ended', onInteractionEnded],
-		['interaction.saved', onInteractionSaved],
-		['interaction.started', onInteractionStarted],
-		['introspection.error', onIntrospectionError],
-		['replay_detection.destroyed', onReplayDetectionDestroyed],
-		['replay_detection.saved', onReplayDetectionSaved],
-		['pushed_authorization_request.error', onPushedAuthorizationRequestError],
-		['pushed_authorization_request.success', onPushedAuthorizationRequestSuccess],
-		['pushed_authorization_request.destroyed', onPushedAuthorizationRequestDestroyed],
-		['pushed_authorization_request.saved', onPushedAuthorizationRequestSaved],
-		['refresh_token.consumed', onRefreshTokenConsumed],
-		['refresh_token.destroyed', onRefreshTokenDestroyed],
-		['refresh_token.saved', onRefreshTokenSaved],
-		['registration_access_token.destroyed', onRegistrationAccessTokenDestroyed],
-		['registration_access_token.saved', onRegistrationAccessTokenSaved],
-		['registration_create.error', onRegistrationCreateError],
-		['registration_create.success', onRegistrationCreateSuccess],
-		['registration_delete.error', onRegistrationDeleteError],
-		['registration_delete.success', onRegistrationDeleteSuccess],
-		['registration_read.error', onRegistrationReadError],
-		['registration_update.error', onRegistrationUpdateError],
-		['registration_update.success', onRegistrationUpdateSuccess],
-		['revocation.error', onRevocationError],
-		['server_error', onServerError],
-		['session.destroyed', onSessionDestroyed],
-		['session.saved', onSessionSaved],
-		['userinfo.error', onUserinfoError]
-	]
+  const eventHandlers = [
+    ['access_token.destroyed', onAccessTokenDestroyed],
+    ['access_token.saved', onAccessTokenSaved],
+    ['access_token.issued', onAccessTokenIssued],
+    ['authorization_code.consumed', onAuthorizationCodeConsumed],
+    ['authorization_code.destroyed', onAuthorizationCodeDestroyed],
+    ['authorization_code.saved', onAuthorizationCodeSaved],
+    ['authorization.accepted', onAuthorizationAccepted],
+    ['authorization.error', onAuthorizationError],
+    ['authorization.success', onAuthorizationSuccess],
+    ['backchannel.error', onBackchannelError],
+    ['backchannel.success', onBackchannelSuccess],
+    ['jwks.error', onJwksError],
+    ['client_credentials.destroyed', onClientCredentialsDestroyed],
+    ['client_credentials.saved', onClientCredentialsSaved],
+    ['client_credentials.issued', onClientCredentialsIssued],
+    ['device_code.consumed', onDeviceCodeConsumed],
+    ['device_code.destroyed', onDeviceCodeDestroyed],
+    ['device_code.saved', onDeviceCodeSaved],
+    ['discovery.error', onDiscoveryError],
+    ['end_session.error', onEndSessionError],
+    ['end_session.success', onEndSessionSuccess],
+    ['grant.error', onGrantError],
+    ['grant.revoked', onGrantRevoked],
+    ['grant.success', onGrantSuccess],
+    ['initial_access_token.destroyed', onInitialAccessTokenDestroyed],
+    ['initial_access_token.saved', onInitialAccessTokenSaved],
+    ['interaction.destroyed', onInteractionDestroyed],
+    ['interaction.ended', onInteractionEnded],
+    ['interaction.saved', onInteractionSaved],
+    ['interaction.started', onInteractionStarted],
+    ['introspection.error', onIntrospectionError],
+    ['replay_detection.destroyed', onReplayDetectionDestroyed],
+    ['replay_detection.saved', onReplayDetectionSaved],
+    ['pushed_authorization_request.error', onPushedAuthorizationRequestError],
+    [
+      'pushed_authorization_request.success',
+      onPushedAuthorizationRequestSuccess
+    ],
+    [
+      'pushed_authorization_request.destroyed',
+      onPushedAuthorizationRequestDestroyed
+    ],
+    ['pushed_authorization_request.saved', onPushedAuthorizationRequestSaved],
+    ['refresh_token.consumed', onRefreshTokenConsumed],
+    ['refresh_token.destroyed', onRefreshTokenDestroyed],
+    ['refresh_token.saved', onRefreshTokenSaved],
+    ['registration_access_token.destroyed', onRegistrationAccessTokenDestroyed],
+    ['registration_access_token.saved', onRegistrationAccessTokenSaved],
+    ['registration_create.error', onRegistrationCreateError],
+    ['registration_create.success', onRegistrationCreateSuccess],
+    ['registration_delete.error', onRegistrationDeleteError],
+    ['registration_delete.success', onRegistrationDeleteSuccess],
+    ['registration_read.error', onRegistrationReadError],
+    ['registration_update.error', onRegistrationUpdateError],
+    ['registration_update.success', onRegistrationUpdateSuccess],
+    ['revocation.error', onRevocationError],
+    ['server_error', onServerError],
+    ['session.destroyed', onSessionDestroyed],
+    ['session.saved', onSessionSaved],
+    ['userinfo.error', onUserinfoError]
+  ]
 
-	eventHandlers.map(([event, handler]) => {
-		const eventLocalDebug = debug(`oidc:event:${event}`)
-		provider.on(event, (...args) => {
-			eventLocalDebug(handler.name, ...args)
-			handler(...args)
-		})
-	})
+  eventHandlers.map(([event, handler]) => {
+    const eventLocalDebug = debug(`oidc:event:${event}`)
+    provider.on(event, (...args) => {
+      const filtered = args.filter((arg) => !arg.req)
+      eventLocalDebug(handler.name, ...filtered)
+      handler(...args)
+    })
+  })
 }
 
 /**
