@@ -89,7 +89,7 @@ importers:
         version: 5.8.1
       '@scalar/fastify-api-reference':
         specifier: ^1.13.18
-        version: 1.13.18(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.25.2)
+        version: 1.13.18(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0)
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -115,8 +115,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1
       fastify:
-        specifier: ^4.25.2
-        version: 4.25.2
+        specifier: ^4.26.0
+        version: 4.26.0
       fastify-disablecache:
         specifier: ^3.1.9
         version: 3.1.9
@@ -3406,7 +3406,7 @@ packages:
     resolution: {integrity: sha512-irBNt5094vHloql4QzY8RdeI8Tns2kGsaiJ/m6jENWx9xCz/m/F4gKQ1dAailFmpL0Id9tgWLqZbTUO4SINM/Q==}
     dev: false
 
-  /@scalar/fastify-api-reference@1.13.18(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.25.2):
+  /@scalar/fastify-api-reference@1.13.18(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0):
     resolution: {integrity: sha512-2zdEAyD9xKz+dDEkg4mFeQHHWAx3pu6Mh+00uMV1ql+7USKEDIW+wneVW703a7mU8vPn1zeFMCQhGq2/D0nqPw==}
     engines: {node: '>=18'}
     peerDependencies:
@@ -3414,7 +3414,7 @@ packages:
       fastify-html: ^0.3.0
       fastify-plugin: ^4.0.0
     dependencies:
-      fastify: 4.25.2
+      fastify: 4.26.0
       fastify-html: 0.3.2
       fastify-plugin: 4.5.1
     dev: false
@@ -6951,8 +6951,8 @@ packages:
     resolution: {integrity: sha512-stRHYGeuqpEZTL1Ef0Ovr2ltazUT9g844X5z/zEBFLG8RYlpDiOCIG+ATvYEp+/zmc7sN29mcIMp8gvYplYPIQ==}
     dev: false
 
-  /fastify@4.25.2:
-    resolution: {integrity: sha512-SywRouGleDHvRh054onj+lEZnbC1sBCLkR0UY3oyJwjD4BdZJUrxBqfkfCaqn74pVCwBaRHGuL3nEWeHbHzAfw==}
+  /fastify@4.26.0:
+    resolution: {integrity: sha512-Fq/7ziWKc6pYLYLIlCRaqJqEVTIZ5tZYfcW/mDK2AQ9v/sqjGFpj0On0/7hU50kbPVjLO4de+larPA1WwPZSfw==}
     dependencies:
       '@fastify/ajv-compiler': 3.5.0
       '@fastify/error': 3.4.1
@@ -6961,7 +6961,7 @@ packages:
       avvio: 8.2.1
       fast-content-type-parse: 1.1.0
       fast-json-stringify: 5.10.0
-      find-my-way: 7.7.0
+      find-my-way: 8.1.0
       light-my-request: 5.11.0
       pino: 8.17.2
       process-warning: 3.0.0
@@ -7055,8 +7055,8 @@ packages:
       pkg-dir: 4.2.0
     dev: false
 
-  /find-my-way@7.7.0:
-    resolution: {integrity: sha512-+SrHpvQ52Q6W9f3wJoJBbAQULJuNEEQwBvlvYwACDhBTLOTMiQ0HYWh4+vC3OivGP2ENcTI1oKlFA2OepJNjhQ==}
+  /find-my-way@8.1.0:
+    resolution: {integrity: sha512-41QwjCGcVTODUmLLqTMeoHeiozbMXYMAE1CKFiDyi9zVZ2Vjh0yz3MF0WQZoIb+cmzP/XlbFjlF2NtJmvZHznA==}
     engines: {node: '>=14'}
     dependencies:
       fast-deep-equal: 3.1.3
