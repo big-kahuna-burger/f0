@@ -24,6 +24,7 @@ export {
   getConnection,
   updateDBConnection,
   deleteDbConnection,
+  createSocialConnection,
   userInfo
 }
 import { importJWK } from 'jose'
@@ -47,6 +48,33 @@ async function deleteApi(id) {
   }
   const response = await fetch(`${baseUrl}/api/${id}`, opts)
   const json = await response.json()
+  return json
+}
+
+async function createSocialConnection({
+  name,
+  strategy,
+  clientId,
+  clientSecret,
+  scopes,
+  allowedMobileClientIds,
+  syncAttributes
+}) {
+  const opts = {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify({
+      name,
+      strategy,
+      clientId,
+      clientSecret,
+      scopes,
+      allowedMobileClientIds,
+      syncAttributes
+    })
+  }
+  const connectionsResponse = await fetch(`${baseUrl}/connections/social`, opts)
+  const json = await connectionsResponse.json()
   return json
 }
 

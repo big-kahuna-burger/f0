@@ -20,6 +20,8 @@ import { Applications } from './components/Applications'
 import { Connection } from './components/Connection'
 import { Tester } from './components/Connection/Tester'
 import { Connections } from './components/Connections'
+import { NewSocialConnection } from './components/NewSocialConnection'
+import { NewGoogle } from './components/NewSocialConnection/NewGoogle'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -160,6 +162,14 @@ const routes = [
       {
         path: '/authn/social',
         element: <></>
+      },
+      {
+        path: '/authn/social/new',
+        element: <NewSocialConnection />
+      },
+      {
+        path: '/authn/social/new/google',
+        element: <NewGoogle />
       },
       {
         path: '/users',

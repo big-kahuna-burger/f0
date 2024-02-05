@@ -155,10 +155,12 @@ model Connection {
   name             String             @unique
   updatedAt        DateTime           @default(now()) @updatedAt
   type             CONNECTION_TYPE    @default(DB)
+  strategy         CONNECTION_STRATEGY? @default(DB)
   ClientConnection ClientConnection[]
   readonly         Boolean            @default(false)
   Identities       Identity[]
   disableSignup    Boolean            @default(true)
+  connectionConfig Json?
   @@map("connection")
 }
 
@@ -181,6 +183,15 @@ enum RS_SIGNING_ALG {
 
 enum CONNECTION_TYPE {
   DB
+  SOCIAL
+}
+
+enum CONNECTION_STRATEGY {
+  DB
+  GOOGLE
+  GITHUB
+  MICROSOFT
+  APPLE
 }
 
 enum AMR {
