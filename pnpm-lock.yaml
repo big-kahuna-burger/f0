@@ -124,8 +124,8 @@ importers:
         specifier: ^4.5.1
         version: 4.5.1
       jose:
-        specifier: ^5.1.3
-        version: 5.2.0
+        specifier: ^5.2.1
+        version: 5.2.1
       koa-pino-logger:
         specifier: ^4.0.0
         version: 4.0.0
@@ -218,8 +218,8 @@ importers:
         specifier: ^3.0.6
         version: 3.3.1
       jose:
-        specifier: ^5.2.0
-        version: 5.2.0
+        specifier: ^5.2.1
+        version: 5.2.1
       qs:
         specifier: ^6.11.2
         version: 6.11.2
@@ -8739,8 +8739,8 @@ packages:
     resolution: {integrity: sha512-W+oqK4H+r5sITxfxpSU+MMdr/YSWGvgZMQDIsNoBDGGy4i7GBPTtvFKibQzW06n3U3TqHjhvBJsirShsEJ6eeQ==}
     dev: false
 
-  /jose@5.2.0:
-    resolution: {integrity: sha512-oW3PCnvyrcm1HMvGTzqjxxfnEs9EoFOFWi2HsEGhlFVOXxTE3K9GKWVMFoFw06yPUqwpvEWic1BmtUZBI/tIjw==}
+  /jose@5.2.1:
+    resolution: {integrity: sha512-qiaQhtQRw6YrOaOj0v59h3R6hUY9NvxBmmnMfKemkqYmBB0tEc97NbLP7ix44VP5p9/0YHG8Vyhzuo5YBNwviA==}
     dev: false
 
   /joycon@3.1.1:
@@ -9666,7 +9666,7 @@ packages:
       debug: 4.3.4
       eta: 3.2.0
       got: 13.0.0
-      jose: 5.2.0
+      jose: 5.2.1
       jsesc: 3.0.2
       koa: 2.15.0
       nanoid: 5.0.4
