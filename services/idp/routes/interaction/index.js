@@ -145,6 +145,7 @@ export default async function interactionsRouter(fastify, opts) {
         const githubEmails = JSON.parse(emails.body.toString())
         const primaryEmail = githubEmails.find((e) => e.primary)
         githubClaims.email = primaryEmail.email
+        githubClaims.email_verified = true
         githubClaims.sub = sha256(githubClaims.email).substring(0, 21)
         const account = await Account.findByFederated('github', githubClaims)
 
@@ -502,12 +503,8 @@ export default async function interactionsRouter(fastify, opts) {
   async function callbackUpstream(request, reply) {
     const nonce = reply.raw.scriptNonce
     const { upstream } = request.params
-    return reply.viewNoLayout(
-      upstream === 'google' ? 'repost-hash.ejs' : 'repost-query.ejs',
-      {
-        upstream,
-        nonce
-      }
-    )
+    const viewTpl =
+      upstream === 'google' ? 'repost-hash.ejs' : 'repost-query.ejs'
+    return reply.viewNoLayout(viewTpl, { upstream, nonce })
   }
 }
