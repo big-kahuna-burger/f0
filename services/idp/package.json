@@ -48,7 +48,7 @@
     "@opentelemetry/semantic-conventions": "^1.19.0",
     "@prisma/client": "^5.7.1",
     "@prisma/instrumentation": "^5.9.1",
-    "@scalar/fastify-api-reference": "^1.13.18",
+    "@scalar/fastify-api-reference": "^1.14.8",
     "bcrypt": "^5.1.1",
     "chalk": "^5.3.0",
     "close-with-grace": "^1.2.0",
