@@ -13,11 +13,17 @@ const cache = new TTLCache({
 const issuers = new Map()
 const clients = new Map()
 
-const { ISSUER, DEFAULT_GOOGLE_CLIENT_ID, DEFAULT_GOOGLE_CLIENT_SECRET } =
-  process.env
+const {
+  ISSUER,
+  DEFAULT_GOOGLE_CLIENT_ID,
+  DEFAULT_GOOGLE_CLIENT_SECRET,
+  DEFAULT_GITHUB_CLIENT_ID,
+  DEFAULT_GITHUB_CLIENT_SECRET
+} = process.env
 const parsed = new URL(ISSUER)
 const ISSUER_ORIGIN = parsed.origin
 const GOOGLE_CALLBACK = `${ISSUER_ORIGIN}/interaction/callback/google`
+const GITHUB_CALLBACK = `${ISSUER_ORIGIN}/interaction/callback/github`
 
 async function loadSocialConnectionsAndCreateClients() {
   const connections = cache.get('sconn') || (await loadSocialConnections())
@@ -43,6 +49,24 @@ async function loadSocialConnectionsAndCreateClients() {
       })
       debugLog('setting google client for ', connection.name)
       clients.set(connection.name, googleClient)
+    }
+    if (connection.strategy === 'GITHUB') {
+      const githubIssuer = new Issuer({
+        issuer: 'https://github.com',
+        authorization_endpoint: 'https://github.com/login/oauth/authorize',
+        token_endpoint: 'https://github.com/login/oauth/access_token',
+        userinfo_endpoint: 'https://api.github.com/user'
+      })
+      const githubClient = new githubIssuer.Client({
+        client_id:
+          connection.connectionConfig.clientId || DEFAULT_GITHUB_CLIENT_ID,
+        client_secret:
+          connection.connectionConfig.clientSecret ||
+          DEFAULT_GITHUB_CLIENT_SECRET,
+        redirect_uris: [GITHUB_CALLBACK],
+        response_types: ['code']
+      })
+      clients.set(connection.name, githubClient)
     }
   }
 }

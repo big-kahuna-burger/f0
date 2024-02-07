@@ -4,6 +4,12 @@ import prisma from '../../db/client.js'
 import { compareHash, generateHash } from './password-tsc.js'
 const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 26)
 
+const providerConnectionMap = (provider) =>
+  ({
+    google: 'google-oauth2',
+    github: 'github'
+  })[provider]
+
 class Account {
   constructor(id, profile = {}) {
     if (!id) {
@@ -86,18 +92,22 @@ class Account {
     })
 
     if (!found) {
-      if (provider === 'google') {
-        return await Account.createGoogleAccount('google', claims)
+      switch (provider) {
+        case 'google':
+        case 'github':
+          return await Account.createFederatedAccount(provider, claims)
+        default:
+          throw new Error('provider not supported')
       }
     }
     return fromDbData(found)
   }
 
-  static async createGoogleAccount(provider, claims) {
-    const googleConnection = await prisma.connection.findFirst({
-      where: { name: 'google-oauth2' }
+  static async createFederatedAccount(provider, claims) {
+    const connection = await prisma.connection.findFirst({
+      where: { name: providerConnectionMap(provider) }
     })
-    const connectionId = googleConnection.id
+    const connectionId = connection.id
     const createdAccount = await Account.createFromClaims(
       {
         ...claims,
@@ -308,7 +318,7 @@ class Account {
 }
 
 function fromDbData(data) {
-  return new Account(data.id, data.Profile[0])
+  return new Account(data.id, data.Profile ? data.Profile[0] : {})
 }
 
 class AccountNotFound extends Error {

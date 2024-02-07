@@ -5,8 +5,10 @@ import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import { errors } from 'oidc-provider'
 import CSP from '../../csp.js'
-
 import debug from './debug-render.js'
+
+const sha256 = (input) =>
+  crypto.createHash('sha256').update(input).digest('hex')
 
 const { errorCodes } = Fastify
 const { FST_ERR_BAD_STATUS_CODE } = errorCodes
@@ -18,6 +20,7 @@ const MERGE = {
 const NO_MERGE = {
   mergeWithLastSubmission: false
 }
+const GH_COOKIE_KEY = 'github.nonce'
 const GOOGLE_NONCE_COOKIE_KEY = 'google.nonce'
 
 export default async function interactionsRouter(fastify, opts) {
@@ -48,7 +51,7 @@ export default async function interactionsRouter(fastify, opts) {
   fastify.post('/:uid/register', registerUser) // submit login prompt with registration
   fastify.post('/:uid/confirm', interactionConfirm) // submit consent prompt
   fastify.get('/:uid/abort', interactionAbort) // abort the interaction
-  fastify.get('/callback/google', callbackGoogle) // google callback
+  fastify.get('/callback/:upstream', callbackUpstream) // federation callback
   fastify.post('/:uid/federated', federated) // federated
 
   async function federated(request, reply) {
@@ -96,6 +99,54 @@ export default async function interactionsRouter(fastify, opts) {
           'google',
           tokenset.claims()
         )
+
+        const result = { login: { accountId: account.accountId } }
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          result,
+          NO_MERGE
+        )
+        return reply.redirect(303, returnTo)
+      }
+      case 'github': {
+        const oidcClients = await opts.getFederationClients()
+        const githubClient = oidcClients.github
+        const cbParams = githubClient.callbackParams(request)
+
+        // init
+        if (!Object.keys(cbParams).length) {
+          const state = request.params.uid
+          const nonce = crypto.randomBytes(32).toString('hex')
+
+          return reply.cookie(GH_COOKIE_KEY, nonce, cookieOpts).redirect(
+            303,
+            githubClient.authorizationUrl({
+              state,
+              nonce,
+              scope: 'user:email'
+            })
+          )
+        }
+        // callback
+        const nonce = request.cookies[GH_COOKIE_KEY]
+        reply.cookie(GH_COOKIE_KEY, null, cookieOpts)
+
+        const tokenset = await githubClient.oauthCallback(undefined, cbParams, {
+          state: request.params.uid,
+          nonce
+        })
+
+        const githubClaims = await githubClient.userinfo(tokenset)
+        const emails = await githubClient.requestResource(
+          'https://api.github.com/user/emails',
+          tokenset
+        )
+        const githubEmails = JSON.parse(emails.body.toString())
+        const primaryEmail = githubEmails.find((e) => e.primary)
+        githubClaims.email = primaryEmail.email
+        githubClaims.sub = sha256(githubClaims.email).substring(0, 21)
+        const account = await Account.findByFederated('github', githubClaims)
 
         const result = { login: { accountId: account.accountId } }
         const returnTo = await provider.interactionResult(
@@ -219,6 +270,7 @@ export default async function interactionsRouter(fastify, opts) {
             google:
               oidcClients['google-oauth2'] &&
               connectionStrategies.has('GOOGLE'),
+            github: oidcClients.github && connectionStrategies.has('GITHUB'),
             db: connectionStrategies.has('DB')
           },
           supportsRegister: connectionsSupportingRegister,
@@ -447,12 +499,15 @@ export default async function interactionsRouter(fastify, opts) {
     return reply.redirect(303, returnTo)
   }
 
-  async function callbackGoogle(request, reply) {
+  async function callbackUpstream(request, reply) {
     const nonce = reply.raw.scriptNonce
-
-    return reply.viewNoLayout('repost.ejs', {
-      upstream: 'google',
-      nonce
-    })
+    const { upstream } = request.params
+    return reply.viewNoLayout(
+      upstream === 'google' ? 'repost-hash.ejs' : 'repost-query.ejs',
+      {
+        upstream,
+        nonce
+      }
+    )
   }
 }
