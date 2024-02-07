@@ -58,3 +58,5 @@ profile*
 *flamegraph*
 
 *.env
+
+services/idp/testme.cjs

@@ -1,14 +1,13 @@
 <html>
-
 <head>
   <title>Fragment Federated Callback Repost Form</title>
 </head>
-
 <body>
   <script nonce="<%= nonce %>">
     function parseQuery(queryString) {
       var query = {};
       var pairs = (queryString[0] === '?' ? queryString.slice(1) : queryString).split('&');
+      
       for (var i = 0; i < pairs.length; i++) {
         var pair = pairs[i].split('=');
         query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
@@ -18,7 +17,8 @@
 
     var fields = parseQuery(window.location.hash.slice(1));
     fields.upstream = '<%= upstream %>'
-    var uid = fields.state.split('|')[0]
+
+    var uid = fields.state
 
     var form = document.createElement('form');
     form.method = 'POST';
@@ -44,5 +44,4 @@
     form.submit();
   </script>
 </body>
-
 </html>

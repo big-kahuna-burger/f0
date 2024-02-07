@@ -721,7 +721,7 @@ async function secretFactory() {
 
 function flattenAccount(acc) {
   const { Profile, ...account } = acc
-  const { Address, addressId, ...p } = Profile[0]
+  const { Address = {}, addressId, ...p } = Profile[0] || {}
 
   return { ...account, ...p, ...Address }
 }

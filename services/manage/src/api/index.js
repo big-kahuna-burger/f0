@@ -396,9 +396,7 @@ async function getUsers() {
   return usersJson.map((u, i) => ({
     ...u,
     name: `${u.given_name} ${u.family_name}`,
-    picture: `https://raw.githubusercontent.com/mantinedev/mantine/master/.demo/avatars/avatar-${
-      (i % 10) + 1
-    }.png`,
+    picture: u.picture,
     stats: [
       { value: Math.round(Math.random() * 255), label: 'Logins' },
       { value: '2h ago', label: 'Last Login' },

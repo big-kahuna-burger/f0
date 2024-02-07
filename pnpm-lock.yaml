@@ -28,7 +28,7 @@ importers:
         specifier: ^5.8.0
         version: 5.8.0
       '@fastify/cookie':
-        specifier: ^9.2.0
+        specifier: ^9.3.1
         version: 9.3.1
       '@fastify/cors':
         specifier: ^9.0.1
@@ -54,6 +54,9 @@ importers:
       '@fastify/view':
         specifier: ^8.2.0
         version: 8.2.0
+      '@isaacs/ttlcache':
+        specifier: ^1.4.1
+        version: 1.4.1
       '@opentelemetry/api':
         specifier: ^1.7.0
         version: 1.7.0
@@ -2430,6 +2433,11 @@ packages:
       strip-ansi-cjs: /strip-ansi@6.0.1
       wrap-ansi: 8.1.0
       wrap-ansi-cjs: /wrap-ansi@7.0.0
+    dev: false
+
+  /@isaacs/ttlcache@1.4.1:
+    resolution: {integrity: sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==}
+    engines: {node: '>=12'}
     dev: false
 
   /@istanbuljs/load-nyc-config@1.1.0:

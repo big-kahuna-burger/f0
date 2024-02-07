@@ -7,7 +7,9 @@ import { fastify as Fastify } from 'fastify'
 import './env.js'
 
 import { configureOidc } from './oidc/index.js'
+import { getFederationClients } from './oidc/support/federation.js'
 import InteractonsAPI from './oidc/support/interaction.js'
+
 import { MANAGEMENT } from './resource-servers/management.js'
 import { swaggerOpts } from './swagger-opts.js'
 
@@ -52,10 +54,6 @@ async function makeFastify(config, pretty) {
 
   const oidCallback = provider.callback()
   app.use(pathname, oidCallback)
-  const slower = (seconds) => (req, res, next) => {
-    return setTimeout(next, seconds * 1000)
-  }
-  // app.use(slower(0.1))
 
   const appService = await import('./app.js')
   await app.register(appService, {
@@ -65,7 +63,8 @@ async function makeFastify(config, pretty) {
     AccountErrors,
     localKeySet,
     MANAGEMENT_API: MANAGEMENT,
-    InteractonsAPI
+    InteractonsAPI,
+    getFederationClients
   })
 
   // delay is the number of milliseconds for the graceful close to finish

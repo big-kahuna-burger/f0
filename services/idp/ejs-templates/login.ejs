@@ -13,32 +13,34 @@
     <span class="google-button__text">Sign in with Google</span>
   </button>
 </form>
-<div class="login-help">
-  - or -
-</div>
 <% } %>
 
-
-
-<form id="authnform" autocomplete="off" action="/interaction/<%= uid %>/login" method="post">
-  <input required type="text" name="login" placeholder="Enter any login" <% if (!params.login_hint) {
-        %>autofocus="on" <% } else { %> value="<%= params.login_hint %>" <% } %>>
-  <input required type="password" name="password" placeholder="and password" <% if (params.login_hint) {
-              %>autofocus="on" <% } %>>
-  <% if (error) { %>
-  <p id="error" class="red"><%= error %></p>
-  <% } %>
-  <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
+<% if (locals.db) { %>
+  <% if (locals.google) { %>
   <div class="login-help">
-    <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
-    <% if (supportsRegister) { %>
-    <hr />
-    <div>
-      Don't have an account? <a href="/interaction/<%= uid %>/register">Sign up</a>
-    </div>
-    <% } %>
+    - or -
   </div>
-</form>
+  <% } %>
+  <form id="authnform" autocomplete="off" action="/interaction/<%= uid %>/login" method="post">
+    <input required type="text" name="login" placeholder="Enter any login" <% if (!params.login_hint) {
+          %>autofocus="on" <% } else { %> value="<%= params.login_hint %>" <% } %>>
+    <input required type="password" name="password" placeholder="and password" <% if (params.login_hint) {
+                %>autofocus="on" <% } %>>
+    <% if (error) { %>
+    <p id="error" class="red"><%= error %></p>
+    <% } %>
+    <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
+    <div class="login-help">
+      <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
+      <% if (supportsRegister) { %>
+      <hr />
+      <div>
+        Don't have an account? <a href="/interaction/<%= uid %>/register">Sign up</a>
+      </div>
+      <% } %>
+    </div>
+  </form>
+<% } %>
 
 <% if(vercel) { %>
   <script nonce="<%= nonce %>">
