@@ -20,6 +20,16 @@ class Connection {
     const connectionsFound = await prisma.connection.findMany()
     return connectionsFound
   }
+  static async getSocialConnections() {
+    const connectionsFound = await prisma.connection.findMany({
+      where: { type: 'SOCIAL' }
+    })
+    return connectionsFound
+  }
+  static async getConnectionIdByName(name) {
+    const connection = await prisma.connection.findFirst({ where: { name } })
+    return connection?.id
+  }
 }
 
 export { Connection }

@@ -4,13 +4,19 @@ import prisma from '../../db/client.js'
 import { compareHash, generateHash } from './password-tsc.js'
 const customid = customAlphabet('abcdefghijklmnopqrstuvwxyz0123456789', 26)
 
+const providerConnectionMap = (provider) =>
+  ({
+    google: 'google-oauth2',
+    github: 'github'
+  })[provider]
+
 class Account {
-  constructor(id, profile) {
+  constructor(id, profile = {}) {
     if (!id) {
       throw new Error('id is required')
     }
     this.accountId = id
-    this.profile = profile
+    this.profile = omitNulls(profile)
     this.profile.sub = id
   }
 
@@ -40,7 +46,7 @@ class Account {
       }
 
       if (scope.includes('address')) {
-        let address
+        const address = {}
         try {
           const { Address } = await prisma.profile.findFirst({
             where: { id: this.profile.id },
@@ -48,26 +54,30 @@ class Account {
               Address: true
             }
           })
-          address = {
-            // formatted: Address.formatted,
-            street_address: Address.streetAddress,
-            locality: Address.locality,
-            region: Address.region,
-            postal_code: Address.postalCode,
-            country: Address.country
+          // formatted: Address.formatted,
+          if (Address.streetAddress) {
+            address.street_address = Address.streetAddress
           }
-        } catch (error) {}
-        claimsValues = {
-          ...claimsValues,
-          address
-        }
+          if (Address.locality) {
+            address.locality = Address.locality
+          }
+          if (Address.region) {
+            address.region = Address.region
+          }
+          if (Address.postalCode) {
+            address.postal_code = Address.postalCode
+          }
+          if (Address.country) {
+            address.country = Address.country
+          }
+          claimsValues.address = address
+        } catch {}
       }
 
       if (scope.includes('phone')) {
-        claimsValues = {
-          ...claimsValues,
-          phone_number: this.profile.phoneNumber,
-          phone_number_verified: this.profile.phoneNumberVerified
+        if (this.profile.phoneNumber) {
+          claimsValues.phone_number = this.profile.phoneNumber
+          claimsValues.phone_number_verified = this.profile.phoneNumberVerified
         }
       }
     }
@@ -76,14 +86,38 @@ class Account {
 
   static async findByFederated(provider, claims) {
     const id = `${provider}.${claims.sub}`
-    const found = await prisma.account.findFirst({ where: { id } })
+    const found = await prisma.account.findFirst({
+      where: { id },
+      include: { Profile: true }
+    })
 
     if (!found) {
-      throw new Error('no account found')
+      switch (provider) {
+        case 'google':
+        case 'github':
+          return await Account.createFederatedAccount(provider, claims)
+        default:
+          throw new Error('provider not supported')
+      }
     }
     return fromDbData(found)
   }
 
+  static async createFederatedAccount(provider, claims) {
+    const connection = await prisma.connection.findFirst({
+      where: { name: providerConnectionMap(provider) }
+    })
+    const connectionId = connection.id
+    const createdAccount = await Account.createFromClaims(
+      {
+        ...claims,
+        connectionId,
+        sub: `${provider}.${claims.sub}`
+      },
+      provider
+    )
+    return createdAccount
+  }
   static async findByEmail(email) {
     const found = await prisma.account.findFirst({
       where: { email },
@@ -191,9 +225,11 @@ class Account {
 
   static async createFromClaims(claims, provider = 'f0') {
     const {
+      sub,
       address,
       birthdate,
       email,
+      email_verified,
       family_name,
       gender,
       given_name,
@@ -202,6 +238,7 @@ class Account {
       name,
       nickname,
       phone_number,
+      phone_number_verified,
       picture,
       preferred_username,
       profile,
@@ -214,8 +251,8 @@ class Account {
     const ProfileData = {
       birthdate,
       email,
-      emailVerified: false,
-      phoneNumberVerified: false,
+      emailVerified: email_verified,
+      phoneNumberVerified: phone_number_verified,
       phoneNumber: phone_number,
       familyName: family_name,
       middleName: middle_name,
@@ -251,17 +288,20 @@ class Account {
         }
       }
     }
+    const identityPayload = {
+      provider,
+      connectionId
+    }
+    if (password) {
+      identityPayload.PasswordHash = {
+        create: [{ hash: await generateHash(password) }]
+      }
+    }
     const accountCreated = await prisma.account.create({
       data: {
-        id: `${provider}.${customid()}`,
+        id: sub || `${provider}.${customid()}`,
         Identity: {
-          create: [
-            {
-              provider: 'f0',
-              connectionId,
-              PasswordHash: { create: [{ hash: await generateHash(password) }] }
-            }
-          ]
+          create: [identityPayload]
         }
       }
     })
@@ -278,7 +318,7 @@ class Account {
 }
 
 function fromDbData(data) {
-  return new Account(data.id, data.Profile[0])
+  return new Account(data.id, data.Profile ? data.Profile[0] : {})
 }
 
 class AccountNotFound extends Error {
@@ -305,3 +345,13 @@ export const errors = {
 }
 
 export default Account
+
+function omitNulls(obj) {
+  const newObj = {}
+  for (const key in obj) {
+    if (obj[key] !== null) {
+      newObj[key] = obj[key]
+    }
+  }
+  return newObj
+}

@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict'
+import crypto from 'node:crypto'
 import FormBody from '@fastify/formbody'
 import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import { errors } from 'oidc-provider'
-
 import CSP from '../../csp.js'
-
+import { epochTime } from '../../oidc/helpers/epoch.js'
 import debug from './debug-render.js'
 
 const { errorCodes } = Fastify
@@ -18,6 +18,8 @@ const MERGE = {
 const NO_MERGE = {
   mergeWithLastSubmission: false
 }
+const GH_COOKIE_KEY = 'github.nonce'
+const GOOGLE_NONCE_COOKIE_KEY = 'google.nonce'
 
 export default async function interactionsRouter(fastify, opts) {
   const Account = opts.Account
@@ -47,7 +49,135 @@ export default async function interactionsRouter(fastify, opts) {
   fastify.post('/:uid/register', registerUser) // submit login prompt with registration
   fastify.post('/:uid/confirm', interactionConfirm) // submit consent prompt
   fastify.get('/:uid/abort', interactionAbort) // abort the interaction
+  fastify.get('/callback/:upstream', callbackUpstream) // federation callback
+  fastify.post('/:uid/federated', federated) // federated
 
+  async function federated(request, reply) {
+    const provider = this.oidc
+    const { upstream } = request.body
+    const {
+      prompt: { name }
+    } = await provider.interactionDetails(request, reply)
+    const path = `/interaction/${request.params.uid}/federated`
+    const cookieOpts = { path, sameSite: 'strict' }
+    switch (upstream) {
+      case 'google': {
+        const oidcClients = await opts.getFederationClients()
+        const googleClient = oidcClients['google-oauth2']
+        const cbParams = googleClient.callbackParams(request)
+
+        // init
+        if (!Object.keys(cbParams).length) {
+          const state = request.params.uid
+          const nonce = crypto.randomBytes(32).toString('hex')
+
+          return reply
+            .cookie(GOOGLE_NONCE_COOKIE_KEY, nonce, cookieOpts)
+            .redirect(
+              303,
+              googleClient.authorizationUrl({
+                state,
+                nonce,
+                scope: 'openid email profile',
+                prompt: 'select_account'
+              })
+            )
+        }
+        // callback
+        const nonce = request.cookies[GOOGLE_NONCE_COOKIE_KEY]
+        reply.cookie(GOOGLE_NONCE_COOKIE_KEY, null, cookieOpts)
+
+        const tokenset = await googleClient.callback(undefined, cbParams, {
+          state: request.params.uid,
+          nonce,
+          response_type: 'id_token'
+        })
+
+        const account = await Account.findByFederated(
+          'google',
+          tokenset.claims()
+        )
+
+        const result = { login: { accountId: account.accountId } }
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          result,
+          NO_MERGE
+        )
+        return reply.redirect(303, returnTo)
+      }
+      case 'github': {
+        const oidcClients = await opts.getFederationClients()
+        const githubClient = oidcClients.github
+        const cbParams = githubClient.callbackParams(request)
+
+        // init
+        if (!Object.keys(cbParams).length) {
+          const state = request.params.uid
+          const nonce = crypto.randomBytes(32).toString('hex')
+
+          return reply.cookie(GH_COOKIE_KEY, nonce, cookieOpts).redirect(
+            303,
+            githubClient.authorizationUrl({
+              state,
+              nonce,
+              scope: 'user:email'
+            })
+          )
+        }
+        // callback
+        const nonce = request.cookies[GH_COOKIE_KEY]
+        reply.cookie(GH_COOKIE_KEY, null, cookieOpts)
+
+        const tokenset = await githubClient.oauthCallback(undefined, cbParams, {
+          state: request.params.uid,
+          nonce
+        })
+
+        const githubClaims = await githubClient.userinfo(tokenset)
+
+        try {
+          const emails = await githubClient.requestResource(
+            'https://api.github.com/user/emails',
+            tokenset
+          )
+          const githubEmails = JSON.parse(emails.body.toString())
+          const primaryEmail = githubEmails.find((e) => e.primary)
+
+          githubClaims.email = primaryEmail.email
+          githubClaims.email_verified = primaryEmail.verified
+        } catch (error) {
+          // this should not happen, but if it does, we'll generate something here so it won't fail
+          // TODO, enable creating accounts in oidc without revealing the external emails
+          githubClaims.email = `hiddenemail+${epochTime()}@github.com`
+        }
+
+        githubClaims.sub = githubClaims.id
+        if (githubClaims.avatar_url) {
+          githubClaims.picture = githubClaims.avatar_url
+        }
+        if (githubClaims.blog) {
+          githubClaims.website = githubClaims.blog
+        }
+        if (githubClaims.html_url) {
+          githubClaims.profile = githubClaims.html_url
+        }
+        const account = await Account.findByFederated('github', githubClaims)
+
+        const result = { login: { accountId: account.accountId } }
+        const returnTo = await provider.interactionResult(
+          request,
+          reply,
+          result,
+          NO_MERGE
+        )
+        return reply.redirect(303, returnTo)
+      }
+      default:
+        return undefined
+    }
+  }
   async function getInteraction(request, reply) {
     const provider = this.oidc
     const {
@@ -107,9 +237,9 @@ export default async function interactionsRouter(fastify, opts) {
       return reply.redirect(303, returnTo)
     }
 
-    const connectionTypes = new Set(connections.map((x) => x.type))
+    const connectionStrategies = new Set(connections.map((x) => x.strategy))
 
-    if (connectionTypes.size === 0 && client.clientId !== 'tester') {
+    if (connectionStrategies.size === 0 && client.clientId !== 'tester') {
       const result = {
         error: 'access_denied',
         error_description: 'No connections available for this client'
@@ -136,7 +266,6 @@ export default async function interactionsRouter(fastify, opts) {
       })
     }
     const nonce = reply.raw.scriptNonce
-
     switch (prompt.name) {
       case 'login': {
         const viewName = isRegister ? 'register.ejs' : 'login.ejs'
@@ -146,6 +275,7 @@ export default async function interactionsRouter(fastify, opts) {
         if (error) {
           await InteractonsAPI.clearInteractionError(request.params.uid)
         }
+        const oidcClients = await opts.getFederationClients()
         return reply.view(viewName, {
           nonce,
           client,
@@ -153,8 +283,14 @@ export default async function interactionsRouter(fastify, opts) {
           details: prompt.details,
           params,
           title,
+          locals: {
+            google:
+              oidcClients['google-oauth2'] &&
+              connectionStrategies.has('GOOGLE'),
+            github: oidcClients.github && connectionStrategies.has('GITHUB'),
+            db: connectionStrategies.has('DB')
+          },
           supportsRegister: connectionsSupportingRegister,
-          connectionTypes,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),
@@ -378,5 +514,13 @@ export default async function interactionsRouter(fastify, opts) {
     )
     reply.header('Content-Length', 0)
     return reply.redirect(303, returnTo)
+  }
+
+  async function callbackUpstream(request, reply) {
+    const nonce = reply.raw.scriptNonce
+    const { upstream } = request.params
+    const viewTpl =
+      upstream === 'google' ? 'repost-hash.ejs' : 'repost-query.ejs'
+    return reply.viewNoLayout(viewTpl, { upstream, nonce })
   }
 }

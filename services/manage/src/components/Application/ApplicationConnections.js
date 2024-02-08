@@ -1,42 +1,89 @@
 import {
   Anchor,
+  Divider,
   Group,
   Paper,
   Stack,
   Switch,
   Table,
+  Text,
   ThemeIcon,
   rem,
   useMantineTheme
 } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
-import { IconDatabase } from '@tabler/icons-react'
+import { IconBrandGoogle, IconDatabase } from '@tabler/icons-react'
 import { IconCheck, IconX } from '@tabler/icons-react'
 import { useLoaderData, useNavigate } from 'react-router-dom'
 import { enableDisableConnection } from '../../api'
 
 const ApplicationConnections = () => {
   const isMobile = useMediaQuery('(max-width: 850px)')
-  const theme = useMantineTheme()
-  const { activeApp, connections = [] } = useLoaderData()
-  const rows = connections.map((x) => {
+  const { connections = [], socialConnections = [] } = useLoaderData()
+  const rows = renderRows(connections)
+  const socialRows = renderRows(socialConnections)
+
+  return (
+    <>
+      <Paper
+        mt="xs"
+        shadow="md"
+        withBorder
+        p="sm"
+        radius={'sm'}
+        maw={1000}
+        miw={330}
+      >
+        <Text> DB Connections </Text>
+        <Stack miw={150} maw={806} w={isMobile ? undefined : 806}>
+          <Table.ScrollContainer>
+            <Table verticalSpacing="lg">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Connection Name</Table.Th>
+                  <Table.Th>Enabled</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{rows}</Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </Stack>
+        <Divider my="sm" />
+        <Text> Social Connections </Text>
+
+        <Stack miw={150} maw={806} w={isMobile ? undefined : 806}>
+          <Table.ScrollContainer>
+            <Table verticalSpacing="lg">
+              <Table.Thead>
+                <Table.Tr>
+                  <Table.Th>Connection Name</Table.Th>
+                  <Table.Th>Enabled</Table.Th>
+                </Table.Tr>
+              </Table.Thead>
+              <Table.Tbody>{socialRows}</Table.Tbody>
+            </Table>
+          </Table.ScrollContainer>
+        </Stack>
+      </Paper>
+    </>
+  )
+}
+
+const renderRows = (connections) => {
+  const { activeApp } = useLoaderData()
+  return connections.map((x) => {
     const enabled = activeApp.connections.some((c) => c.id === x.id)
+    const Icon = x.strategy === 'GOOGLE' ? IconBrandGoogle : IconDatabase
+    const ctype = x.type.toLowerCase()
     return (
       <Table.Tr key={x.id}>
         <Table.Td>
           <Group>
-            <ThemeIcon
-              variant={enabled ? 'filled' : 'outline'}
-              size={38}
-              c={theme.colors[enabled ? 'myAltColor' : 'myColor'][5]}
-            >
-              <IconDatabase style={{ width: rem(20), height: rem(20) }} />
+            <ThemeIcon variant={enabled ? 'filled' : 'outline'} size={38}>
+              <Icon style={{ width: rem(20), height: rem(20) }} />
             </ThemeIcon>
-            <Anchor href={`/authn/db/${x.id}`}>{x.name}</Anchor>
+            <Anchor href={`/authn/${ctype}/${x.id}`}>{x.name}</Anchor>
           </Group>
-        </Table.Td>
-        <Table.Td>
-          <div style={{ flexBasis: '100%' }}>{}</div>
         </Table.Td>
         <Table.Td justify="center">
           <EnabledCell
@@ -48,32 +95,6 @@ const ApplicationConnections = () => {
       </Table.Tr>
     )
   })
-  return (
-    <Paper
-      mt="xs"
-      shadow="md"
-      withBorder
-      p="sm"
-      radius={'sm'}
-      maw={1000}
-      miw={330}
-    >
-      <Stack miw={150} maw={806} w={isMobile ? undefined : 806}>
-        <Table.ScrollContainer>
-          <Table verticalSpacing="lg">
-            <Table.Thead>
-              <Table.Tr>
-                <Table.Th>Connection Name</Table.Th>
-                <Table.Th>-</Table.Th>
-                <Table.Th>Enabled</Table.Th>
-              </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>{rows}</Table.Tbody>
-          </Table>
-        </Table.ScrollContainer>
-      </Stack>
-    </Paper>
-  )
 }
 
 const EnabledCell = ({ connectionId, clientId, enabled }) => {

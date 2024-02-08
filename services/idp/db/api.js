@@ -670,6 +670,19 @@ async function removeConnectionFromClient(clientId, connectionId) {
   return deleteResult
 }
 
+async function createSocialConnection({ name, strategy, connectionConfig }) {
+  const connection = await prisma.connection.create({
+    data: {
+      id: `conn_${nanoidAlpha(8)}`,
+      name,
+      type: 'SOCIAL',
+      strategy,
+      connectionConfig
+    }
+  })
+  return connection
+}
+
 export {
   getAccount,
   loadAccounts,
@@ -696,7 +709,8 @@ export {
   deleteClient,
   addConnectionToClient,
   removeConnectionFromClient,
-  getClientGrantsByClientId
+  getClientGrantsByClientId,
+  createSocialConnection
 }
 
 async function secretFactory() {
@@ -707,7 +721,7 @@ async function secretFactory() {
 
 function flattenAccount(acc) {
   const { Profile, ...account } = acc
-  const { Address, addressId, ...p } = Profile[0]
+  const { Address = {}, addressId, ...p } = Profile[0] || {}
 
   return { ...account, ...p, ...Address }
 }

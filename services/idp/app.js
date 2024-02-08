@@ -1,5 +1,6 @@
 import path from 'node:path'
 import AutoLoad from '@fastify/autoload'
+import fCookie from '@fastify/cookie'
 import Cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import Static from '@fastify/static'
@@ -57,8 +58,22 @@ export default async function runme(fastify, opts) {
     defaultContext: {
       uid: '',
       vercel: opts.isVercel,
-      showDebug: process.env.GRANTS_DEBUG
+      showDebug: process.env.GRANTS_DEBUG,
+      title: ''
     }
+  })
+
+  fastify.register(View, {
+    engine: { ejs },
+    root: path.join(__dirname, 'ejs-templates'),
+    extName: 'ejs',
+    propertyName: 'viewNoLayout'
+  })
+
+  fastify.register(fCookie, {
+    secret: process.env.COOKIES_SECRET || 'my-secret', // for cookies signature // this is used in google federation call, find better place to store secret
+    hook: 'onRequest', // set to false to disable cookie autoparsing or set autoparsing on any of the following hooks: 'onRequest', 'preParsing', 'preHandler', 'preValidation'. default: 'onRequest'
+    parseOptions: {} // options for parsing cookies
   })
 
   fastify.register(AutoLoad, {

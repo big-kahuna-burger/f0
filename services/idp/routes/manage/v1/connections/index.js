@@ -26,6 +26,29 @@ export default async function (fastify, opts) {
     },
     updateConnection
   )
+  fastify.post(
+    '/social',
+    { onRequest: fastify.authenticate },
+    createSocialConnection
+  )
+
+  async function createSocialConnection(request, reply) {
+    const { name, strategy, ...data } = request.body
+    if (strategy === 'google') {
+      const connectionConfig = {}
+      connectionConfig.scopes = data.scopes // todo validate scopes
+      connectionConfig.clientId = data.clientId // todo validate client id
+      connectionConfig.clientSecret = data.clientSecret // todo validate client secret
+      connectionConfig.syncAttributes = data.syncAttributes
+      connectionConfig.allowedMobileClientIds = data.allowedMobileClientIds // todo validate mobile client ids
+      return api.createSocialConnection({
+        name: 'google-oauth2',
+        strategy: 'GOOGLE',
+        connectionConfig
+      })
+    }
+    throw new Error('unsupported strategy')
+  }
 
   async function deleteConnection(request, reply) {
     const { id } = request.params
