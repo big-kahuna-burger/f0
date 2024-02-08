@@ -33,6 +33,7 @@ const connectionsDB = {
     id: 'default',
     name: 'default',
     type: 'DB',
+    strategy: 'DB',
     readonly: true
   }
 }
@@ -67,10 +68,10 @@ const oidcClientDb = {
 
 const debug =
   (fn) =>
-    (...args) => {
-      console.log('DEBUG TEST MOCK', fn.name, ...args)
-      return fn(...args)
-    }
+  (...args) => {
+    console.log('DEBUG TEST MOCK', fn.name, ...args)
+    return fn(...args)
+  }
 
 export const setupPrisma = async (prisma) => {
   prisma.config.findMany.mockImplementation(configFindMany)
@@ -105,6 +106,7 @@ export const setupPrisma = async (prisma) => {
   prisma.oidcModel.create.mockImplementation(oidcModelCreate)
   prisma.oidcModel.count.mockImplementation(oidcModelCount)
   prisma.clientConnection.findMany.mockImplementation(findManyClientConnections)
+  prisma.connection.findMany.mockImplementation(connectionsFindMany)
   prisma.connection.findFirst.mockImplementation(findFirstConnection)
   prisma.$transaction.mockImplementation((cb) => cb(prisma))
   await newAccount()
@@ -112,6 +114,10 @@ export const setupPrisma = async (prisma) => {
 }
 
 export { clientMock, getCurrentKeys }
+
+function connectionsFindMany({ where: { type } = {} }) {
+  return Object.values(connectionsDB)
+}
 
 function findFirstConnection({ where: { id, name } }) {
   if (id) {
@@ -248,7 +254,11 @@ function oidcClientFindUnique({ where: { id } }) {
   return clientMock
 }
 
-function oidcModelFindUnique({ where: { id_type: { id, type } } }) {
+function oidcModelFindUnique({
+  where: {
+    id_type: { id, type }
+  }
+}) {
   if (type === 10) {
     return interactionsDB[id]
   }

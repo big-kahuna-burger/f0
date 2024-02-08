@@ -26,6 +26,13 @@ export default async function (fastify, opts) {
     },
     updateConnection
   )
+  fastify.patch(
+    '/social/:id',
+    {
+      onRequest: fastify.authenticate
+    },
+    updateSocialConnection
+  )
   fastify.post(
     '/social',
     { onRequest: fastify.authenticate },
@@ -87,6 +94,25 @@ export default async function (fastify, opts) {
     const { id } = request.params
     const { disableSignup } = request.body
     const connection = await api.updateDBConnection(id, { disableSignup })
+    return connection
+  }
+
+  async function updateSocialConnection(request, reply) {
+    const { id } = request.params
+    const {
+      clientId,
+      clientSecret,
+      allowedMobileClientIds,
+      scopes,
+      syncAttributes
+    } = request.body
+    const connection = await api.updateSocialConnection(id, {
+      clientId,
+      clientSecret,
+      allowedMobileClientIds,
+      scopes,
+      syncAttributes
+    })
     return connection
   }
 }
