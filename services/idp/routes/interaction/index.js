@@ -154,7 +154,15 @@ export default async function interactionsRouter(fastify, opts) {
         }
 
         githubClaims.sub = githubClaims.id
-
+        if (githubClaims.avatar_url) {
+          githubClaims.picture = githubClaims.avatar_url
+        }
+        if (githubClaims.blog) {
+          githubClaims.website = githubClaims.blog
+        }
+        if (githubClaims.html_url) {
+          githubClaims.profile = githubClaims.html_url
+        }
         const account = await Account.findByFederated('github', githubClaims)
 
         const result = { login: { accountId: account.accountId } }
