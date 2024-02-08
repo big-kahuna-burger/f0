@@ -5,10 +5,8 @@ import Fastify from 'fastify'
 import NoCache from 'fastify-disablecache'
 import { errors } from 'oidc-provider'
 import CSP from '../../csp.js'
+import { epochTime } from '../../oidc/helpers/epoch.js'
 import debug from './debug-render.js'
-
-const sha256 = (input) =>
-  crypto.createHash('sha256').update(input).digest('hex')
 
 const { errorCodes } = Fastify
 const { FST_ERR_BAD_STATUS_CODE } = errorCodes
@@ -138,15 +136,25 @@ export default async function interactionsRouter(fastify, opts) {
         })
 
         const githubClaims = await githubClient.userinfo(tokenset)
-        const emails = await githubClient.requestResource(
-          'https://api.github.com/user/emails',
-          tokenset
-        )
-        const githubEmails = JSON.parse(emails.body.toString())
-        const primaryEmail = githubEmails.find((e) => e.primary)
-        githubClaims.email = primaryEmail.email
-        githubClaims.email_verified = true
-        githubClaims.sub = sha256(githubClaims.email).substring(0, 21)
+
+        try {
+          const emails = await githubClient.requestResource(
+            'https://api.github.com/user/emails',
+            tokenset
+          )
+          const githubEmails = JSON.parse(emails.body.toString())
+          const primaryEmail = githubEmails.find((e) => e.primary)
+
+          githubClaims.email = primaryEmail.email
+          githubClaims.email_verified = primaryEmail.verified
+        } catch (error) {
+          // this should not happen, but if it does, we'll generate something here so it won't fail
+          // TODO, enable creating accounts in oidc without revealing the external emails
+          githubClaims.email = `hiddenemail+${epochTime()}@github.com`
+        }
+
+        githubClaims.sub = githubClaims.id
+
         const account = await Account.findByFederated('github', githubClaims)
 
         const result = { login: { accountId: account.accountId } }
