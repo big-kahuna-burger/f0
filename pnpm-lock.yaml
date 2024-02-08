@@ -158,8 +158,8 @@ importers:
         specifier: ^1.2.2
         version: 1.2.2(vitest@1.2.2)
       got:
-        specifier: ^14.0.0
-        version: 14.0.0
+        specifier: ^14.2.0
+        version: 14.2.0
       open:
         specifier: ^10.0.3
         version: 10.0.3
@@ -7412,8 +7412,8 @@ packages:
       responselike: 3.0.0
     dev: false
 
-  /got@14.0.0:
-    resolution: {integrity: sha512-X01vTgaX9SwaMq5DfImvS+3GMQFFs5HtrrlS9CuzUSzkxAf/tWGEyynuI+Qy7BjciMczZGjyVSmawYbP4eYhYA==}
+  /got@14.2.0:
+    resolution: {integrity: sha512-dBq2KkHcQl3AwPoIWsLsQScCPpUgRulz1qZVthjPYKYOPmYfBnekR3vxecjZbm91Vc3JUGnV9mqFX7B+Fe2quw==}
     engines: {node: '>=20'}
     dependencies:
       '@sindresorhus/is': 6.1.0

@@ -73,7 +73,7 @@
     "@types/node": "^20.11.15",
     "@vitest/coverage-v8": "^1.2.2",
     "@vitest/ui": "^1.2.2",
-    "got": "^14.0.0",
+    "got": "^14.2.0",
     "open": "^10.0.3",
     "qrcode": "^1.5.3",
     "set-cookie-parser": "^2.6.0",
