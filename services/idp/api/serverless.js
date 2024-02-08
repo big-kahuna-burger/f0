@@ -1,9 +1,9 @@
 import middie from '@fastify/middie'
 import Fastify from 'fastify'
 import { configureOidc } from '../oidc/index.js'
+import { getFederationClients } from '../oidc/support/federation.js'
+import InteractonsAPI from '../oidc/support/interaction.js'
 import { MANAGEMENT } from '../resource-servers/management.js'
-import { getFederationClients } from './oidc/support/federation.js'
-import InteractonsAPI from './oidc/support/interaction.js'
 const config = {}
 const parsedHost = new URL(config?.issuer || process.env.ISSUER)
 const { hostname, protocol, port, pathname } = parsedHost
