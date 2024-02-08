@@ -82,8 +82,8 @@ importers:
         specifier: ^1.19.0
         version: 1.20.0
       '@prisma/client':
-        specifier: ^5.7.1
-        version: 5.8.1(prisma@5.9.1)
+        specifier: ^5.9.1
+        version: 5.9.1(prisma@5.9.1)
       '@prisma/instrumentation':
         specifier: ^5.9.1
         version: 5.9.1
@@ -3163,8 +3163,8 @@ packages:
     resolution: {integrity: sha512-2LuNTFBIO0m7kKIQvvPHN6UE63VjpmL9rnEEaOOaiSPbZK+zUOYIzBAWcED+3XYzhYsd/0mD57VdxAEqqV52CQ==}
     dev: true
 
-  /@prisma/client@5.8.1(prisma@5.9.1):
-    resolution: {integrity: sha512-xQtMPfbIwLlbm0VVIVQY2yqQVOxPwRQhvIp7Z3m2900g1bu/zRHKhYZJQWELqmjl6d8YwBy0K2NvMqh47v1ubw==}
+  /@prisma/client@5.9.1(prisma@5.9.1):
+    resolution: {integrity: sha512-caSOnG4kxcSkhqC/2ShV7rEoWwd3XrftokxJqOCMVvia4NYV/TPtJlS9C2os3Igxw/Qyxumj9GBQzcStzECvtQ==}
     engines: {node: '>=16.13'}
     requiresBuild: true
     peerDependencies:
