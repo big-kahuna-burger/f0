@@ -44,18 +44,17 @@
   <p id="error" class="red"><%= error %></p>
   <% } %>
   <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
-  <div class="login-help">
-    <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
-    <% if (supportsRegister) { %>
-    <hr />
-    <div>
-      Don't have an account? <a href="/interaction/<%= uid %>/register">Sign up</a>
-    </div>
-    <% } %>
-  </div>
 </form>
 <% } %>
-
+<div class="login-help">
+  <a href="/interaction/<%= uid %>/abort">[ Cancel ]</a>
+  <% if (supportsRegister) { %>
+  <hr />
+  <div>
+    Don't have an account? <a href="/interaction/<%= uid %>/register">Sign up</a>
+  </div>
+  <% } %>
+</div>
 <% if(vercel) { %>
 <script nonce="<%= nonce %>">
   function vaTrack() {
