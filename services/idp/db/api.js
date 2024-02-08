@@ -637,13 +637,44 @@ async function deleteConnection(id) {
 
 async function updateDBConnection(id, { disableSignup }) {
   const connectionFound = await prisma.connection.findFirst({ where: { id } })
-  if (connectionFound.readonly) {
+  if (connectionFound?.readonly) {
     throw new Error('Cannot update read only connection')
   }
   const connection = await prisma.connection.update({
     where: { id },
     data: { disableSignup }
   })
+  return connection
+}
+
+async function updateSocialConnection(
+  id,
+  { clientId, clientSecret, scopes, allowedMobileClientIds, syncAttributes }
+) {
+  const connectionFound = await prisma.connection.findFirst({ where: { id } })
+
+  if (!connectionFound) {
+    throw new Error('Connection not found')
+  }
+  const data = { connectionConfig: { ...connectionFound.connectionConfig } }
+
+  if (syncAttributes !== undefined) {
+    data.connectionConfig.syncAttributes = syncAttributes
+  }
+
+  if (clientId && clientSecret) {
+    data.connectionConfig.clientId = clientId
+    data.connectionConfig.clientSecret = clientSecret
+  }
+
+  if (scopes) {
+    data.connectionConfig.scopes = scopes
+  }
+  if (allowedMobileClientIds) {
+    data.connectionConfig.allowedMobileClientIds = allowedMobileClientIds
+  }
+
+  const connection = await prisma.connection.update({ where: { id }, data })
   return connection
 }
 
@@ -710,7 +741,8 @@ export {
   addConnectionToClient,
   removeConnectionFromClient,
   getClientGrantsByClientId,
-  createSocialConnection
+  createSocialConnection,
+  updateSocialConnection
 }
 
 async function secretFactory() {

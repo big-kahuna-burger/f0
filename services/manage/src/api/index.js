@@ -25,6 +25,7 @@ export {
   updateDBConnection,
   deleteDbConnection,
   createSocialConnection,
+  updateSocialConnection,
   userInfo
 }
 import { importJWK } from 'jose'
@@ -74,6 +75,39 @@ async function createSocialConnection({
     })
   }
   const connectionsResponse = await fetch(`${baseUrl}/connections/social`, opts)
+  const json = await connectionsResponse.json()
+  return json
+}
+
+async function updateSocialConnection(
+  id,
+  { clientId, clientSecret, scopes, allowedMobileClientIds, syncAttributes }
+) {
+  const body = {}
+  if (clientId?.length) {
+    body.clientId = clientId
+  }
+  if (clientSecret?.length) {
+    body.clientSecret = clientSecret
+  }
+  if (scopes) {
+    body.scopes = scopes
+  }
+  if (allowedMobileClientIds) {
+    body.allowedMobileClientIds = allowedMobileClientIds
+  }
+  if (syncAttributes !== undefined) {
+    body.syncAttributes = syncAttributes
+  }
+  const opts = {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...getHeaders() },
+    body: JSON.stringify(body)
+  }
+  const connectionsResponse = await fetch(
+    `${baseUrl}/connections/social/${id}`,
+    opts
+  )
   const json = await connectionsResponse.json()
   return json
 }

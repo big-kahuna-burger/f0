@@ -18,8 +18,10 @@ import { AppServer } from './components/ApplicationServer'
 import { AppServers } from './components/ApplicationServers'
 import { Applications } from './components/Applications'
 import { Connection } from './components/Connection'
+import { GoogleEdit } from './components/Connection/GoogleEdit'
 import { Tester } from './components/Connection/Tester'
 import { Connections } from './components/Connections'
+import { SocialConnections } from './components/Connections/Social'
 import { NewSocialConnection } from './components/NewSocialConnection'
 import { NewGoogle } from './components/NewSocialConnection/NewGoogle'
 import { UsersRolesTable } from './components/UserTableWithRoles'
@@ -167,7 +169,27 @@ const children = [
   },
   {
     path: '/authn/social',
-    element: <></>
+    element: <SocialConnections />,
+    loader: async ({ params }) => {
+      const connections = await getConnections({
+        page: 0,
+        size: 20,
+        type: 'social'
+      })
+      return { connections }
+    }
+  },
+  {
+    path: '/authn/social/google',
+    element: <GoogleEdit />,
+    loader: async ({ params }) => {
+      const connections = await getConnections({
+        page: 0,
+        size: 20,
+        type: 'social'
+      })
+      return { connection: connections.find((c) => c.strategy === 'GOOGLE') }
+    }
   },
   {
     path: '/authn/social/new',
