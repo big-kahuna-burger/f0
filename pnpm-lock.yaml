@@ -233,8 +233,8 @@ importers:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
       react-oauth2-code-pkce:
-        specifier: ^1.16.0
-        version: 1.16.0(react@18.2.0)
+        specifier: ^1.16.1
+        version: 1.16.1(react@18.2.0)
       react-router-dom:
         specifier: ^6.22.0
         version: 6.22.0(react-dom@18.2.0)(react@18.2.0)
@@ -11152,8 +11152,8 @@ packages:
       react-dom: 18.2.0(react@18.2.0)
     dev: false
 
-  /react-oauth2-code-pkce@1.16.0(react@18.2.0):
-    resolution: {integrity: sha512-ikzSQqkmSCCWgSxViWiceTs2rWEeUDxCK1xG64iPJAz7Eyoxc4HMrYMh1Cd4RzYyk4VKpbFnLGRROFGi5myy2w==}
+  /react-oauth2-code-pkce@1.16.1(react@18.2.0):
+    resolution: {integrity: sha512-9tqn6Q/jlOSdL9eIQ7jad5/v0FCXZIHUMeX2TRRecfU+KZMLLeZXzGB6aRszjM+0qy0eT7nO3AFPxpDTgfKGvg==}
     peerDependencies:
       react: '>=16.8.0'
     dependencies:
