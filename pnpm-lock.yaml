@@ -191,8 +191,8 @@ importers:
         specifier: ^7.4.0
         version: 7.4.2(@mantine/hooks@7.5.2)(react-dom@18.2.0)(react@18.2.0)
       '@mantine/dates':
-        specifier: ^7.5.0
-        version: 7.5.0(@mantine/core@7.4.2)(@mantine/hooks@7.5.2)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0)
+        specifier: ^7.5.2
+        version: 7.5.2(@mantine/core@7.4.2)(@mantine/hooks@7.5.2)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0)
       '@mantine/form':
         specifier: ^7.5.1
         version: 7.5.1(react@18.2.0)
@@ -2791,11 +2791,11 @@ packages:
       - '@types/react'
     dev: false
 
-  /@mantine/dates@7.5.0(@mantine/core@7.4.2)(@mantine/hooks@7.5.2)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-zFbV+s1ChatO7OBCXHlk6mzcagCG+sSHJ0HNT0XzeCAjnhfVabYEjih5RaaxFedEa2jxUOMkQi/rPlfbGeYooQ==}
+  /@mantine/dates@7.5.2(@mantine/core@7.4.2)(@mantine/hooks@7.5.2)(dayjs@1.11.10)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-fQN/5YXgXEr3rpyPq3TeiBIljCJWFo957DTFqLzkn/m0E2Qx5Sk+l6CjCTF9ShdPAuDaTkI9RKdE9NaV5JvcrQ==}
     peerDependencies:
-      '@mantine/core': 7.5.0
-      '@mantine/hooks': 7.5.0
+      '@mantine/core': 7.5.2
+      '@mantine/hooks': 7.5.2
       dayjs: '>=1.0.0'
       react: ^18.2.0
       react-dom: ^18.2.0
