@@ -91,8 +91,8 @@ importers:
         specifier: ^5.9.1
         version: 5.9.1
       '@scalar/fastify-api-reference':
-        specifier: ^1.14.8
-        version: 1.14.8(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0)
+        specifier: ^1.16.0
+        version: 1.16.0(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0)
       bcrypt:
         specifier: ^5.1.1
         version: 5.1.1
@@ -3384,8 +3384,8 @@ packages:
     resolution: {integrity: sha512-irBNt5094vHloql4QzY8RdeI8Tns2kGsaiJ/m6jENWx9xCz/m/F4gKQ1dAailFmpL0Id9tgWLqZbTUO4SINM/Q==}
     dev: false
 
-  /@scalar/fastify-api-reference@1.14.8(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0):
-    resolution: {integrity: sha512-fsHHsWfpRQ4s+DhoYjQnwQmraNKj13Y+aZU2AFk/Un88cCwHqfJoN+ETzKRBK58YJqftWtEKFN6ROverXW4jkA==}
+  /@scalar/fastify-api-reference@1.16.0(fastify-html@0.3.2)(fastify-plugin@4.5.1)(fastify@4.26.0):
+    resolution: {integrity: sha512-gZkoVg9kiqnRlxlgYvgNlm1687Myp6EQfSe27HZyoBL3bN68Im/BDo9QQHjqheJ7DvD0tLiKSC9Y6jbSwtPVlw==}
     engines: {node: '>=18'}
     peerDependencies:
       fastify: ^4.0.0
