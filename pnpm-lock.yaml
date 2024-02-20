@@ -158,8 +158,8 @@ importers:
         specifier: ^1.2.2
         version: 1.2.2(vitest@1.2.2)
       '@vitest/ui':
-        specifier: ^1.2.2
-        version: 1.2.2(vitest@1.2.2)
+        specifier: ^1.3.0
+        version: 1.3.0(vitest@1.2.2)
       got:
         specifier: ^14.2.0
         version: 14.2.0
@@ -174,7 +174,7 @@ importers:
         version: 2.6.0
       vitest:
         specifier: ^1.2.2
-        version: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.2.2)
+        version: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.3.0)
       vitest-mock-extended:
         specifier: ^1.3.1
         version: 1.3.1(typescript@5.3.3)(vitest@1.2.2)
@@ -4116,7 +4116,7 @@ packages:
       std-env: 3.7.0
       test-exclude: 6.0.0
       v8-to-istanbul: 9.2.0
-      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.2.2)
+      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.3.0)
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -4151,23 +4151,32 @@ packages:
       tinyspy: 2.2.0
     dev: true
 
-  /@vitest/ui@1.2.2(vitest@1.2.2):
-    resolution: {integrity: sha512-CG+5fa8lyoBr+9i+UZGS31Qw81v33QlD10uecHxN2CLJVN+jLnqx4pGzGvFFeJ7jSnUCT0AlbmVWY6fU6NJZmw==}
+  /@vitest/ui@1.3.0(vitest@1.2.2):
+    resolution: {integrity: sha512-gDGEBUddrPOJvF4e0nIeKBz1whiDthBxBB0OUAbUqnY0HxJwqlKg9R257Sxoeh1Q7ZDSzc7qY96n4hrEPy1NaQ==}
     peerDependencies:
-      vitest: ^1.0.0
+      vitest: 1.3.0
     dependencies:
-      '@vitest/utils': 1.2.2
+      '@vitest/utils': 1.3.0
       fast-glob: 3.3.2
       fflate: 0.8.1
       flatted: 3.2.9
       pathe: 1.1.2
       picocolors: 1.0.0
       sirv: 2.0.4
-      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.2.2)
+      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.3.0)
     dev: true
 
   /@vitest/utils@1.2.2:
     resolution: {integrity: sha512-WKITBHLsBHlpjnDQahr+XK6RE7MiAsgrIkr0pGhQ9ygoxBfUeG0lUG5iLlzqjmKSlBv3+j5EGsriBzh+C3Tq9g==}
+    dependencies:
+      diff-sequences: 29.6.3
+      estree-walker: 3.0.3
+      loupe: 2.3.7
+      pretty-format: 29.7.0
+    dev: true
+
+  /@vitest/utils@1.3.0:
+    resolution: {integrity: sha512-/LibEY/fkaXQufi4GDlQZhikQsPO2entBKtfuyIpr1jV4DpaeasqkeHjhdOhU24vSHshcSuEyVlWdzvv2XmYCw==}
     dependencies:
       diff-sequences: 29.6.3
       estree-walker: 3.0.3
@@ -13061,10 +13070,10 @@ packages:
     dependencies:
       ts-essentials: 9.4.1(typescript@5.3.3)
       typescript: 5.3.3
-      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.2.2)
+      vitest: 1.2.2(@types/node@20.11.17)(@vitest/ui@1.3.0)
     dev: true
 
-  /vitest@1.2.2(@types/node@20.11.17)(@vitest/ui@1.2.2):
+  /vitest@1.2.2(@types/node@20.11.17)(@vitest/ui@1.3.0):
     resolution: {integrity: sha512-d5Ouvrnms3GD9USIK36KG8OZ5bEvKEkITFtnGv56HFaSlbItJuYr7hv2Lkn903+AvRAgSixiamozUVfORUekjw==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -13094,7 +13103,7 @@ packages:
       '@vitest/runner': 1.2.2
       '@vitest/snapshot': 1.2.2
       '@vitest/spy': 1.2.2
-      '@vitest/ui': 1.2.2(vitest@1.2.2)
+      '@vitest/ui': 1.3.0(vitest@1.2.2)
       '@vitest/utils': 1.2.2
       acorn-walk: 8.3.2
       cac: 6.7.14
