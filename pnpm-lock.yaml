@@ -52,8 +52,8 @@ importers:
         specifier: ^8.12.1
         version: 8.14.0
       '@fastify/view':
-        specifier: ^8.2.0
-        version: 8.2.0
+        specifier: ^9.0.0
+        version: 9.0.0
       '@isaacs/ttlcache':
         specifier: ^1.4.1
         version: 1.4.1
@@ -2350,8 +2350,8 @@ packages:
       - supports-color
     dev: false
 
-  /@fastify/view@8.2.0:
-    resolution: {integrity: sha512-hBSiBofCnJNlPHEMZWpO1SL84eqOaqujJ1hR3jntFyZZCkweH5jMs12DKYyGesjVll7SJFRRxPUBB8kmUmneRQ==}
+  /@fastify/view@9.0.0:
+    resolution: {integrity: sha512-4KSM75Ad7Q9adQWJK17XAJlmwNE9HhIe8TdSTnvFzDvt0aOwmS4iY6k+Xd4NWuEk0JbteS6kzo0eZOr0ZZgPVg==}
     dependencies:
       fastify-plugin: 4.5.1
       hashlru: 2.3.0
