@@ -60,4 +60,3 @@ profile*
 *.env
 
 services/idp/testme.cjs
-package-lock.json
