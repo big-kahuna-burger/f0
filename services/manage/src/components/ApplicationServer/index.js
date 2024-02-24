@@ -530,7 +530,7 @@ function Settings({ api }) {
             label="API Identifier"
             value={api.identifier}
             description={
-              'The Unique API identifier. This value will be used as the audience parameter when resource indicators are used.'
+              "The Unique API identifier. This value should be used as the 'resource' parameter when resource indicators are used."
             }
             inputWrapperOrder={['label', 'input', 'description']}
             disabled

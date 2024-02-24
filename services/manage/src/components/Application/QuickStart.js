@@ -1,6 +1,8 @@
 import { CodeHighlight } from '@mantine/code-highlight'
-import { Paper, Select } from '@mantine/core'
+import { Paper, Select, MultiSelect } from '@mantine/core'
 import { useEffect, useState } from 'react'
+import { getClientGrantsByClientId, getResourceServers } from '../../api'
+
 const privateKeyBlockClientCredentials = ({
   issuer,
   client_id,
@@ -80,22 +82,26 @@ const codeBlock = ({
   client_secret,
   alg,
   kid,
-  selectedGrantType
+  selectedGrantType,
+  selectedResource,
+  selectedScope
 }) => {
   if (selectedGrantType === 'client_credentials') {
     switch (token_endpoint_auth_method) {
       case 'private_key_jwt':
         return privateKeyBlockClientCredentials({ issuer, client_id, alg, kid })
       case 'client_secret_basic':
+        return 'not implemented yet'
       case 'client_secret_post':
-      case 'none':
-        return clientSecretBasicClientCredentials({
+        return clientSecretPostClientCredentials({
           issuer,
           client_id,
           client_secret,
-          alg,
-          kid
+          resource: selectedResource,
+          scope: selectedScope.join(' ')
         })
+      case 'none':
+        return 'not implemented yet'
       default:
         return 'not implemented yet'
     }
@@ -129,13 +135,53 @@ const codeBlock = ({
   return 'NI'
 }
 
-const clientSecretBasicClientCredentials = ({
+const clientSecretPostClientCredentials = ({
   issuer,
   client_id,
   client_secret,
-  alg,
-  kid
-}) => 'const TODO = true'
+  resource,
+  scope
+}) => `
+const http = require('http')
+
+const data = {
+  grant_type: 'client_credentials',
+  client_id: '${client_id}',
+  client_secret: '${client_secret}',
+  resource: '${resource}',
+  scope: '${scope}'
+}
+
+const dataPayload = new URLSearchParams(data).toString()
+
+const options = {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Content-Length': Buffer.byteLength(dataPayload)
+  }
+}
+
+const url = '${issuer}/token'
+const req = http.request(url, options, onResponse)
+
+req.on('error', console.error)
+
+req.write(dataPayload)
+req.end()
+
+function onResponse(res) {
+  let responseData = ''
+  res.on('data', (chunk) => {
+    responseData += chunk
+  })
+  res.on('end', () => {
+    console.log(responseData)
+  })
+}
+
+`
+
 const authCodeGrantTypeJwk = ({
   client_id,
   issuer,
@@ -225,10 +271,11 @@ const { Issuer, generators } = require('openid-client')
 server.removeAllListeners('request')
 const {
   OIDC_CLIENT_ID = '${client_id}',
-  OIDC_ISSUER = '${issuer}'${client_secret
-    ? `,
+  OIDC_ISSUER = '${issuer}'${
+    client_secret
+      ? `,
   OIDC_CLIENT_SECRET = '${client_secret}'`
-    : ''
+      : ''
   }
 } = process.env
 
@@ -239,11 +286,12 @@ server.once('listening', () => {
     const redirect_uri = '${redirect_uri}'
 
     const client = new issuer.Client({
-      client_id: OIDC_CLIENT_ID${client_secret
-    ? `,
+      client_id: OIDC_CLIENT_ID${
+        client_secret
+          ? `,
       client_secret: OIDC_CLIENT_SECRET,`
-    : ','
-  }
+          : ','
+      }
       redirect_uris: ${redirect_uris},
       response_types: ${response_types},
       token_endpoint_auth_method: '${token_endpoint_auth_method}'
@@ -291,8 +339,7 @@ server.once('listening', () => {
 })`
 
 const QuickStart = ({ app }) => {
-  const [selectedGrantType, setSelectedGrantType] =
-    useState('client_credentials')
+  const [selectedGrantType, setSelectedGrantType] = useState('')
   const redirectUris = app.redirect_uris ? app.redirect_uris.split(',') : []
   const fixedApp = {
     ...app,
@@ -300,9 +347,44 @@ const QuickStart = ({ app }) => {
     response_types: renderArry(app.response_types),
     redirect_uri: redirectUris[0]
   }
+
+  const [resMap, setResMap] = useState()
+  const [availableResources, setAvailableResources] = useState([])
+  const [selectedResource, setSelectedResource] = useState()
+  const [availableScopes, setAvailableScopes] = useState([])
+  const [selectedScope, setSelectedScope] = useState([])
+
   const [selectedCredential, setSelectedCredential] = useState()
   const [alg, setAlg] = useState()
   const [kid, setKid] = useState()
+
+  useEffect(() => {
+    if (
+      selectedGrantType === 'client_credentials' &&
+      availableResources.length === 0
+    ) {
+      const resourceToScopes = new Map()
+      getClientGrantsByClientId(app.client_id)
+        .then((grants) => {
+          grants.map((grant) => {
+            Object.entries(grant.resources).map(([resource, scopes]) => {
+              resourceToScopes.set(resource, scopes)
+            })
+          })
+        })
+        .then(() => {
+          setResMap(resourceToScopes)
+          setAvailableResources(Array.from(resourceToScopes.keys()))
+        })
+    }
+  }, [selectedGrantType, availableResources, app])
+
+  useEffect(() => {
+    if (selectedResource) {
+      setAvailableScopes(resMap.get(selectedResource).split(' '))
+    }
+  }, [selectedResource, resMap])
+
   useEffect(() => {
     if (selectedCredential && selectedCredential !== 'N/A') {
       const cred = app.jwks?.keys?.find(
@@ -319,6 +401,10 @@ const QuickStart = ({ app }) => {
       label: `${cred.alg} 🔑 ${cred.kid} ` || 'N/A',
       value: cred.kid || 'N/A'
     })) || []
+  const grantTypeOptions = app.grant_types?.map((gt) => ({
+    label: gt,
+    value: gt
+  }))
 
   return (
     <>
@@ -326,18 +412,35 @@ const QuickStart = ({ app }) => {
         variant="outline"
         onChange={(v) => setSelectedGrantType(v)}
         placeholder="Select a grant type"
-        data={[
-          {
-            label: 'client_credentials',
-            value: 'client_credentials'
-          },
-          {
-            label: 'authorization_code',
-            value: 'authorization_code'
-          }
-        ]}
+        data={grantTypeOptions}
         miw={450}
       />
+      {selectedGrantType === 'client_credentials' && (
+        <Select
+          variant="outline"
+          onChange={(v) => setSelectedResource(v)}
+          placeholder="Select a resource"
+          data={availableResources.map((resource) => ({
+            label: resource,
+            value: resource
+          }))}
+          miw={450}
+        />
+      )}
+      {selectedResource && availableScopes && (
+        <MultiSelect
+          variant="outline"
+          placeholder="Select a scope"
+          onChange={(v) => {
+            setSelectedScope(v)
+          }}
+          data={availableScopes.map((scope) => ({
+            label: scope,
+            value: scope
+          }))}
+          miw={450}
+        />
+      )}
       {app.token_endpoint_auth_method === 'private_key_jwt' ? (
         <Paper>
           <Select
@@ -357,7 +460,13 @@ const QuickStart = ({ app }) => {
         </Paper>
       ) : (
         <CodeHighlight
-          code={codeBlock({ ...fixedApp, selectedGrantType })}
+          code={codeBlock({
+            ...fixedApp,
+            selectedGrantType,
+            availableResources,
+            selectedResource,
+            selectedScope
+          })}
           language="js"
         />
       )}
