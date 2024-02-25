@@ -19,7 +19,7 @@ import { IconBrandGithub, IconInfoCircle } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
 
 const attributes = {
-  openid: 'Basic Profile',
+  user: 'Basic Profile',
   email: 'Email Address'
 }
 
