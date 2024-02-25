@@ -20,7 +20,7 @@ import { useNavigate } from 'react-router-dom'
 
 const attributes = {
   user: 'Basic Profile',
-  email: 'Email Address'
+  'user:email': 'Email Address'
 }
 
 const scopeMap = {
