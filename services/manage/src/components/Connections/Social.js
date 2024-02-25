@@ -1,9 +1,20 @@
-import { Anchor, Group, Table, ThemeIcon, rem } from '@mantine/core'
+import {
+  Anchor,
+  Button,
+  Group,
+  Table,
+  ThemeIcon,
+  rem,
+  Text,
+  Paper
+} from '@mantine/core'
 import { useColorScheme } from '@mantine/hooks'
 import { IconDatabase } from '@tabler/icons-react'
-import { useLoaderData } from 'react-router-dom'
+import { useLoaderData, useNavigate } from 'react-router-dom'
+import { IconPlus } from '@tabler/icons-react'
 
 export function SocialConnections() {
+  const navigate = useNavigate()
   const colorScheme = useColorScheme()
   const { connections } = useLoaderData()
   const rows = connections.map((conn) => (
@@ -23,7 +34,28 @@ export function SocialConnections() {
   ))
 
   return (
-    <>
+    <Paper p="md">
+      <Group justify="space-between" align="center">
+        <Text mb="lg">Social Connections</Text>{' '}
+        <Button
+          leftSection={
+            <IconPlus
+              style={{
+                width: rem(18),
+                height: rem(18)
+              }}
+              stroke={1.5}
+            />
+          }
+          radius={'xl'}
+          onClick={() => {
+            navigate('/authn/social/new')
+          }}
+        >
+          Configure New Connection
+        </Button>
+      </Group>
+
       <Table
         striped
         highlightOnHover
@@ -38,6 +70,6 @@ export function SocialConnections() {
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
-    </>
+    </Paper>
   )
 }
