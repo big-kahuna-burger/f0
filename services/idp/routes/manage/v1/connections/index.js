@@ -54,6 +54,18 @@ export default async function (fastify, opts) {
         connectionConfig
       })
     }
+    if (strategy === 'github') {
+      const connectionConfig = {}
+      connectionConfig.scopes = data.scopes // todo validate scopes
+      connectionConfig.clientId = data.clientId // todo validate client id
+      connectionConfig.clientSecret = data.clientSecret // todo validate client secret
+      connectionConfig.syncAttributes = data.syncAttributes
+      return api.createSocialConnection({
+        name: 'github',
+        strategy: 'GITHUB',
+        connectionConfig
+      })
+    }
     throw new Error('unsupported strategy')
   }
 

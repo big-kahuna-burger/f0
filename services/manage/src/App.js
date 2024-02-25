@@ -24,6 +24,7 @@ import { Connections } from './components/Connections'
 import { SocialConnections } from './components/Connections/Social'
 import { NewSocialConnection } from './components/NewSocialConnection'
 import { NewGoogle } from './components/NewSocialConnection/NewGoogle'
+import { NewGithub } from './components/NewSocialConnection/NewGithub'
 import { UsersRolesTable } from './components/UserTableWithRoles'
 import { UsersTable } from './components/UsersTable'
 
@@ -198,6 +199,10 @@ const children = [
   {
     path: '/authn/social/new/google',
     element: <NewGoogle />
+  },
+  {
+    path: '/authn/social/new/github',
+    element: <NewGithub />
   },
   {
     path: '/users',
