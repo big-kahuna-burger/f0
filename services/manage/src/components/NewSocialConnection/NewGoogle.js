@@ -11,6 +11,7 @@ import {
 } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { createSocialConnection } from '../../api'
+import { IconBrandGoogle } from '@tabler/icons-react'
 const scopeMap = {
   openid: {
     default: true,
@@ -50,6 +51,10 @@ export function NewGoogle() {
   return (
     <Stack align="center">
       <Paper miw={350} maw={850} withBorder p="md">
+        <Stack align="center">
+          <Text>Configure Google Connection</Text>
+          <IconBrandGoogle />
+        </Stack>
         <Group justify="space-between" p="lg">
           <Group miw={250}>
             <Text>General</Text>
