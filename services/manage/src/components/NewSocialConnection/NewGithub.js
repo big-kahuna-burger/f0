@@ -63,9 +63,9 @@ export function NewGithub() {
       scopes: requiredScopes,
       syncAttributes: true
     },
-
     validate: {}
   })
+
   const scopeKeys = Object.keys(scopeMap)
   const handleScopeChange = (checked, scope) => {
     if (checked) {
