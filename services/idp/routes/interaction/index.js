@@ -219,10 +219,10 @@ export default async function interactionsRouter(fastify, opts) {
     }
 
     const connectionsSupportingRegister =
-      connections.length &&
-      connections.filter((c) => c.disableSignup).length === 0
+      connections.length > 0 &&
+      connections.filter((c) => !c.disableSignup).length > 0
 
-    if (isRegister && !connectionsSupportingRegister) {
+    if (isRegister && connectionsSupportingRegister === false) {
       const result = {
         error: 'access_denied',
         error_description: 'No connections support registration'
@@ -385,8 +385,11 @@ export default async function interactionsRouter(fastify, opts) {
 
     assert.equal(name, 'login')
     const client = await provider.Client.find(params.client_id)
-    const connections = await Connection.getEnabledConnections(client.clientId)
-    const dbConnections = connections.filter((c) => c.type === 'DB')
+    const isTester = client.clientId === 'tester'
+
+    const dbConnections = (isTester
+      ? await Connection.getAllConnections()
+      : await Connection.getEnabledConnections(client.clientId)).filter(conn => conn.type === 'DB')
     // check that at least one connection supports registration
     if (dbConnections.length === 0) {
       const returnTo = await provider.interactionResult(

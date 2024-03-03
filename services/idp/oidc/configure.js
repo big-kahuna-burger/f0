@@ -1,5 +1,6 @@
 import koaPino from 'koa-pino-logger'
 import Provider from 'oidc-provider'
+
 import '../env.js'
 import subscribe from './events.js'
 import { calculateJwks } from './helpers/keystore.js'
