@@ -60,3 +60,4 @@ profile*
 *.env
 
 services/idp/testme.cjs
+services/idp/deps.svg
