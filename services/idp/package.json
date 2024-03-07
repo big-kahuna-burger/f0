@@ -72,7 +72,7 @@
     "fastify": "^4.26.1",
     "fastify-disablecache": "^3.1.9",
     "fastify-plugin": "^4.5.1",
-    "jose": "^5.2.2",
+    "jose": "^5.2.3",
     "koa-pino-logger": "^4.0.0",
     "nanoid": "^5.0.6",
     "oidc-provider": "^8.4.5",
