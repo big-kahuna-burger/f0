@@ -7,7 +7,7 @@
     "@mantine/code-highlight": "^7.5.2",
     "@mantine/core": "^7.5.3",
     "@mantine/dates": "^7.5.3",
-    "@mantine/form": "^7.5.3",
+    "@mantine/form": "^7.8.0",
     "@mantine/hooks": "^7.5.3",
     "@tabler/icons-react": "^2.47.0",
     "@testing-library/jest-dom": "^6.4.2",
