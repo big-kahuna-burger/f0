@@ -57,7 +57,6 @@ export default async function runme(fastify, opts) {
     extName: 'ejs',
     defaultContext: {
       uid: '',
-      vercel: opts.isVercel,
       showDebug: process.env.GRANTS_DEBUG,
       title: ''
     }

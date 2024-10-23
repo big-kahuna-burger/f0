@@ -43,7 +43,7 @@
   <% if (error) { %>
   <p id="error" class="red"><%= error %></p>
   <% } %>
-  <button type="submit" class="login login-submit" <% if (vercel) { %> onclick="vaTrack()" <% } %>>Continue</button>
+  <button type="submit" class="login login-submit">Continue</button>
 </form>
 <% } %>
 <div class="login-help">
@@ -55,12 +55,3 @@
   </div>
   <% } %>
 </div>
-<% if(vercel) { %>
-<script nonce="<%= nonce %>">
-  function vaTrack() {
-    va('event', {
-      name: 'Login'
-    })
-  }
-</script>
-<% } %>

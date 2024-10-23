@@ -1,6 +1,5 @@
 import { AppShell, Burger, Group } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks'
-import { SpeedInsights } from '@vercel/speed-insights/react'
 import { Outlet } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import { SelectedUserContext } from './SelectedUser.context'

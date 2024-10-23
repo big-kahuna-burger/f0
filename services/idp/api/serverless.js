@@ -10,7 +10,7 @@ const { hostname, protocol, port, pathname } = parsedHost
 if (pathname === '/') {
   throw new Error(
     'You should provide a path/prefix for the issuer. ' +
-      "Can't mount it to root. In env vars ISSUER=https://mydomain.com/oidc"
+    "Can't mount it to root. In env vars ISSUER=https://mydomain.com/oidc"
   )
 }
 
@@ -43,7 +43,6 @@ app.register(appService, {
   oidc: provider,
   Account,
   AccountErrors,
-  isVercel: true,
   localKeySet,
   MANAGEMENT_API: MANAGEMENT,
   InteractonsAPI,
