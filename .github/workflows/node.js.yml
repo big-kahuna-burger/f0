@@ -13,25 +13,22 @@ jobs:
   build:
     environment: TEST
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [18.x, 20.x, 22.x]
-
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Install pnpm
+      uses: pnpm/action-setup@v3.0.0
+      with:
+        version: 9
+        run_install: false
     - name: Setup ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - uses: pnpm/action-setup@v3.0.0
-      name: Install pnpm
-      with:
-        version: 8
-        run_install: false
-
+        cache: 'pnpm'
     - name: Get pnpm store directory
       shell: bash
       run: |
@@ -43,12 +40,10 @@ jobs:
         key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
         restore-keys: |
           ${{ runner.os }}-pnpm-store-
-
     - name: Install dependencies
       run: pnpm install
-    
-    - run: pnpm run build
-
+    - name: Build
+      run: pnpm run build
     - name: Test ${{ matrix.node-version }}
       run: pnpm test
       env:
